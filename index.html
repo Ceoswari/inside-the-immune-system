@@ -356,7 +356,7 @@ async function show(i){clearIdle();ST.i=i;const sc=SCENES[i];
   meterLabel();const prevI=ST._shown;ST._shown=i;let drawn='';try{drawn=sc.draw()}catch(e){console.error(P.id,sc.id,e)}
   stage.innerHTML=DEFS+drawn+'<rect width="900" height="560" fill="url(#tis)" pointer-events="none"/><g id="fx"></g>';hud(sc);bodyGo(sc.body||[]);dots();
   const solved=ST.solved[kid(sc)];const ttl=(sc.veil&&!solved)?sc.veil:sc.title;
-  let h=`<div class="eyebrow">Scene ${i+1} of ${SCENES.length}<span class="loc">${sc.where}</span><span>${sc.clock}</span></div>${P&&P.topic&&sc._as?`<div class="asbar">You are ${sc._as.replace(/^The /,'the ')}</div>`:''}<h1>${ttl}</h1>${sc._ctxShow?`<div class="ctx">${sc._ctxShow}</div>`:''}<p class="narr">${sc.narr}</p>`;
+  let h=`<div class="eyebrow">Scene ${i+1} of ${SCENES.length}<span class="loc">${sc.where}</span><span>${sc.clock}</span></div>${P&&P.topic&&sc._as?`<div class="asbar">You are ${sc._as.replace(/^The /,'the ')}</div>`:''}<h1>${ttl}</h1>${sc._ctxShow?`<div class="ctx">${sc._ctxShow}</div>`:''}${sc.note?`<div class="ctx">${sc.note}</div>`:''}<p class="narr">${sc.narr}</p>`;
   if(sc.table)h+=sc.table;
   if(sc.extra&&!(P&&P.topic&&sc._from))h+=sc.extra;
   if(i===0&&!sc.extra&&!(P&&P.topic))h+=`<div class="goal"><b class="h">How this works</b>Each scene asks what your cell (or the body) does next. Get it right and the infection shrinks. Get it wrong and you see what goes wrong, and the infection grows. A first-try answer earns a star.</div>`;
@@ -424,6 +424,264 @@ $('#next').onclick=()=>{if(MODE){if(MODE.next)MODE.next();return}if(!P)return;co
 $('#back').onclick=()=>{if(MODE){if(MODE.back)MODE.back();else home();return}if(!P)return;if(ST.i===0){home();return}TRAIL.pop();show(ST.i-1)};
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('#next').disabled&&document.activeElement===document.body){$('#next').click()}});
 window.addEventListener('load',()=>{ST.tried={};const bd=$('#body');if(bd){{const mv=store.get('ij-mini');if(mv==='1'||(mv==null&&innerWidth<600))bd.classList.add('mini')}bd.title='Tap to hide or show the body map';bd.onclick=()=>{bd.classList.toggle('mini');store.set('ij-mini',bd.classList.contains('mini')?'1':'0')}}setLoad(20);if(/[ptm]=/.test(location.hash))route();else home()});
+
+</script>
+<script>
+(()=>{
+/* ---------- The infected airway cell: influenza in a bronchus. Same patient, lung and timeline as the NK and CD8 players.
+   Helpers are local so they cannot collide with other player files. */
+const VC='#c9a2e6';                        // virus and viral peptide color (matches kit virus())
+const XS=[230,330,430,530,630,730,830];    // airway cell row, centers; you are XS[3]
+const CY=245;                              // row center (cells span y 170 to 320)
+const hex=(cx,cy,r)=>'M'+[0,1,2,3,4,5].map(i=>{const a=Math.PI/6+i*Math.PI/3;return (cx+Math.cos(a)*r).toFixed(1)+','+(cy+Math.sin(a)*r).toFixed(1)}).join(' L')+'Z';
+const pep=k=>k==='flu'?`<path d="M-5.5,-1 L0,-11 L5.5,-1Z" fill="${VC}" stroke="var(--ink)" stroke-width="1.3"/>`:k?`<circle cy="-6" r="4" fill="var(--hot)" stroke="var(--ink)" stroke-width="1"/>`:'';
+const post=k=>`<path d="M-4.5,4 L-4.5,-6 M4.5,4 L4.5,-6" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>${pep(k)}`;
+const down=(x,y,html)=>`<g transform="translate(${x},${y}) rotate(180)">${html}</g>`;
+const flag=()=>`<path d="M0,3 L0,-8" stroke="var(--hot)" stroke-width="2.4"/><path d="${hex(0,-14,6.5)}" fill="var(--hot)" stroke="var(--paper)" stroke-width="1"/>`;
+const SH=`<rect x="-51" y="-81" width="102" height="162" rx="19" fill="var(--hot)" fill-opacity=".07" stroke="var(--hot)" stroke-width="2.4" stroke-dasharray="5 4" pointer-events="none"/>`;
+function cilia(){let s='';for(let i=0;i<7;i++){const x=-36+i*12;
+  s+=`<path d="M${x},-74 q-3,-12 2,-24" stroke="var(--muted)" stroke-width="2" fill="none" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="-14 ${x} -74;16 ${x} -74;-14 ${x} -74" dur="1.3s" begin="-${(i*.13).toFixed(2)}s" repeatCount="indefinite"/></path>`}return s}
+/* a ciliated columnar cell at 0,0. o.inf infected, o.mhc self|flu|hi|few|none (posts on the basal side, facing the tissue), o.flags stress flags, o.av antiviral state */
+function ccell(o,seed){o=o||{};const inf=!!o.inf;let s=`<rect x="-45" y="-75" width="90" height="150" rx="16" fill="${inf?'#e9dcef':'var(--epi)'}" class="cellb" filter="url(#soft)"/><rect x="-45" y="-75" width="90" height="150" rx="16" fill="url(#shine)" pointer-events="none"/>`;
+  s+=cilia()+`<ellipse cx="0" cy="34" rx="15" ry="19" class="nuc"/>`;
+  if(inf)s+=[[-18,-34],[16,-44],[2,-10],[-14,6]].map(p=>virus(p[0],p[1],.72)).join('');
+  const m=o.mhc||'self';const P=m==='flu'?[[-16,'flu'],[0,'self'],[16,'flu']]:m==='hi'?[[-32,'self'],[-16,'self'],[0,'self'],[16,'self'],[32,'self']]:m==='few'?[[0,'self']]:m==='none'?[]:[[-16,'self'],[0,'self'],[16,'self']];
+  s+=P.map(p=>down(p[0],78,post(p[1]))).join('');
+  if(o.flags)s+=[-36,36].map(x=>down(x,76,flag())).join('');
+  if(o.av)s+=SH;
+  return s}
+const RING=`<g class="me" pointer-events="none"><rect x="-56" y="-86" width="112" height="172" rx="21" fill="none" stroke="var(--you)" stroke-width="3.5" stroke-dasharray="8 6"><animate attributeName="stroke-dashoffset" from="0" to="-28" dur="1.4s" repeatCount="indefinite"/></rect><text x="30" y="-92" class="youlbl">you</text></g>`;
+/* cells: array of 7 (null = gap); cls 'tc' makes them tappable with ids t0..t6 */
+const row=(cells,cls,pre)=>cells.map((o,i)=>o?G(XS[i],CY,ccell(o,i+3)+(o.you?RING:''),cls||'',(pre||'c')+i):'').join('');
+const H={ok:{},av:{av:true},hi:{av:true,mhc:'hi'},inf:{inf:true},miss:{inf:true,mhc:'none',flags:true}};
+const ME0={inf:true,you:true},ME1={inf:true,mhc:'flu',flags:true,you:true};
+function airBG(noLumenLbl){return `<rect width="900" height="560" fill="var(--tissue)"/><rect width="900" height="160" fill="var(--paper2)"/>
+  <path d="M0,116 Q120,102 240,116 T480,116 T720,116 T960,116 V148 H0Z" fill="var(--line)" opacity=".8"/>${fibers(23,350,560)}
+  <path d="M0,327 H900" stroke="var(--muted)" stroke-width="3" opacity=".55"/>
+  ${noLumenLbl?'':'<text x="640" y="30" class="zone">airway lumen (air)</text>'}<text x="770" y="140" class="zone">mucus</text><text x="16" y="545" class="zone">tissue under the lining</text>`}
+function venule(y0,y1){return `<rect x="0" y="${y0}" width="900" height="${y1-y0}" fill="var(--vessel)"/><rect x="0" y="${y0-7}" width="900" height="8" fill="var(--vwall)"/><rect x="0" y="${y1}" width="900" height="8" fill="var(--vwall)"/>
+  ${Array.from({length:7},(_,i)=>`<g class="flow" style="animation-delay:-${i*.45}s;animation-duration:${2.6+i%3*.5}s"><ellipse cx="0" cy="${y0+16+(i*13)%(y1-y0-28)}" rx="12" ry="6" fill="#d9b8c2" stroke="#b994a2" stroke-width="1"/></g>`).join('')}
+  <text x="888" y="${y1-8}" class="zone" style="text-anchor:end">blood &#8594;</text>`}
+/* the big close-up of you (inside view) */
+function bigYou(){let c='';for(let x=232;x<=850;x+=31)c+=`<path d="M${x},72 q-5,-22 3,-44" stroke="var(--muted)" stroke-width="3" fill="none" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="-12 ${x} 72;14 ${x} 72;-12 ${x} 72" dur="1.3s" begin="-${((x%7)*.17).toFixed(2)}s" repeatCount="indefinite"/></path>`;
+  return `<rect width="900" height="560" fill="var(--tissue)"/>${c}<rect x="200" y="72" width="680" height="436" rx="48" fill="#e9dcef" stroke="var(--epi2)" stroke-width="6"/><rect x="200" y="72" width="680" height="436" rx="48" fill="url(#shine)" opacity=".5"/>
+  <rect x="192" y="64" width="696" height="452" rx="54" fill="none" stroke="var(--you)" stroke-width="3.5" stroke-dasharray="8 6"><animate attributeName="stroke-dashoffset" from="0" to="-28" dur="1.4s" repeatCount="indefinite"/></rect>
+  <text x="884" y="540" class="youlbl" style="text-anchor:end">you, close up</text>
+  <ellipse cx="720" cy="405" rx="82" ry="60" class="nuc" id="bnuc"/>${T(720,490,'your nucleus','sublbl')}`}
+const rnaS=(x,y,s)=>`<path transform="translate(${x},${y}) scale(${s||1})" d="M-34,0 q8,-12 17,0 t17,0 t17,0 t17,0" stroke="#7a4fa3" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+function pdcCell(x,y){return `<g>${mblob(x,y,32,71,.08,10,30,'var(--dc)')}<circle cx="${x-13}" cy="${y-2}" r="11" class="nuc"/>${[0,1,2].map(i=>`<path d="M${x+2+i*6},${y-14} q5,14 0,28" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" fill="none"/>`).join('')}</g>`}
+/* animation helpers */
+const say=(x,y,t)=>{const e=add(T(x,y,t,'youlbl'));e.setAttribute('text-anchor','middle');e.style.opacity=0;return fade(e,1,400)};
+function bud(idxs,cap){idle(()=>{if(stage.querySelectorAll('.bud').length>=(cap||6))return;const k=idxs[Math.floor(Math.random()*idxs.length)];const x=XS[k]+(Math.random()*40-20);
+  const v=add(G(x,168,virus(0,0,.9),'bud'));pop(v,300);moveTo(v,Math.max(240,Math.min(880,x+(Math.random()*120-60))),42+Math.random()*50,2600,'ease-out')},1600)}
+async function shoot(x0,y0,x1,y1,n){const ps=[];for(let k=0;k<(n||5);k++){const d=add(G(x0+(k-2)*6,y0,`<circle r="4.5" fill="var(--hot)" stroke="var(--paper)" stroke-width="1"/>`));
+  ps.push(wait(k*70).then(()=>moveTo(d,x1+(k-2)*7,y1+(k%2)*8,600,'ease-in')).then(()=>fade(d,0,250)))}await Promise.all(ps)}
+async function apopC(el){if(typeof el==='string')el=stage.querySelector(el);if(!el)return[];const x=+el.dataset.x,y=+el.dataset.y;
+  const sh=el.animate([{transform:`translate(${x}px,${y}px) scale(1)`},{transform:`translate(${x}px,${y}px) scale(.72)`}],{duration:RED?1:550,fill:'forwards'});
+  await fin(sh,550);if(!el.isConnected)return[];await fade(el,.08,400);const bl=[];
+  for(let k=0;k<8;k++){const a=k/8*Math.PI*2+.3,b=add(G(x,y,`<circle r="${6+k%3*3}" fill="var(--epi2)" stroke="var(--muted)" stroke-width="1.2"/>`+(k%2?virus(0,0,.5):''),'bleb'));bl.push(b);moveTo(b,x+Math.cos(a)*34,y+Math.sin(a)*52,700)}
+  await wait(750);return bl}
+const shield=i=>{const e=add(G(XS[i],CY,SH,'shield'));return pop(e,450)};
+const nkG=()=>nkcell(0,0,41)+T(0,52,'NK cell','sublbl');
+const live=fx=>fx&&fx.isConnected;
+
+const scenes=[
+{id:'intro',title:'You',where:'Lining of a bronchus, right lung',clock:'Hour 0',body:['lung'],
+ narr:`You are a ciliated epithelial cell, one of a carpet of cells lining a bronchus. Your cilia beat all day, sweeping a sheet of mucus up toward the throat. You have no weapons and no training. An influenza virus has just landed in the mucus above you. Its hemagglutinin grabs the sialic acid on your surface, and you pull it inside.`,
+ draw(){return airBG()+row([H.ok,H.ok,H.ok,{you:true},H.ok,H.ok,H.ok])+G(520,46,virus(0,0,1.3),'','v0')+G(575,70,virus(0,0,1.1),'','v1')+G(470,74,virus(0,0,1.2),'','v2')+`<g id="vl">${T(610,40,'influenza virus','sublbl')}</g>`},
+ async play(){const fx=stage.querySelector('#fx');await wait(500);fade('#vl',0,400);
+   await Promise.all([moveTo('#v0',530,160,1700),moveTo('#v1',548,166,1900),moveTo('#v2',512,164,2000)]);if(!live(fx))return;
+   await Promise.all(['#v0','#v1','#v2'].map(q=>fade(q,0,500)));if(!live(fx))return;const c=stage.querySelector('#c3');if(c)c.innerHTML=ccell(ME0,6)+RING;
+   await say(530,372,'infected');bud([3],3)},
+ extra:`<div class="goal"><b class="h">How this works</b>You are the cell the virus picked. You cannot run and you cannot fight, but you can warn everyone else, and in the end you can let yourself be killed. Each scene asks for the next move. Get it right and the infection shrinks. Get it wrong and you see what goes wrong, and more virus comes out. A first-try answer earns a star.</div>`},
+
+{id:'sense',title:'Something foreign inside',where:'Inside you, the cytosol',clock:'Hours 1 to 2',body:['lung'],
+ narr:`The virus has opened up inside you and let go of its genome, single strands of RNA. Its RNA pieces head for your nucleus to be copied there, unusual for an RNA virus. But viral RNA sitting in your cytosol carries a chemical end your own RNA never has. You did not need a lymph node or a teacher for what comes next. The sensors are already built in.`,
+ draw(){return bigYou()+`<text x="236" y="112" class="zone">cytosol</text>`
+   +`<g id="rna">${rnaS(330,250)}${rnaS(470,330,.9)}${rnaS(400,430)}${rnaS(570,215,.8)}</g>`+T(470,300,'viral RNA','sublbl')
+   +[[300,470],[560,455],[640,300]].map((p,k)=>G(p[0],p[1],`<path d="M-11,-6 a12,12 0 1 1 22,0" stroke="var(--hot)" stroke-width="6" fill="none" stroke-linecap="round"/><circle r="5" fill="var(--hot)"/>`,'','s'+k)).join('')
+   +`<circle cx="790" cy="190" r="42" fill="var(--paper)" fill-opacity=".5" stroke="var(--muted)" stroke-width="2.5"/>`+T(790,250,'endosome','sublbl')},
+ async play(){const r=stage.querySelector('#rna');if(r)fin(r.animate([{opacity:.6},{opacity:1},{opacity:.6}],{duration:RED?1:1800,iterations:2}),3600)},
+ chal:{type:'choice',q:'Something foreign is loose in your cytosol. Which of your sensors catches it?',opts:[
+   {t:'RIG-I, a sensor floating in your cytosol',ok:true,why:'RIG-I and its relatives (the RIG-I-like receptors) are pattern recognition receptors that sit in the cytosol of almost every cell and bind viral RNA. Viruses are made inside cells, so a cell needs sensors on the inside, not just on its surface.'},
+   {t:'TLR4, which waits on your outer surface',why:'TLR4 binds LPS from gram-negative bacteria, out on the cell surface. Flu carries no LPS, and its RNA is inside you anyway. Nothing fires, and the virus keeps copying itself.'},
+   {t:'NOD2, another sensor in your cytosol',why:'Right place, wrong pattern. NOD2 does sit in the cytosol, but it reads peptidoglycan from bacterial cell walls. A virus has none, so the copies pile up unnoticed.'},
+   {t:'Dectin-1, a lectin on your outer surface',why:'Dectin-1 is a lectin receptor, mostly on phagocytes, that binds the glucan in fungal cell walls. Flu has no glucan, and its RNA is inside you anyway. The virus copies on.'}]},
+ async win(){const fx=stage.querySelector('#fx');const tg=[[330,250],[470,330],[400,430]];
+   await Promise.all(tg.map((p,k)=>moveTo('#s'+k,p[0],p[1]-6,1000)));if(!live(fx))return;tg.forEach((_,k)=>{const s=stage.querySelector('#s'+k);if(s)s.classList.add('glow')});
+   setLoad(ST.load-3);await say(470,180,'viral RNA caught')},
+ take:'Viruses are made inside cells, so cells carry sensors inside. RIG-I-like receptors catch viral RNA in the cytosol of almost every cell. Every one of these sensors leads to the same answer: type I interferon.',map:'#idea-pamp'},
+
+{id:'alarm',title:'Sound the alarm',where:'Bronchus lining',clock:'Hours 2 to 6',body:['lung'],
+ narr:`You are going to lose this fight. The virus already owns your machinery. But the cells beside you are still clean, and you have a few hours to warn them. Do it in the right order.`,
+ draw(){return airBG()+row([H.ok,H.ok,H.ok,ME0,H.ok,H.ok,H.ok])},
+ async play(){bud([3],3)},
+ chal:{type:'order',q:'Tap your steps in the order they happen.',steps:[
+   {t:'RIG-I binds the viral RNA and sends a signal',anim:async()=>{const p=add(`<circle cx="530" cy="205" r="16" fill="none" stroke="var(--hot)" stroke-width="4" class="pulse"/>`);pop(p,300);await wait(700)}},
+   {t:'The signal switches on your interferon genes',anim:async()=>{const n=add(`<ellipse cx="530" cy="279" rx="16" ry="20" fill="var(--hot)" opacity=".7" class="pulse"/>`);pop(n,300);await wait(700)}},
+   {t:'You secrete type I interferon (IFN-β)',anim:async()=>{await Promise.all([cytokine(530,250,445,232,'IFN',0),cytokine(530,250,615,232,'IFN',150),cytokine(530,260,345,250,'',300),cytokine(530,260,715,250,'',420)])}},
+   {t:'It binds interferon receptors on your neighbors',anim:async()=>{for(const i of [1,2,4,5]){const r=add(G(XS[i]+(i<3?40:-40),CY-20,`<circle r="7" fill="var(--hot)"/><path d="M-9,-2 a9,9 0 0 0 18,0" stroke="var(--ink)" stroke-width="2.5" fill="none" transform="rotate(${i<3?-90:90})"/>`,'rec'));pop(r,300);await wait(110)}}},
+   {t:'Your neighbors switch on their antiviral genes',anim:async()=>{await Promise.all([1,2,4,5].map((i,k)=>wait(k*120).then(()=>shield(i))))}}],
+  bad:'Out of order. A signal that never reaches your nucleus makes no interferon, so your neighbors hear nothing. The new virions leaving you walk into cells that never saw them coming.'},
+ async badAnim(){const fx=stage.querySelector('#fx');if(!fx)return;[...fx.children].forEach(e=>{if(!e.classList.contains('newbug')&&!e.classList.contains('bud'))e.remove()});await wait(300)},
+ async win(){setLoad(ST.load-4);say(530,372,'warning sent')},
+ take:'Sense, signal, secrete, warn. The interferon you make acts on your neighbors (paracrine) and on you (autocrine). It is the very first antiviral defense, hours old, long before any lymphocyte has heard of this virus.',map:'#cell-ifn'},
+
+{id:'antiviral',title:'The warning lands',where:'Bronchus lining',clock:'Hours 6 to 12',body:['lung'],
+ narr:`New virions are budding off your top surface and drifting along the mucus toward the cells next door. But your interferon got there first. The neighbor to your left has it locked onto its receptors, and its nucleus is already busy.`,
+ draw(){return airBG()+row([H.ok,H.ok,H.ok,ME0,H.ok,H.ok,H.ok])
+   +[2,4].map(i=>G(XS[i]+(i<3?40:-40),CY-20,`<circle r="7" fill="var(--hot)"/>`,'','r'+i)).join('')+`<g id="ifnl">${T(430,370,'interferon bound','sublbl')}</g>`},
+ async play(){bud([3],4)},
+ chal:{type:'choice',q:'What does your interferon make the cell next door do?',opts:[
+   {t:'Block viral copying and put up more MHC I',ok:true,why:'This is the antiviral state. Interferon switches on genes whose products stop viral replication: an RNase chews up viral RNA, a kinase called PKR halts protein making the moment virus gets in, and the cell raises MHC I. Virus that lands there gets almost nowhere.'},
+   {t:'Divide quickly to fill the gap you will leave',why:'Interferon is a warning, not a growth signal. The neighbor divides with no defenses up, and the virus moves right in. Regrowing the lining is a job for basal cells, after the fight.'},
+   {t:'Die right away so the virus finds no home',why:'The neighbor is not infected yet. If every warned cell killed itself, the airway would strip bare in a day. Interferon protects healthy cells; it does not sacrifice them.'},
+   {t:'Make antibody to coat the incoming virus',why:'Only plasma cells make antibody, and the first flu antibody is about a week away. The neighbor waits for a weapon it cannot make, and gets infected.'}]},
+ async win(){const fx=stage.querySelector('#fx');fade('#ifnl',0,300);await Promise.all([1,2,4,5].map((i,k)=>wait(k*100).then(()=>shield(i))));if(!live(fx))return;
+   [2,4].forEach(i=>{for(const x of [-32,32]){const p=add(G(XS[i]+x,CY+78,`<g transform="rotate(180)">${post('self')}</g>`,'xtra'));pop(p,300)}});
+   const vs=[add(G(470,60,virus(0,0,1),'')),add(G(600,64,virus(0,0,1),''))];await Promise.all([moveTo(vs[0],XS[2],164,1300),moveTo(vs[1],XS[4],164,1300)]);if(!live(fx))return;
+   await Promise.all(vs.map(v=>fade(v,0,600)));setLoad(ST.load-5);say(530,388,'the neighbors hold')},
+ take:'Type I interferon (IFN-α and IFN-β) puts nearby cells into the antiviral state: viral RNA is degraded, protein making shuts down if virus gets in, and MHC I goes up. Recombinant interferon alpha has been used as a drug for chronic hepatitis B and C, and its side effects are fever, aches and fatigue, a lot like having the flu.',map:'#cell-ifn'},
+
+{id:'pdc',title:'The interferon specialist',where:'Tissue under the lining',clock:'Hours 12 to 24',body:['lung'],
+ narr:`Below the lining, a round cell arrives from the blood. It looks more like a plasma cell than a dendritic cell, which is how it got its name: a plasmacytoid dendritic cell. It is not infected. It has been swallowing virions and the remains of dying cells, and making interferon is its whole job.`,
+ draw(){return airBG()+row([H.ok,H.av,H.av,ME0,H.inf,H.ok,H.ok])+G(630,440,pdcCell(0,0)+`<circle cx="14" cy="-2" r="9" fill="var(--paper)" fill-opacity=".7" stroke="var(--ink)" stroke-width="1.5" id="endo"/>`,'','pdc')+T(630,500,'plasmacytoid dendritic cell','sublbl')},
+ async play(){const fx=stage.querySelector('#fx');bud([3,4],5);for(let k=0;k<3;k++){if(!live(fx))return;const v=add(G(560+k*40,330,virus(0,0,.8),'eat'));await moveTo(v,640,438,1300);if(!live(fx))return;fade(v,0,300)}},
+ chal:{type:'choice',q:'The pDC was never infected. How does it detect the flu RNA it swallowed?',opts:[
+   {t:'TLR7 in its endosomes reads the viral RNA',ok:true,why:'Swallowed virus ends up in endosomes, and that is where the pDC keeps TLR7 (for single-stranded RNA, like flu) and TLR9 (for CpG DNA). So it can raise the alarm about a virus without ever being infected.'},
+   {t:'TLR4 on its surface reads the viral envelope',why:'TLR4 is built for bacterial LPS, and flu has none. The pDC stays quiet while infected cells keep budding virus.'},
+   {t:'RIG-I in its cytosol reads the viral RNA',why:'RIG-I reads RNA made inside an infected cell. This pDC was never infected: the virus it swallowed sits sealed in endosomes, out of RIG-I\'s reach. Nothing fires.'},
+   {t:'NOD2 in its cytosol reads the viral coat',why:'NOD2 reads bacterial peptidoglycan, not virus, and the swallowed virus is sealed in endosomes anyway. The pDC stays quiet while infected cells keep budding virus.'}]},
+ async win(){const fx=stage.querySelector('#fx');const e=stage.querySelector('#endo');if(e)e.classList.add('glow');add(T(700,410,'TLR7','lbl'));await wait(400);if(!live(fx))return;
+   const tg=[0,1,2,4,5,6].map(i=>[XS[i],300]);await Promise.all(tg.map((p,k)=>cytokine(630,420,p[0],p[1],k%2?'':'IFN-α',k*90)));if(!live(fx))return;
+   await Promise.all([0,5,6].map((i,k)=>wait(k*100).then(()=>shield(i))));setLoad(ST.load-5);say(630,540,'a flood of interferon')},
+ take:'Plasmacytoid dendritic cells are the body\'s biggest source of type I interferon. They read viral nucleic acid inside endosomes with TLR7 and TLR9, so they can sound the alarm even for viruses that never infect them. The interferon they release puts whole stretches of lining into the antiviral state.',map:'#cell-ifn'},
+
+{id:'nkarm',title:'Who comes first',where:'Tissue under the lining, near a venule',clock:'Hours 12 to 24',body:['lung'],
+ narr:`Your interferon and the pDC's has seeped down into the blood vessel below the lining. Many kinds of white cells ride past in that blood. Interferon cannot kill anything by itself. It needs a killer that can answer today, not next week.`,
+ draw(){return airBG()+row([H.av,H.av,H.inf,ME0,H.av,H.ok,H.av])+venule(430,520)},
+ async play(){bud([2,3],5);idle(()=>cytokine(XS[2+Math.floor(Math.random()*2)],330,300+Math.random()*500,450,'',0),1300)},
+ chal:{type:'choice',q:'Which killer can answer the interferon within a day?',opts:[
+   {t:'NK cells, which need no training to kill',ok:true,why:'NK cells are innate lymphocytes, born ready. Type I interferon arms them (more perforin and granzyme) and helps pull them into the infected tissue within a day. That is exactly the gap before T cells exist.'},
+   {t:'CD8 T cells already trained for this flu',why:'There are none yet. The few naive CD8 cells that fit flu peptides still have to meet a dendritic cell in the lymph node and divide, which takes about a week. Meanwhile the virus spreads.'},
+   {t:'Neutrophils, to swallow every free virion',why:'Eating viruses one at a time is not very efficient, and there are far too many of them, copying too fast. The neutrophils fill the airway and the infected cells keep making virus.'},
+   {t:'Plasma cells, to release antibody right away',why:'No plasma cell makes flu antibody yet. B cells need T cell help and about a week first. Nothing arrives today.'}]},
+ async win(){clearIdle();const fx=stage.querySelector('#fx');const n=add(G(240,475,nkG(),'','nk'));await pop(n,400);if(!live(fx))return;await moveTo(n,480,470,1200);if(!live(fx))return;await moveTo(n,500,385,900);
+   if(!live(fx))return;n.classList.add('glow');setLoad(ST.load-3);say(600,372,'armed by interferon')},
+ take:'The antiviral tag team runs in order. First, type I interferon sets up the antiviral state. Next, NK cells move in to kill infected cells, armed by that same interferon. Finally, about a week later, CD8 T cells and antibodies clear the infection.',map:'#cell-nk'},
+
+{id:'nkcheck',title:'ID check',where:'Underside of the bronchus lining',clock:'Day 2',body:['lung'],
+ narr:`The NK cell crawls along the underside of the lining, pressing against each cell. The virus has been choking your protein making, but interferon keeps pushing your MHC I back up. Not every infected cell has been so lucky.`,
+ draw(){return airBG(true)+row([H.av,H.av,H.ok,ME1,H.av,H.miss,H.av],'tc','t')+G(300,430,nkG(),'','nk')
+   +`<g transform="translate(470,8)"><rect width="412" height="94" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+     <g transform="translate(24,38)">${post('self')}</g><text x="44" y="32" style="font-size:12.5px">two-prong post = MHC I (its ID card)</text>
+     <g transform="translate(24,64)">${flag()}</g><text x="44" y="60" style="font-size:12.5px">blue hexagon = stress flag</text>
+     <g transform="translate(24,82)">${virus(0,-2,.8)}</g><text x="44" y="86" style="font-size:12.5px">virus inside = infected cell</text>
+     <text x="250" y="32" style="font-size:12.5px">dashed blue = antiviral state</text></g>`},
+ async play(){idle(()=>moveTo('#nk',260+Math.random()*560,410+Math.random()*40,1400,'ease-in-out'),1700)},
+ chal:{type:'find',q:'The NK cell is about to strike one cell. Tap the one it kills.',
+  hint:'Look under each cell. Posts are MHC I, the brake. Blue hexagons are stress flags, the gas. Virus inside means infected.',
+  check(i){if(i===5)return {ok:true,why:'No MHC I and stress flags up: all gas, no brake. The NK cell releases perforin and granzymes, and that cell dies before it can finish more virus. (Play the NK cell to live this check from the other side.)'};
+   if(i===3)return {why:'The NK cell presses against you and stalls. You are infected and stressed, but interferon kept your MHC I up, so its brake holds this time. While it hesitates on you, the cell with no ID keeps releasing virus. Your MHC I has a different fate: it now holds flu peptide.'};
+   return {why:'This cell shows full MHC I and no stress flags. The brake wins and the NK cell moves on, while the cell with no ID keeps releasing virus. Killing healthy lining cells would only strip the airway.'}}},
+ async win(){clearIdle();const fx=stage.querySelector('#fx');await moveTo('#nk',XS[5],395,1000);if(!live(fx))return;await shoot(XS[5],372,XS[5],CY+60,5);if(!live(fx))return;
+   await apopC('#t5');if(!live(fx))return;setLoad(ST.load-5);await moveTo('#nk',640,440,900);say(560,372,'missing self, caught')},
+ take:'NK cells kill by balance: stress flags press the gas, self MHC I presses the brake. Interferon raises MHC I, which protects a cell from NK cells but makes it easy for CD8 T cells to read. A cell that loses MHC I hides from T cells and is exposed to NK cells. Either way, it cannot hide from both.',map:'#idea-miss'},
+
+{id:'present',title:'Showing your insides',where:'Inside you',clock:'Days 2 to 6',body:['lung'],
+ narr:`You are still alive, and still making virus. Every MHC I molecule you build leaves your endoplasmic reticulum holding a short peptide, a sample of whatever you happen to be making. Right now, much of what you make is flu.`,
+ draw(){return bigYou()+`<text x="236" y="112" class="zone">cytosol</text>`
+   +`<g transform="translate(380,330)">${[0,1,2,3].map(k=>`<rect x="-26" y="${-30+k*15}" width="52" height="13" rx="5" fill="var(--comp)" stroke="var(--ink)" stroke-width="1"/>`).join('')}</g>${T(380,395,'proteasome','sublbl')}
+   <path d="M520,180 Q640,150 700,200 Q720,260 640,280 Q560,295 520,250Z" fill="var(--paper)" stroke="var(--muted)" stroke-width="2.5"/>${T(640,140,'endoplasmic reticulum','sublbl')}
+   <rect x="512" y="200" width="18" height="30" rx="4" fill="var(--hot)"/>${T(492,192,'TAP','lbl')}
+   <path d="M210,506 H870" stroke="var(--epi2)" stroke-width="2"/>${T(300,540,'your basal surface, facing the tissue','sublbl')}`
+   +G(630,235,`<g transform="scale(1.8)">${post('')}</g>`,'','mhc')
+   +G(280,240,`<path d="M-30,-6 q10,-16 26,-8 q14,-12 28,2 q8,14 -6,20 q-18,8 -28,-2 q-24,2 -20,-12z" fill="${VC}" stroke="var(--ink)" stroke-width="1.8"/>`,'','prot')+`<g id="protl">${T(280,282,'flu protein','sublbl')}</g>`
+   +G(380,330,[[-10,0],[0,-8],[10,2]].map(p=>`<path transform="translate(${p[0]},${p[1]})" d="M-5,3 L0,-6 L5,3Z" fill="${VC}" stroke="var(--ink)" stroke-width="1.2"/>`).join(''),'','peps')},
+ async play(){const p=stage.querySelector('#peps');if(p)p.style.opacity=0},
+ chal:{type:'choice',q:'How does a piece of that flu protein end up on your MHC I?',opts:[
+   {t:'Proteasome chops it; TAP pumps it into the ER',ok:true,why:'The proteasome cuts cytosolic protein into short peptides, TAP carries them into the endoplasmic reticulum, and new MHC I molecules load one each and ride the Golgi to your surface. Every nucleated cell does this all day with self peptides, so a virus has no way to keep its proteins private.'},
+   {t:'Lysosomes digest it, and MHC II carries it out',why:'That is the road for protein a cell swallows, shown on MHC II to CD4 helpers. Airway cells make little MHC II, and a protein made in your own cytosol does not go that way. No killer ever reads your infection.'},
+   {t:'An antibody brings it back to your surface',why:'There is no flu antibody yet, and antibodies never load MHC. Your MHC I leaves empty-handed for flu, and the virus keeps working.'},
+   {t:'Whole virions get stuck to MHC I as they bud',why:'MHC I holds only a short peptide in its groove. A T cell receptor never sees a whole virus. Nothing useful shows up on your surface.'}]},
+ async win(){const fx=stage.querySelector('#fx');fade('#protl',0,300);await moveTo('#prot',380,330,900);if(!live(fx))return;await fade('#prot',0,300);
+   const p=stage.querySelector('#peps');if(!p)return;await fade(p,1,200);await moveTo(p,521,215,700);if(!live(fx))return;await moveTo(p,620,230,500);if(!live(fx))return;
+   const m=stage.querySelector('#mhc');if(m){m.innerHTML=`<g transform="scale(1.8)">${post('flu')}</g>`;m.classList.add('glow')}fade(p,0,300);await moveTo('#mhc',560,380,800);if(!live(fx))return;await moveTo('#mhc',580,516,800);
+   if(!live(fx))return;const m2=stage.querySelector('#mhc');if(m2)m2.innerHTML=`<g transform="rotate(180) scale(1.8)">${post('flu')}</g>`;setLoad(ST.load-3);say(470,480,'flu peptide on MHC I, facing out')},
+ take:'Cytosol, proteasome, TAP, endoplasmic reticulum, MHC I, surface. Interferon turns MHC I up, so infected cells show more of their insides. When TAP is missing (bare lymphocyte syndrome type I), MHC I stays low and CD8 T cells are reduced.',map:'#idea-mhc1'},
+
+{id:'cd8',title:'The kiss of death',where:'Underside of the bronchus lining',clock:'Days 6 to 7',body:['lung'],
+ narr:`A week in, a CD8 T cell squeezes out of a capillary below you. It was trained in the lymph node beside the lung for exactly the flu peptide you are holding up. Its receptor finds your MHC I and locks on, and it presses flat against you.`,
+ draw(){return airBG()+row([H.hi,H.hi,H.av,ME1,H.hi,null,H.hi])+G(820,460,tcell(0,0,'tri','CD8',3)+T(0,62,'CD8 T cell','sublbl'),'','t8')},
+ async play(){const fx=stage.querySelector('#fx');bud([3],4);await moveTo('#t8',560,420,1800,'ease-in-out');if(!live(fx))return;await moveTo('#t8',530,372,800);const t=stage.querySelector('#t8');if(t)t.classList.add('glow')},
+ chal:{type:'choice',q:'The T cell has read your flu peptide. What is the best outcome for the body?',opts:[
+   {t:'You die by apoptosis, with the virus inside',ok:true,why:'This is the job. The T cell releases perforin, which opens pores in your membrane, and granzymes, which slip in and switch on your caspases. Fas ligand on the T cell binding Fas on you is a second route to the same end. They are the same two weapons NK cells use.'},
+   {t:'You live, since interferon already guards you',why:'Interferon protects cells that are not infected yet. Inside you the virus is already copying itself, so you keep sending out new virions for days, and more of the lining falls.'},
+   {t:'You burst open so antibody can reach the virus',why:'A burst cell sprays half-built virus and its own insides into the airway. More cells get infected and the lung gets angrier. A tidy death is the point.'},
+   {t:'The T cell waits for an NK cell to decide',why:'The NK cell already passed you; your MHC I held its brake. A CD8 T cell needs no one\'s permission once it reads its peptide. Waiting means more virus.'}]},
+ async win(){clearIdle();const fx=stage.querySelector('#fx');await shoot(530,350,530,CY+56,6);if(!live(fx))return;
+   add(`<path d="M522,352 V326" stroke="var(--t)" stroke-width="4"/><circle cx="522" cy="322" r="5" fill="var(--t)"/>`);add(T(640,352,'perforin, granzymes, Fas ligand','sublbl'));
+   const me=stage.querySelector('#c3 .me');if(me)fade(me,0,400);const bl=await apopC('#c3');if(!live(fx))return;await Promise.all((bl||[]).map(b=>fade(b,0,900)));setLoad(ST.load-12);say(530,140,'you are gone, and the virus with you')},
+ take:'Being killed is the right outcome for an infected cell. CD8 T cells and NK cells share two routes: perforin with granzymes, and Fas ligand on Fas, both ending in apoptosis. Perforin mutations cause familial hemophagocytic lymphohistiocytosis, and in Chediak-Higashi syndrome (LYST) the granules cannot be released, so infected cells are not finished off.',map:'#idea-perf'},
+
+{id:'chronic',title:'A virus that never leaves',where:'Another body: the liver',clock:'Months to years',body:[[52,88]],
+ narr:`Your story ended with you. Now look at someone else, where a virus never clears: chronic hepatitis B. Liver cells hold viral peptide up on MHC I every day, for years. The CD8 T cells that read them have been signaled again and again, with no end in sight.`,
+ draw(){let s=`<rect width="900" height="560" fill="var(--tissue)"/>`;const R=rng(77);
+   for(let r=0;r<9;r++)for(let c=0;c<12;c++){const x=196+c*69.3+(r%2)*34.6,y=40+r*60;if(x>900)continue;const inf=R()<.45;
+     s+=`<path d="${hex(x,y,39)}" fill="${inf?'#e9dcef':'var(--epi)'}" stroke="var(--epi2)" stroke-width="2"/><circle cx="${x}" cy="${y}" r="8" class="nuc"/>`+(inf?virus(x+15,y-13,.5):'')}
+   s+=`<rect x="8" y="526" width="252" height="28" rx="6" fill="var(--paper)" opacity=".9"/><text x="18" y="545" class="zone">liver, years of hepatitis B</text>`;
+   return s+[[300,300],[450,190],[610,330],[770,220],[520,450]].map((p,k)=>G(p[0],p[1],tcell(0,0,'tri','CD8',k+2),'xt','x'+k)).join('')},
+ async play(){idle(()=>{const k=Math.floor(Math.random()*5);const t=stage.querySelector('#x'+k);if(!t)return;const x=+t.dataset.x,y=+t.dataset.y;shoot(x,y-24,x+(Math.random()*60-30),y-70,3)},1500)},
+ chal:{type:'choice',q:'Months of nonstop antigen go by. What happens to these T cells?',opts:[
+   {t:'They raise PD-1 and CTLA-4 and slow down',ok:true,why:'This is exhaustion. Chronically activated T cells carry high levels of inhibitory checkpoint receptors such as PD-1 and CTLA-4, and their killing and cytokines fade. It limits damage to the liver, at the cost of letting the virus stay.'},
+   {t:'They grow stronger with each round of killing',why:'Endless activation does the opposite. If they kept killing at full strength for years, the liver itself would be destroyed. The brakes come on instead.'},
+   {t:'They settle down as resting memory cells',why:'Memory forms after the antigen is gone. Here the antigen never leaves, so the cells stay activated until they wear out.'},
+   {t:'They switch over to making antibody instead',why:'T cells never make antibody; only plasma cells, which come from B cells, do. Nothing changes and the virus stays.'}]},
+ async win(){clearIdle();const fx=stage.querySelector('#fx');for(let k=0;k<5;k++){const t=stage.querySelector('#x'+k);if(!t)return;const x=+t.dataset.x,y=+t.dataset.y;
+     for(const a of [-50,50]){const r=a*Math.PI/180;const m=add(`<g transform="translate(${(x+Math.sin(r)*24).toFixed(1)},${(y-Math.cos(r)*24).toFixed(1)}) rotate(${a})"><path d="M0,0 V-9" stroke="var(--hot)" stroke-width="2.6"/><circle cy="-12" r="4" fill="var(--hot)"/></g>`);pop(m,300)}
+     fade(t,.45,700);await wait(120)}
+   if(!live(fx))return;say(540,540,'exhausted: PD-1 and CTLA-4 up, killing fades')},
+ take:'Short effector lives and checkpoint molecules keep T cells from causing damage. Under chronic activation, in persistent infection or in cancer, T cells become exhausted: high PD-1 and CTLA-4, weak effector function. The infection or the tumor is left in place.',map:'#idea-ctla4'},
+
+{id:'brake',title:'Cutting the brake',where:'Another body: a lung tumor',clock:'Months',body:['lungR'],
+ narr:`Exhausted T cells sit inside many tumors too. This one is touching a lung cancer cell, and four pairs of molecules connect them. One pair is holding the brake down. A drug that cuts the right pair can wake this T cell back up.`,
+ draw(){const xs=[300,460,620,780],keys=['tcr','cd8','pd1','lfa'],labs=['TCR + MHC I','CD8 + MHC I','PD-1 + PD-L1','LFA-1 + ICAM-1'];
+   const top={tcr:x=>`<path d="M${x-6},210 V277 M${x+6},210 V277" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/><path d="M${x-6},278 L${x},290 L${x+6},278Z" fill="${VC}" stroke="var(--ink)" stroke-width="1.3"/>`,
+     cd8:x=>`<path d="M${x-6},210 V282 M${x+6},210 V282" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>`,
+     pd1:x=>`<path d="M${x},210 V276" stroke="var(--ink)" stroke-width="3.5"/><rect x="${x-7}" y="276" width="14" height="13" rx="2" fill="var(--ink)"/>`,
+     lfa:x=>`<path d="M${x},210 V286" stroke="var(--ink)" stroke-width="2"/>${[226,246,266].map(y=>`<circle cx="${x}" cy="${y}" r="5.5" fill="var(--ink)"/>`).join('')}`};
+   const bot={tcr:x=>`<path d="M${x-7},372 V298 M${x+7},372 V298" stroke="var(--hot)" stroke-width="4" stroke-linecap="round"/><path d="M${x-10},298 Q${x},286 ${x+10},298" stroke="var(--hot)" stroke-width="3.5" fill="none"/>`,
+     cd8:x=>`<path d="M${x},372 V302" stroke="var(--hot)" stroke-width="4"/><circle cx="${x}" cy="296" r="7" fill="var(--hot)"/>`,
+     pd1:x=>`<path d="M${x},372 V300" stroke="var(--hot)" stroke-width="4"/><circle cx="${x}" cy="295" r="7.5" fill="var(--hot)"/>`,
+     lfa:x=>`<path d="M${x-8},372 L${x},298 L${x+8},372" stroke="var(--hot)" stroke-width="3.5" fill="none"/><ellipse cx="${x}" cy="293" rx="9" ry="6" fill="var(--hot)"/>`};
+   return `<rect width="900" height="560" fill="var(--tissue)"/>${fibers(31,0,560)}${mblob(540,115,335,61,.04,14,98,'#cbbfd6')}<ellipse cx="740" cy="105" rx="62" ry="36" class="nuc"/>${T(420,110,'lung cancer cell','lbl')}
+     <g id="tcb">${mblob(540,455,335,62,.04,14,92,'var(--t)')}</g><text x="540" y="505" class="lbl" style="fill:#fff;stroke:none">exhausted CD8 T cell</text>`
+     +xs.map((x,i)=>{const k=keys[i];return `<g class="tc" id="${k}" style="cursor:pointer"><rect x="${x-62}" y="200" width="124" height="230" fill="transparent"/>${G(0,0,top[k](x),'',k==='pd1'?'pdl1':'')}${bot[k](x)}<text x="${x}" y="415" style="font-size:13.5px;font-weight:700;fill:#fff;text-anchor:middle">${labs[i]}</text></g>`}).join('')},
+ chal:{type:'find',q:'Tap the pair a drug should cut to wake this T cell up.',hint:'Each pair joins the cancer cell (top) to the T cell (bottom). Cutting the wrong one leaves the T cell worse off.',
+  check(i){if(i==='pd1')return {ok:true,why:'That is the brake. Drugs against PD-1 (pembrolizumab, nivolumab) or against PD-L1 cut it, and the exhausted T cell starts killing again. A drug against CTLA-4 (ipilimumab) lifts a related brake that acts earlier, when T cells are first being switched on.'};
+   if(i==='tcr')return {why:'Cut that and the T cell goes blind: it can no longer read the tumor peptide on MHC I at all. The tumor keeps growing.'};
+   if(i==='cd8')return {why:'CD8 helps the receptor grip MHC I. Cutting it only weakens recognition; the brake is still on, and the tumor grows.'};
+   return {why:'That is the adhesion grip that holds the contact together. Cut it and the T cell slides off the cancer cell, still exhausted.'}}},
+ async win(){const fx=stage.querySelector('#fx');const d=add(G(900,290,`<g transform="rotate(-90)">${ab(0,0,0,'var(--you)')}</g>`+T(30,-14,'drug','sublbl'),''));
+   await moveTo(d,640,296,1100);if(!live(fx))return;await moveTo('#pdl1',0,-22,600);if(!live(fx))return;
+   const tc=stage.querySelector('#tcb');if(tc)tc.classList.add('glow');await Promise.all([300,460,780].map((x,k)=>wait(k*120).then(()=>shoot(x+20,360,x+20,205,4))));if(!live(fx))return;
+   const c=add(`<ellipse cx="540" cy="115" rx="320" ry="95" fill="var(--tissue)" opacity="0"/>`);fin(c.animate([{opacity:0},{opacity:.55}],{duration:RED?1:900,fill:'forwards'}),900);setLoad(ST.load-6);say(540,180,'brake released: the T cell kills again')},
+ take:'Checkpoint inhibitors (anti-PD-1, anti-PD-L1, anti-CTLA-4) release exhausted T cells against cancers such as melanoma and lung cancer. Because the same brakes keep T cells off healthy tissue, their side effects are autoimmune: colitis, hepatitis, thyroiditis, pneumonitis and skin rashes.',map:'#idea-ctla4'},
+
+{id:'final',title:'What you left behind',where:'Bronchus lining',clock:'Day 10 to weeks',body:['lung'],final:true,
+ narr:`Back in the first lung, the flu is gone. You are gone too, along with the cells the virus reached. The neighbors you warned held out, and basal cells under the lining are dividing to replace the ones that died. Your warning went out first, and everything else followed in order.`,
+ draw(){const B=[['Type I interferon: the antiviral state',200,150,'var(--hot)'],['NK cells kill infected cells',260,250,'var(--dc)'],['CD8 T cells and antibody clear it',430,300,'var(--t)'],['Memory T and B cells stay',640,200,'var(--pl)']];
+   return `<rect width="900" height="560" fill="var(--node)"/><text x="200" y="70" class="zone">the antiviral tag team</text><line x1="200" y1="420" x2="860" y2="420" stroke="var(--muted)" stroke-width="2"/>`
+   +B.map((b,k)=>`<g id="b${k}" style="transform-box:fill-box;transform-origin:left center;opacity:0"><rect x="${b[1]}" y="${110+k*72}" width="${b[2]}" height="34" rx="9" fill="${b[3]}"/></g><text x="${b[1]}" y="${102+k*72}" style="font-size:14px;font-weight:700">${b[0]}</text>`).join('')
+   +[['hours',220],['days 1 to 3',360],['days 6 to 10',560],['weeks to years',770]].map(t=>`<text x="${t[1]}" y="446" class="sublbl">${t[0]}</text>`).join('')},
+ async play(){setLoad(0);for(let k=0;k<4;k++){const b=stage.querySelector('#b'+k);if(!b)return;b.style.opacity=1;await fin(b.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:RED?1:700,fill:'forwards'}),700)}},
+ take:'First, type I interferon puts nearby cells into the antiviral state and raises MHC I. Next, NK cells, armed by interferon, kill infected cells that lost MHC I. Finally, CD8 T cells read viral peptide on MHC I and kill by apoptosis, and antibody and memory follow. When the virus never clears, T cells exhaust behind PD-1 and CTLA-4, and checkpoint drugs can wake them.',map:'#cell-ifn'}
+];
+registerPlayer({id:'airway',bug:'virus',name:'The infected airway cell',role:'The cell the flu picked: sense it, warn your neighbors, and let yourself be killed',order:6.5,load0:30,
+ blurb:'Live a flu infection from inside the cell it takes over, from the first alarm to the killer T cell.',
+ icon:(x,y)=>`<g transform="translate(${x},${y}) scale(.55)">${ccell({inf:true},3)}</g>`,
+ scenes});
+})();
 
 </script>
 <script>
@@ -641,12 +899,44 @@ registerPlayer({id:'antibody',name:'The IgG antibody',role:'Grab the bug, then c
  chal:{type:'choice',q:'What protects the red blood cell from complement?',opts:[
    {t:'DAF (CD55) and CD59 on its own surface',ok:true,why:'DAF pulls the C3 convertase apart on the red cell, and CD59 stops C9 from forming a pore. Both hang on GPI anchors. In the plasma, factor H does the same job for the alternative pathway.'},
    {t:'Nothing; complement only sticks to microbes',why:'C3b sticks to almost any nearby surface. Without its own brakes the red cell gets a full attack complex and bursts inside the vessel.'},
-   {t:'C1 inhibitor coating the red cell',why:'C1 inhibitor works in the plasma, holding back C1r and C1s (and kallikrein). It does not sit on the red cell, which now gets holes punched in it. Missing C1 inhibitor causes hereditary angioedema: bradykinin builds up, low C4, swelling without hives. ACE inhibitors are contraindicated, since ACE breaks down bradykinin.'},
+   {t:'C1 inhibitor coating the red cell',why:'C1 inhibitor works in the plasma, holding back C1r and C1s (and kallikrein). It does not sit on the red cell, which now gets holes punched in it. You will see what happens when it goes missing in the next scene.'},
    {t:'A coat of IgG on the red cell',why:'That would mark the red cell for destruction, the way you mark bacteria. It is autoimmune hemolytic anemia, and a direct Coombs test would be positive.'}]},
  async win(){const fx=stage.querySelector('#fx');const tags=[[-120,-62,'DAF (CD55)'],[110,-68,'CD59'],[0,96,'DAF (CD55)']];
    for(const t of tags){const g=add(G(580+t[0],300+t[1],`<path d="M0,0 L0,-16" stroke="var(--hot)" stroke-width="3"/><circle cy="-20" r="6" fill="var(--hot)"/><text x="0" y="-32" class="lbl" style="font-size:12.5px">${t[2]}</text>`),fx);await pop(g,350)}
    const sp=[...stage.querySelectorAll('.sp')];await Promise.all(sp.map((s,k)=>moveTo(s,+s.dataset.x+(+s.dataset.x-580)*.6,+s.dataset.y+(+s.dataset.y-300)*.6,900).then(()=>fade(s,0,400))));setLoad(Math.max(0,ST.load-8))},
  take:'Your own cells carry complement brakes. In paroxysmal nocturnal hemoglobinuria, a PIGA mutation removes the GPI anchor, so red cells lose DAF and CD59 and burst in the vessels (dark morning urine, thrombosis). Eculizumab blocks C5 to stop it. Losing factor H can cause atypical HUS.',map:'#idea-cbrake'},
+
+{id:'hae',title:'Swelling with no hives',where:'A small vessel in someone else\'s lip',clock:'Meanwhile',body:['heart',[60,29]],
+ narr:`Your own body is handling the splinter well. Now picture yourself drifting through someone else's blood: a person who has had attacks of swelling since their teens. You float past the plasma proteins that guard the vessel wall, and you can watch, from inside the vessel, what makes the wall leak.`,
+ draw(){return `<rect width="900" height="560" fill="var(--tissue)"/>${fibers(17,300,560)}<rect x="0" y="40" width="900" height="210" fill="var(--vessel)"/><rect x="0" y="32" width="900" height="12" fill="var(--vwall)"/>
+   <g id="endo">${Array.from({length:12},(_,i)=>`<path d="${blob(38+i*76,256,38,i+70,.08,9,11)}" fill="var(--vwall)" stroke="var(--muted)" stroke-width="1"/>`).join('')}</g>
+   <text x="190" y="236" class="zone">inside the vessel</text><text x="190" y="545" class="zone">lip tissue</text>
+   <ellipse id="swell" style="transform-origin:560px 410px" cx="560" cy="410" rx="150" ry="70" fill="var(--hot)" fill-opacity=".08" stroke="var(--hot)" stroke-width="1.5" stroke-dasharray="6 6"/><text x="560" y="414" class="sublbl" id="swlbl">fluid building up</text>
+   ${G(270,420,MAST+T(0,50,'mast cell','sublbl'),'','mast')}
+   ${G(330,150,C1Q(1.1)+T(46,-46,'C1'),'','c1H')}${G(560,140,`<circle r="18" fill="var(--pl)" stroke="${INK}" stroke-width="1.2"/><text y="4" text-anchor="middle" style="font-size:10px;font-weight:700;fill:#fff">K</text>`+T(0,40,'kallikrein','sublbl'),'','kal')}
+   ${[0,1,2].map(k=>G(420+k*34,210,FR('C4','var(--comp)',12),'c4q','c4'+k)).join('')}
+   ${G(820,130,`<g>${IG(.28)}${ME(0,0,32)}</g>`,'','meH')}
+   <g transform="translate(770,350)"><rect x="-72" y="-34" width="144" height="70" rx="8" fill="var(--paper)" stroke="var(--muted)" stroke-width="1.5"/><text x="0" y="-12" class="sublbl" style="font-weight:700">labs during an attack</text><text x="0" y="8" class="sublbl">C4: low</text><text x="0" y="26" class="sublbl">C3: normal</text></g>`},
+ async play(){idle(()=>{const m=stage.querySelector('#meH');if(m&&!m.dataset.lock)moveTo(m,820+Math.random()*30-15,130+Math.random()*16-8,1800,'ease-in-out')},1900);
+   const sw=stage.querySelector('#swell');if(sw)sw.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:2600,iterations:Infinity})},
+ chal:{type:'choice',q:'This person\'s face, lips and gut swell for days at a time, with no hives and no itching. The worst attack came the day after dental work. C4 is low and C3 is normal. What is causing the swelling?',opts:[
+   {t:'Bradykinin leaking the vessels, with C1 inhibitor missing',ok:true,why:'C1 inhibitor normally holds back C1r and C1s, and kallikrein too. Without it, C1 runs and uses up C4 (low C4, normal C3), and kallikrein cuts kininogen into bradykinin, which opens the vessel wall so fluid pours out. Minor trauma such as dental work, or stress, sets off attacks. This is hereditary angioedema.'},
+   {t:'Histamine from mast cells armed with IgE',why:'That is allergic angioedema, which comes with hives and itching and answers to antihistamines and epinephrine. This person has neither, and the mast cell beside the swelling stays quiet. Treated as an allergy, the next attack keeps swelling.'},
+   {t:'Immune complexes lodging in vessels and using up complement',why:'Immune complex disease uses up C3 as well as C4, and brings vasculitis, joint pain or kidney damage, not painless swelling that comes and goes. Here C3 is normal.'},
+   {t:'Attack complexes punching holes in the lining of the lip',why:'The body\'s own cells carry DAF and CD59, so the MAC does not form on them, and holes would kill cells rather than cause soft swelling that fades. This swelling is fluid leaving the vessels.'}]},
+ async win(){clearIdle();const fx=stage.querySelector('#fx');
+   const gh=[[250,120],[470,100]].map(p=>add(G(p[0],p[1],`<circle r="14" fill="none" stroke="var(--hot)" stroke-width="2" stroke-dasharray="4 4"/>`+T(0,-22,'C1 inhibitor: missing','sublbl')),fx));await Promise.all(gh.map(g=>pop(g,400)));
+   const c1=stage.querySelector('#c1H');if(c1)c1.classList.add('glow');
+   await Promise.all([0,1,2].map(k=>wait(k*200).then(()=>{const c=stage.querySelector('#c4'+k);return c?moveTo(c,350,170,600).then(()=>fade(c,0,300)):null})));
+   add(T(420,236,'C4 used up','sublbl'),fx);
+   const kal=stage.querySelector('#kal');if(kal)kal.classList.add('glow');
+   const bk=[];for(let k=0;k<6;k++){const d=add(G(560,150,`<circle r="5" fill="var(--you)" stroke="var(--bug2)" stroke-width="1"/>`),fx);bk.push(d);moveTo(d,470+k*36,246,1000);await wait(90)}
+   add(T(640,190,'bradykinin','lbl'),fx);await wait(700);
+   const sw=stage.querySelector('#swell');if(sw){sw.getAnimations().forEach(a=>a.cancel());sw.animate([{transform:'scale(1)'},{transform:'scale(1.25)'}],{duration:1200,fill:'forwards'})}
+   bk.forEach((d,k)=>moveTo(d,470+k*36,330+(k%2)*20,1000));
+   const l=stage.querySelector('#swlbl');if(l)l.textContent='fluid leaks out: swelling, no hives';
+   await wait(900);add(T(560,528,'an ACE inhibitor would make this worse','lbl'),fx);setLoad(Math.max(0,ST.load-3))},
+ take:'Hereditary angioedema: autosomal dominant, with C1 inhibitor low (most cases) or present but not working. Attacks of swelling in the skin, gut or airway can be fatal if the larynx closes. Low C4, normal C3. ACE inhibitors are contraindicated, since ACE breaks down bradykinin, and antihistamines do not help. Treatment: C1 inhibitor concentrate, a kallikrein inhibitor, or a bradykinin B2 receptor blocker. Autoantibodies against C1 inhibitor can cause the same picture without the inherited gene.',map:'#idea-cbrake'},
 
 {id:'adcc',title:'A job for the killer',where:'Lip, a cold sore',clock:'Day 10',body:['heart',[60,29]],
  narr:`The blood carries you up to the face. On the lip, a few skin cells are infected with herpes simplex virus and wear viral protein on their outside. You do not fit it, but your IgG cousins shaped for that virus do, and they coat one cell. A cell cannot be swallowed whole, so someone else has to come.`,
@@ -715,6 +1005,16 @@ registerPlayer({id:'antibody',name:'The IgG antibody',role:'Grab the bug, then c
 
 </script>
 <script>
+/* helpers for the complement scenes (alt, lectin), kept local so they do not collide with other players */
+(()=>{
+const CF=(lbl,fill,r)=>`<g><circle r="${r||14}" fill="${fill||'var(--comp)'}" stroke="var(--ink)" stroke-width="1.2"/><text y="4" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:#fff">${lbl}</text></g>`;
+const setCF=(el,t,f)=>{const x=el.querySelector('text'),c=el.querySelector('circle');if(x)x.textContent=t;if(c&&f)c.setAttribute('fill',f)};
+const ALT_C=[[0,0],[30,-8],[-30,6],[14,26],[-16,30],[44,20],[-6,-30],[24,-36],[-40,-24],[50,-14]];
+const ALT_Q=[[260,200],[360,170],[470,205],[600,180],[720,210],[820,170]],ALT_H={fb:[820,300],fd:[865,360],fp:[825,420]};
+const ALT_YL=(x,y,t)=>`<text x="${x}" y="${y}" class="youlbl" style="text-anchor:middle">${t}</text>`;
+const SUG=(x,y)=>{const h=(cx,cy)=>`<polygon points="${[0,1,2,3,4,5].map(k=>{const a=k*Math.PI/3;return (cx+Math.cos(a)*6).toFixed(1)+','+(cy+Math.sin(a)*6).toFixed(1)}).join(' ')}" fill="#fff8e6" stroke="var(--bug2)" stroke-width="1.4"/>`;return `<path d="M${x},${y} L${x},${y-12}" stroke="var(--bug2)" stroke-width="1.4"/>`+h(x,y)+h(x,y-14)};
+const MBL=()=>{let h='';for(let i=0;i<6;i++){const x=-50+i*20;h+=`<path d="M0,-40 Q${x*.5},-8 ${x},30" stroke="var(--comp)" stroke-width="3.5" fill="none"/><path d="M${x-8},30 a8,8 0 0,0 16,0 z" fill="var(--comp)" stroke="var(--ink)" stroke-width="1.2"/>`}
+  return `<rect x="-6" y="-84" width="12" height="46" rx="5" fill="var(--comp)" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="-15" cy="-64" rx="10" ry="6" fill="var(--pl)" stroke="var(--ink)" stroke-width="1"/><ellipse cx="15" cy="-54" rx="10" ry="6" fill="var(--pl)" stroke="var(--ink)" stroke-width="1"/>${h}`};
 registerPlayer({id:'antigen',name:'The antigen',role:'A Staph protein in a splinter wound',mark:'splinter',order:1,
  blurb:'Ride along as the body learns your exact shape, from the skin to the lymph node and back.',
  icon:(x,y)=>YOU(x,y,false),
@@ -756,6 +1056,60 @@ registerPlayer({id:'antigen',name:'The antigen',role:'A Staph protein in a splin
    {t:'Kills you directly with its own enzymes',why:'C3b has no killing power of its own. It is a handle for someone else to grab.'}]},
  async win(){setLoad(ST.load-5);stage.querySelectorAll('.cp').forEach(c=>c.querySelector('circle').setAttribute('fill','var(--hot)'));await cytokine(470,330,450,200,'C5a',0)},
  take:'C3b is the tag; C5a is the call for help. Your wall resists the MAC, so your survival now depends on not being eaten.',map:'#idea-c3b'},
+
+{id:'alt',title:'No antibody needed',where:'Dermis, tissue fluid',clock:'20 min',body:['hand'],
+ narr:`No cell in this body has ever made an antibody that fits you. So how did complement coat you in the first hour? Watch the C3 molecules floating around your bacterium. They do not wait for anyone.`,
+ draw(){return skinBG()+G(300,430,mblob(0,0,60,23,.08,10,34,'var(--epi2)')+T(0,58,'host fibroblast','sublbl'),'','host')
+   +G(600,400,ALT_C.map((c,k)=>coccus(c[0],c[1],16,k+3)).join(''),'','cC')+G(548,352,YOU(0,0),'','youC')
+   +ALT_Q.map((p,i)=>G(p[0],p[1],CF('C3'),'c3q','q'+i)).join('')
+   +G(ALT_H.fb[0],ALT_H.fb[1],CF('B','var(--b)'),'','fb')+G(ALT_H.fd[0],ALT_H.fd[1],CF('D','var(--pl)'),'','fd')+G(ALT_H.fp[0],ALT_H.fp[1],CF('P','var(--hot)'),'','fp')
+   +T(845,470,'factors B, D, P','sublbl')},
+ async play(){idle(()=>{stage.querySelectorAll('.c3q').forEach(c=>{if(c.dataset.lock)return;const i=+c.id.slice(1),h=ALT_Q[i];moveTo(c,h[0]+Math.random()*24-12,h[1]+Math.random()*16-8,1800,'ease-in-out')})},1900)},
+ chal:{type:'order',q:'Tap the steps of the alternative pathway in the order they happen on your bacterium.',steps:[
+   {t:'C3 splits on its own, and a C3b lands on your wall',anim:async()=>{clearIdle();stage.querySelectorAll('.c3q').forEach(q=>q.getAnimations().forEach(a=>{try{a.finish()}catch(e){}}));await wait(40);const c=stage.querySelector('#q2');if(!c)return;c.dataset.lock=1;c.classList.add('glow');await wait(250);setCF(c,'C3b','var(--hot)');
+     const a=add(G(+c.dataset.x,+c.dataset.y,CF('C3a','#9aa6be',10),'cs'));moveTo(a,430,140,900).then(()=>fade(a,0,300));await moveTo(c,640,366,1000)}},
+   {t:'Factor B binds to that C3b',anim:async()=>{await moveTo('#fb',666,360,900)}},
+   {t:'Factor D cuts B, leaving C3bBb, a weak convertase',anim:async()=>{await moveTo('#fd',690,336,800);const b=stage.querySelector('#fb');if(!b)return;setCF(b,'Bb');
+     const a=add(G(680,348,CF('Ba','#9aa6be',10),'cs'));moveTo(a,760,140,900).then(()=>fade(a,0,300));await moveTo('#fd',ALT_H.fd[0],ALT_H.fd[1],700);
+     add(T(700,330,'C3bBb','lbl')).classList.add('cs')}},
+   {t:'Properdin holds the convertase steady',anim:async()=>{const p=stage.querySelector('#fp');if(!p)return;p.dataset.lock=1;await moveTo(p,664,386,800);p.classList.add('glow');
+     const l=add(ALT_YL(720,300,'stable C3 convertase'));l.classList.add('cs');await wait(300)}},
+   {t:'The convertase cuts more C3, and each C3b builds another',anim:async()=>{const spots=[[552,412],[578,450],[618,446],[662,428],[694,392]];
+     await Promise.all([0,1,3,4,5].map((i,k)=>{const c=stage.querySelector('#q'+i);if(!c)return null;c.dataset.lock=1;return wait(k*140).then(async()=>{await moveTo(c,664,386,600);setCF(c,'C3b','var(--hot)');
+       const a=add(G(664,386,CF('C3a','#9aa6be',10),'cs'));moveTo(a,480+k*70,120,900).then(()=>fade(a,0,300));await moveTo(c,spots[k][0],spots[k][1],700)})}));
+     add(ALT_YL(620,510,'amplification loop: coated in minutes')).classList.add('cs')}}],
+  bad:'Out of order. A C3b with nothing to build on is broken down within moments, no convertase forms, and your bacteria keep dividing.'},
+ async badAnim(){stage.querySelectorAll('.cs').forEach(e=>e.remove());
+   for(let i=0;i<ALT_Q.length;i++){const c=stage.querySelector('#q'+i);if(!c)continue;c.classList.remove('glow');delete c.dataset.lock;setCF(c,'C3','var(--comp)');moveTo(c,ALT_Q[i][0],ALT_Q[i][1],400)}
+   const b=stage.querySelector('#fb');if(b)setCF(b,'B');const p=stage.querySelector('#fp');if(p){p.classList.remove('glow');delete p.dataset.lock}
+   for(const k in ALT_H)moveTo('#'+k,ALT_H[k][0],ALT_H[k][1],400);await wait(450)},
+ async win(){setLoad(ST.load-4);const s=add(G(470,330,CF('C3b','var(--hot)',12),''));await moveTo(s,330,392,1100);
+   const l=add(ALT_YL(310,350,'DAF and factor H break it up here'));await wait(500);await fade(s,0,700);s.remove()},
+ take:'The alternative pathway needs no antibody and no sensor. C3 ticks over all the time; any C3b that lands on a surface binds factor B, factor D cuts it to make C3bBb, properdin holds it steady, and every C3 it cuts builds more. That loop is why you were coated in the first hour. The host\'s own cells shut it down with regulators such as DAF (CD55) on their membranes and factor H from the plasma; your bacterium has none. Without properdin the convertase falls apart, and patients get Neisseria infections, especially meningococcus.',map:'#idea-cpath'},
+
+{id:'lectin',title:'A third road',where:'Surface of your bacterium',clock:'30 min',body:['hand'],
+ narr:`Something else drifts out of the plasma: a protein shaped like a bouquet of stalks, with two enzymes riding on its stem. It settles onto your bacterium and grips it. Still, no antibody that fits you exists anywhere in this body.`,
+ draw(){const sy=x=>900-Math.sqrt(480*480-(x-520)*(x-520));
+   return skinBG()+`<circle cx="520" cy="900" r="480" fill="#f3dc9e" stroke="var(--bug2)" stroke-width="7"/>`+T(520,530,'surface of one Staph bacterium','sublbl')
+   +Array.from({length:11},(_,i)=>{const x=370+i*30;return SUG(x,sy(x)-6)}).join('')
+   +G(720,sy(720)-16,YOU(0,0),'','youC')
+   +G(520,250,MBL()+`<text x="48" y="-60" class="lbl" style="text-anchor:start" id="mbllbl">?</text>`,'','mbl')
+   +G(800,170,CF('C4'),'','f4')+G(850,240,CF('C2'),'','f2')},
+ async play(){idle(()=>{const m=stage.querySelector('#mbl');if(m&&!m.dataset.lock)moveTo(m,520+Math.random()*24-12,300+Math.random()*14-7,1800,'ease-in-out')},1900)},
+ chal:{type:'choice',q:'Three roads lead to the same C3 gate, and this protein is opening one of them. What does this road start from?',opts:[
+   {t:'Sugar patterns on your wall, gripped by a plasma lectin',ok:true,why:'This is the lectin pathway. Mannose-binding lectin (MBL) grips the repeating mannose sugars on microbial surfaces, and its enzymes, MASP-1 and MASP-2, cut C4 and C2 the way C1s does. The result is C4bC2a, the same C3 convertase the classical pathway builds, with no antibody at all.'},
+   {t:'IgG or IgM already bound to proteins on your surface',why:'That is the classical pathway, which starts when C1q grabs antibody bound to a surface. Antibody that fits you is a week away. If this road waited for it, your bacteria would divide unopposed for days.'},
+   {t:'C3 splitting on its own and landing on a bare surface',why:'That is the alternative pathway you just watched. It builds C3bBb with factors B and D and never touches C4 or C2. But this protein is not C3, and it is gripping your sugars on purpose, not landing at random. A different road.'},
+   {t:'Wall lipids sensed by TLR2 on the macrophage right next door',why:'TLR2 is a sensor sitting on a cell. It sounds the alarm with cytokines but does not start complement. This protein floats free in the plasma, and it is holding your bacterium, not a cell.'}]},
+ async win(){clearIdle();const m=stage.querySelector('#mbl');if(!m)return;m.dataset.lock=1;m.getAnimations().forEach(a=>{try{a.finish()}catch(e){}});await moveTo(m,520,376,1000);
+   const l=stage.querySelector('#mbllbl');if(l)l.textContent='mannose-binding lectin (MBL)';const fx=stage.querySelector('#fx');
+   add(T(440,322,'MASPs','sublbl'),fx);add(T(300,428,'mannose sugars','sublbl'),fx);
+   await moveTo('#f4',548,316,800);const f4=stage.querySelector('#f4');if(f4)f4.style.opacity=0;
+   const b4=add(G(548,316,CF('C4b'),''),fx),a4=add(G(548,316,CF('C4a','#9aa6be',10),''),fx);await Promise.all([moveTo(b4,640,418,800),moveTo(a4,700,110,1000).then(()=>fade(a4,0,300))]);
+   await moveTo('#f2',548,316,800);const f2=stage.querySelector('#f2');if(f2)f2.style.opacity=0;
+   const b2=add(G(548,316,CF('C2a'),''),fx);await moveTo(b2,668,404,800);
+   add(T(640,486,'C4bC2a: same convertase as classical','lbl'),fx);setLoad(ST.load-3)},
+ take:'Three roads, one gate. Classical starts from antibody bound to a surface (C1q, C1r, C1s). Lectin starts from microbial sugars (MBL with MASP-1 and MASP-2). Both cut C4 and C2 to build C4bC2a. Alternative starts from C3 itself, on any surface that cannot shut it down, and builds C3bBb. All three cut C3 and lead to the same results: C3b tags, C3a and C5a inflame, C5b to C9 punches holes.',map:'#idea-cpath'},
 
 {id:'extrav',title:'Reinforcements',where:'Capillary next to the wound',clock:'1 to 4 hours',body:['hand','wrist'],
  narr:`In the capillary, neutrophils are racing past in the bloodstream. To reach you, one has to get out of a fast-moving river through a wall of endothelial cells.`,
@@ -920,6 +1274,7 @@ registerPlayer({id:'antigen',name:'The antigen',role:'A Staph protein in a splin
  take:'This is why vaccines work: they let the body meet your shape safely, so the real infection meets the fast response.',map:'#stop-s8b'}
 
 ]});
+})();
 
 </script>
 <script>
@@ -964,6 +1319,14 @@ const MPOS=[[560,170],[740,160],[820,330],[600,340],[760,470],[540,480]];
 const GRAB=[2,4,1,6,3,0,2];
 const GPOS=[[560,150],[720,130],[850,230],[850,400],[720,470],[560,450],[520,300]];
 
+/* Follicular dendritic cell: a stromal (non-blood) cell with a fine web of thin processes holding intact antigen as immune
+   complexes. Drawn unlike the dendritic cell on purpose: it is not a DC and not an APC. */
+function FDC(){let h='';const tips=[[-62,-44],[58,-40],[-70,22],[64,30],[-6,-66],[8,62],[-34,58],[40,-66]];
+  for(const [x,y] of tips){h+=`<path d="M0,0 Q${(x*.45).toFixed(0)},${(y*.75).toFixed(0)} ${x},${y}" fill="none" stroke="#b9ab93" stroke-width="3" stroke-linecap="round"/>`;
+    h+=`<path d="M${(x*.7).toFixed(0)},${(y*.7).toFixed(0)} l${(y*.18).toFixed(0)},${(-x*.18).toFixed(0)}" stroke="#b9ab93" stroke-width="2" stroke-linecap="round"/>`}
+  h+=`<ellipse cx="0" cy="0" rx="26" ry="18" fill="#efe6d4" stroke="#8f8068" stroke-width="2"/><ellipse cx="0" cy="0" rx="10" ry="7" fill="#d8ccb3"/>`;
+  for(const [x,y] of tips.slice(0,6))h+=`<g transform="translate(${x},${y})"><path d="M0,0 v-7 M0,-7 l-4,-5 M0,-7 l4,-5" stroke="var(--ab)" stroke-width="1.6" fill="none"/><circle cx="0" cy="-15" r="5" fill="var(--you)" stroke="var(--hot)" stroke-width="1.2"/></g>`;
+  return h}
 registerPlayer({id:'bcell',name:'The B cell',role:'Build your own receptor, earn T cell help, and become an antibody factory',order:6,mark:'splinter',load0:10,
  blurb:'Grow up in the bone marrow, wait in a lymph node for one exact shape, then sharpen your aim until you can end the infection.',
  icon:(x,y)=>`<g transform="translate(${x},${y}) scale(1.55)">${bcell(0,0,3)}</g>`,
@@ -1114,12 +1477,12 @@ registerPlayer({id:'bcell',name:'The B cell',role:'Build your own receptor, earn
  take:'CD40L to CD40 is the license. If CD40L is missing (X-linked hyper-IgM), B cells cannot switch or form germinal centers: high IgM, very low IgG, IgA and IgE, and infections like Pneumocystis. Some of your first daughters become short-lived plasmablasts and pour out IgM right away.',map:'#idea-cd40l'},
 
 {id:'gc',title:'Survival of the best fit',where:'Lymph node, germinal center',clock:'Day 7 to 10',body:['axilla'],
- narr:`In the dark zone you divide again and again, and AID scribbles random point mutations into your V region on purpose (somatic hypermutation). Your daughters move to the light zone to be tested. A follicular dendritic cell holds Staph protein out on its arms, and each daughter pries off as much as it can.`,
+ narr:`In the dark zone you divide again and again, and AID scribbles random point mutations into your V region on purpose (somatic hypermutation). Your daughters move to the light zone to be tested. A follicular dendritic cell holds intact Staph protein out on its thin arms, stuck there as antibody and complement complexes. Despite the name it is not a dendritic cell at all: it is a stromal cell of the node, not made in the bone marrow, and it never shows peptide on MHC. Each daughter pries off as much protein as it can.`,
  draw(){return `<rect width="900" height="560" fill="var(--node)"/><ellipse cx="560" cy="300" rx="340" ry="245" fill="var(--follicle)" stroke="var(--line)" stroke-width="3"/>
    <ellipse cx="370" cy="300" rx="150" ry="190" fill="var(--b)" opacity=".13"/>
    <text x="370" y="96" class="zone" style="text-anchor:middle">dark zone: divide, mutate</text><text x="720" y="80" class="zone" style="text-anchor:middle">light zone: get tested</text>
    ${G(360,300,bcell(0,0,3)+ME(0,0,36),'','me')}
-   ${G(700,310,dc(0,0,23,false)+[[-34,-30],[38,-26],[-40,24],[34,32],[0,-50]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--you)" stroke="var(--hot)" stroke-width="1.2"/>`).join('')+T(0,82,'follicular DC','sublbl'),'','fdc')}
+   ${G(700,310,FDC()+T(0,86,'follicular DC','sublbl')+T(0,106,'stromal cell, not a true DC','sublbl'),'','fdc')}
    ${GRAB.map((n,i)=>G(GPOS[i][0],GPOS[i][1],bcell(0,0,i+1)+Array.from({length:n},(_,j)=>`<circle cx="${-(n-1)*5+j*10}" cy="-36" r="4.2" fill="var(--you)" stroke="var(--hot)" stroke-width="1"/>`).join('')+T(0,44,n?'grabbed '+n:'receptor broken','sublbl'),'tc','t'+i)).join('')}`},
  async play(){hint('Each daughter carries different mutations. The gold dots show how much Staph protein it pulled off the follicular dendritic cell. Tap the one that should win.')},
  chal:{type:'find',q:'Tap the daughter that will get Tfh help and survive.',
@@ -2576,6 +2939,286 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
 </script>
 <script>
 (()=>{
+/* ---------- "The blood sample": a tube of blood riding through the immunology lab (App 3A serology, App 3B flow cytometry).
+   Helpers are local so they cannot collide with other player files. */
+const LAB=[110,204];                       // off the body, lower right of the figure: "the lab"
+const RBC='#c98a90',RBCS='#8a4a52';
+const BLOOD='#9b4a5a',SERUM='#e9cf7a';
+const FONT=(s,w,c,a)=>`style="font-size:${s}px;font-weight:${w||600};fill:${c||'var(--ink)'};text-anchor:${a||'middle'}"`;
+const benchBG=lab=>`<rect width="900" height="560" fill="var(--paper2)"/><rect x="0" y="492" width="900" height="68" fill="var(--line)" opacity=".45"/>${lab?`<text x="186" y="545" class="zone">${lab}</text>`:''}`;
+/* a capped test tube centered at 0,0 (about 30 x 110), fill fraction f, fill color c */
+function tube(id,f,c,lab){const h=110,w=30,top=-h/2,fl=f*(h-6);return `<g><clipPath id="${id}clip"><path d="M${-w/2+3},${top+8} V${h/2-w/2} a${w/2-3},${w/2-3} 0 0 0 ${w-6},0 V${top+8}Z"/></clipPath>
+  <path d="M${-w/2},${top+6} V${h/2-w/2} a${w/2},${w/2} 0 0 0 ${w},0 V${top+6}" fill="var(--paper)" stroke="var(--muted)" stroke-width="2.4"/>
+  <rect id="${id}liq" x="${-w/2}" y="${h/2+2-fl}" width="${w}" height="${fl}" fill="${c||BLOOD}" clip-path="url(#${id}clip)"/>
+  <rect x="${-w/2-3}" y="${top-6}" width="${w+6}" height="16" rx="4" fill="var(--hot)"/>
+  ${lab?`<text x="0" y="${h/2+30}" class="sublbl">${lab}</text>`:''}</g>`}
+const ME_TUBE=(x,y,f,c,lab,id)=>G(x,y,tube(id||'me',f,c,lab)+ME(0,0,62),'',id||'metube');
+function rbc(x,y,r){r=r||30;return `<g><circle cx="${x}" cy="${y}" r="${r}" fill="${RBC}" stroke="${RBCS}" stroke-width="2"/><circle cx="${x}" cy="${y}" r="${r*.45}" fill="#e3b6ba" opacity=".8"/></g>`}
+const dot=(x,y,r,c)=>`<circle cx="${x}" cy="${y}" r="${r||3.2}" fill="${c||RBCS}"/>`;
+const yab=(x,y,rot,c,sw)=>`<g transform="translate(${x},${y}) rotate(${rot||0})"><path d="M0,10 L0,0 M0,0 L-6,-8 M0,0 L6,-8" stroke="${c}" stroke-width="${sw||3.4}" stroke-linecap="round" fill="none"/></g>`;
+const enzY=(x,y)=>`<g transform="translate(${x},${y})">${yab(0,0,180,'var(--hot)')}<circle cx="0" cy="-18" r="7" fill="var(--paper)" stroke="var(--hot)" stroke-width="2.4"/><text x="0" y="-14.5" ${FONT(9,800,'var(--hot)')}>E</text></g>`;
+const helix=(x,y)=>`<g transform="translate(${x},${y})"><path d="M-5,-14 C5,-9 5,-5 -5,0 C-15,5 5,9 -5,14" stroke="var(--hot)" stroke-width="2.6" fill="none"/><path d="M5,-14 C-5,-9 -5,-5 5,0 C15,5 -5,9 5,14" stroke="var(--hot)" stroke-width="2.6" fill="none" opacity=".6"/></g>`;
+const blobP=(x,y,s)=>`<path d="${blob(x,y,7,s,.25,7)}" fill="var(--muted)" opacity=".55"/>`;
+const crp=(x,y)=>`<path transform="translate(${x},${y})" d="M0,-10 L9.5,-3 L6,8 L-6,8 L-9.5,-3Z" fill="var(--you)" stroke="#8a6a10" stroke-width="1.6"/>`;
+/* a wrong answer in this player drops a "redo" tag on the bench instead of bacteria: the test has to be repeated */
+const REDO=`<g><rect x="-28" y="-13" width="56" height="26" rx="7" fill="var(--paper)" stroke="var(--you)" stroke-width="2.4"/><text x="0" y="5" ${FONT(13,800,'var(--hot)')}>redo</text></g>`;
+try{new MutationObserver(ms=>{if(typeof curPid!=='function'||curPid()!=='lab')return;
+  for(const m of ms)for(const n of m.addedNodes){if(n.nodeType!==1||!n.classList||!n.classList.contains('newbug')||n.dataset.redo)continue;
+    n.dataset.redo=1;n.getAnimations().forEach(a=>a.cancel());const k=stage.querySelectorAll('.newbug').length-1;const x=430+(k%7)*62,y=520;
+    n.innerHTML=REDO;n.style.opacity=1;n.style.transform=`translate(${x}px,${y}px)`;n.dataset.x=x;n.dataset.y=y;
+    n.animate([{opacity:0},{opacity:1}],{duration:RED?1:350})}}).observe(stage,{childList:true,subtree:true})}catch(e){}
+const THRU='<style>#stage .newbug{pointer-events:none}</style>';
+/* wells for the typing card: evenly spread cells, or cells gathered into clumps */
+function wellDots(cx,cy,r,seed){const R=rng(seed),p=[];while(p.length<34){const x=(R()*2-1)*r*.8,y=(R()*2-1)*r*.8;if(x*x+y*y<r*r*.62)p.push([cx+x,cy+y])}return p}
+const CLUMPS=[[-26,-20],[22,-26],[-6,18],[30,20],[-34,16]];
+
+registerPlayer({id:'lab',name:'The blood sample',role:'Ride through the immunology lab and learn what each test actually measures',order:15,
+ meter:'Diagnosis delay',load0:30,
+ blurb:'You are a tube of blood. Every scene a clinician needs an answer, and you are what gets tested.',
+ icon:(x,y)=>`<g transform="translate(${x-8},${y}) scale(.62)">${tube('ic',.7,BLOOD)}</g>${yab(x+22,y-8,0,'var(--hot)')}${yab(x+20,y+18,0,'var(--you)')}`,
+ scenes:[
+
+{id:'draw',title:'You',where:'Clinic, a vein at the elbow',clock:'7:40 AM',body:['arm'],
+ narr:`A needle slides into a vein at the elbow and blood rushes into a tube. That blood is you. In a few minutes you will be in the immunology lab, where every test works the same way: someone else's antibody is aimed at something in you, and the lab finds a way to see whether it grabbed.`,
+ go:'Begin',
+ draw(){return `<rect width="900" height="560" fill="var(--tissue)"/>${fibers(5,0,560)}
+   <rect x="0" y="300" width="900" height="74" fill="var(--vessel)"/><rect x="0" y="294" width="900" height="8" fill="var(--vwall)"/><rect x="0" y="372" width="900" height="8" fill="var(--vwall)"/>
+   ${Array.from({length:9},(_,i)=>`<g class="flow" style="animation-delay:-${i*.35}s;animation-duration:${2.6+i%3*.4}s">${rbc(0,318+(i*13)%46,10)}</g>`).join('')}
+   <text x="186" y="420" class="zone">vein at the elbow</text>
+   <path d="M560,340 L700,210" stroke="var(--muted)" stroke-width="5" stroke-linecap="round"/><rect x="690" y="186" width="34" height="34" rx="6" transform="rotate(-42 707 203)" fill="var(--hot)" opacity=".8"/>
+   <path d="M712,196 Q760,150 800,160" stroke="var(--muted)" stroke-width="3" fill="none"/>
+   ${ME_TUBE(800,210,0,BLOOD,'your tube','metube')}`},
+ async play(){await wait(400);const r=stage.querySelector('#metubeliq');if(!r)return;const H=104;
+   const fl=H*.85,t0=performance.now(),dur=RED?1:1800;await new Promise(res=>{function st(t){const f=Math.max(0,Math.min(1,(t-t0)/dur));if(!r.isConnected)return res();r.setAttribute('y',57-fl*f);r.setAttribute('height',fl*f);if(f<1)requestAnimationFrame(st);else res()}requestAnimationFrame(st)})},
+ extra:`<div class="goal"><b class="h">How this works</b>You are the sample. Today you will be many tubes from many patients, and each one arrives with a question on its label. Pick the right test or read the result. A wrong call means the test has to be redone, and the diagnosis waits (the meter rises). A first-try answer earns a star.</div>`},
+
+{id:'mab',title:'The reagent shelf',where:'Immunology lab, reagent shelf',clock:'8:05 AM',body:['arm',LAB],
+ narr:`You arrive in a rack with forty other tubes. Before anyone can test you, the lab needs antibodies of its own: probes that grab one target in you and nothing else. The shelf is running low on one of the most used, an anti-human Ig.`,
+ draw(){return benchBG('immunology lab')+THRU+`<rect x="200" y="130" width="560" height="14" rx="4" fill="var(--muted)" opacity=".6"/>
+   ${[0,1,2,3].map(i=>`<g transform="translate(${250+i*110},84)"><rect x="-22" y="-34" width="44" height="80" rx="8" fill="var(--paper)" stroke="var(--muted)" stroke-width="2"/><rect x="-12" y="-46" width="24" height="14" rx="3" fill="var(--muted)"/></g>`).join('')}
+   <g transform="translate(690,84)"><rect x="-22" y="-34" width="44" height="80" rx="8" fill="none" stroke="var(--you)" stroke-width="2.4" stroke-dasharray="5 4"/><text x="0" y="12" ${FONT(22,800,'var(--hot)')}>?</text></g>
+   <text x="690" y="176" class="sublbl">anti-human Ig: empty</text>
+   <rect x="240" y="220" width="420" height="96" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+   <text x="260" y="254" ${FONT(17,700,'var(--ink)','start')}>Note from the blood bank:</text>
+   <text x="260" y="284" ${FONT(16,500,'var(--ink)','start')}>Need anti-human Ig that behaves the</text><text x="260" y="306" ${FONT(16,500,'var(--ink)','start')}>same in every bottle, for years.</text>
+   <g id="hyb"></g>${ME_TUBE(800,380,.82,BLOOD,'you','metube')}`},
+ chal:{type:'choice',q:'Where should that anti-human Ig come from so every batch is identical?',opts:[
+   {t:'One hybridoma clone, grown in culture',ok:true,why:'A mouse B cell fused with a myeloma cell that makes no Ig of its own becomes a hybridoma: immortal, and every antibody it secretes is identical (one heavy chain, one light chain, one epitope). Infinite supply, no batch-to-batch drift.'},
+   {t:'Pooled serum from a goat immunized many times',why:'That is an antiserum. It works, but each batch reflects one animal\'s response plus everything else in its serum. When the next goat replaces it, the mix changes and this morning\'s results stop matching last month\'s.'},
+   {t:'IgG purified from that same goat',why:'That is a polyclonal antibody. Cleaner than whole antiserum, but still a mix of many B cell clones hitting many epitopes, and a new animal gives a new mix. The note asked for identical.'},
+   {t:'Mouse spleen B cells grown in a dish',why:'Ordinary B cells do not keep growing in culture, so the supply runs out within days. They have to be fused with an immortal myeloma line first.'}]},
+ async win(){setLoad(ST.load-5);const h=stage.querySelector('#hyb');if(!h)return;
+   const b=add(G(300,420,bcell(0,0,3)+T(0,46,'mouse B cell'),'','hb'),h),m=add(G(520,420,mblob(0,0,24,61,.1,10,24,'#9aa3ad')+`<circle r="11" class="nuc"/>`+T(0,46,'myeloma cell'),'','hm'),h);
+   await Promise.all([moveTo(b,390,420,900),moveTo(m,430,420,900)]);fade(b,0,300);fade(m,0,300);
+   const f=add(G(410,420,mblob(0,0,30,71,.1,11,26,'var(--b)')+`<circle r="13" class="nuc"/>`+T(0,52,'hybridoma'),'','hf'),h);await pop(f);
+   for(let k=0;k<4;k++){const c=add(G(410,420,mblob(0,0,18,72+k,.1,10,16,'var(--b)')),h);moveTo(c,250+k*48,350,800);await wait(120)}
+   for(let k=0;k<6;k++){const a=add(G(410,400,yab(0,0,0,'var(--hot)')),h);moveTo(a,560+(k%3)*36,330+Math.floor(k/3)*34,900);await wait(80)}
+   add(T(630,404,'all identical','youlbl'),h)},
+ take:'Antisera and polyclonal antibodies are mixtures that vary from batch to batch; a monoclonal antibody comes from one hybridoma clone, so every molecule is the same. Drugs follow the same idea, and the old names tell the species: -omab mouse, -ximab chimeric (rituximab, anti-CD20), -zumab humanized (palivizumab, anti-RSV), -umab fully human (adalimumab, anti-TNF).',map:'#idea-elisa'},
+
+{id:'type',title:'Clumps',where:'Blood bank, typing card',clock:'8:20 AM',body:[LAB],
+ narr:`A drop of you goes into each of three wells. Each well holds a standard antiserum: anti-A, anti-B, or anti-RhD. An antibody has two arms, so if your red cells carry its antigen, it links cell to cell until they clump where anyone can see it.`,
+ draw(){const xs=[350,540,730];return benchBG('blood typing card')+THRU+`<rect x="250" y="160" width="580" height="270" rx="18" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/>
+   ${['anti-A','anti-B','anti-D (Rh)'].map((l,i)=>`<text x="${xs[i]}" y="200" class="lbl">${l}</text><circle cx="${xs[i]}" cy="300" r="70" fill="#f1dadb" stroke="var(--muted)" stroke-width="2" id="w${i}"/>
+     <g id="wd${i}">${wellDots(0,0,70,40+i).map(p=>G(xs[i]+p[0],300+p[1],dot(0,0,3.6),'rd')).join('')}</g>`).join('')}
+   <text x="350" y="470" class="sublbl">clumps = agglutinated</text><text x="660" y="470" class="sublbl">smooth = not agglutinated</text>
+   ${ME_TUBE(200,410,.6,BLOOD,'you','metube')}`},
+ async play(){await wait(500);for(const i of [0,2]){const g=stage.querySelector('#wd'+i);if(!g)return;const cx=[350,540,730][i];
+   [...g.querySelectorAll('.rd')].forEach((d,k)=>{const c=CLUMPS[k%5];moveTo(d,cx+c[0]+(k%3-1)*4,300+c[1]+((k>>1)%3-1)*4,1600)})}},
+ chal:{type:'choice',q:'Read the card. What is this patient\'s blood type?',opts:[
+   {t:'A, RhD positive',ok:true,why:'Anti-A and anti-D clumped the cells, so they carry A and RhD. Anti-B left them smooth: no B antigen. Clump or no clump, which makes this a qualitative test.'},
+   {t:'B, RhD positive',why:'That reads the card backwards: clumping means the antiserum found its antigen. Labeled type B and given to a type B patient, these cells would meet that patient\'s anti-A and be destroyed, a hemolytic transfusion reaction.'},
+   {t:'AB, RhD negative',why:'The anti-B well stayed smooth, so there is no B antigen, and the anti-D well clumped, so the cells are RhD positive. Two misreads on one card.'},
+   {t:'O, RhD positive',why:'Type O cells carry neither A nor B, so the anti-A well would stay smooth. Here it clumped.'}]},
+ async win(){setLoad(ST.load-5);['#w0','#w2'].forEach(q=>{const w=stage.querySelector(q);if(w){w.setAttribute('stroke','var(--hot)');w.setAttribute('stroke-width','5')}});
+   const t=add(T(540,124,'type A, RhD positive','youlbl'));await pop(t)},
+ take:'Agglutination needs a big particle carrying many copies of the epitope, like a red cell, so the clumps show by eye. Blood typing is qualitative: clumping with anti-A and anti-D means type A, RhD positive.',map:'#idea-coombs'},
+
+{id:'titer',title:'How far can you be diluted?',where:'Serology bench, round-bottom plate',clock:'9:00 AM',body:[LAB],
+ narr:`Now you are serum from a vaccine trial volunteer. You are diluted two-fold across a row of round-bottom wells, and red cells coated with the vaccine antigen go into each one. Where your antibodies still link the cells, they spread over the well wall as a mat. Where they run out, the cells roll to the bottom as a tight button.`,
+ draw(){const L=['1:20','1:40','1:80','1:160','1:320','1:640','control'];return benchBG('round-bottom plate, top view')+THRU+`<rect x="186" y="190" width="680" height="200" rx="20" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/>
+   ${L.map((l,k)=>{const x=236+k*96,mat=k<4,R=rng(70+k);return G(x,280,`<circle r="40" fill="${mat?'#ebc8cb':'#f6ecec'}" stroke="var(--muted)" stroke-width="2"/>
+     ${mat?Array.from({length:30},()=>{const a=R()*6.283,d=8+R()*26;return dot(Math.cos(a)*d,Math.sin(a)*d,2.6)}).join(''):`<circle r="10" fill="${RBCS}"/>`}
+     <text x="0" y="74" class="sublbl">${l}</text><circle r="46" fill="#000" fill-opacity="0"/>`,'tc','t'+k)}).join('')}
+   <g transform="translate(300,440)"><circle r="16" fill="#ebc8cb" stroke="var(--muted)"/>${dot(-5,-4,2.4)}${dot(5,3,2.4)}${dot(-2,7,2.4)}<text x="26" y="5" ${FONT(15,600,'var(--ink)','start')}>mat: agglutinated</text></g>
+   <g transform="translate(560,440)"><circle r="16" fill="#f6ecec" stroke="var(--muted)"/><circle r="6" fill="${RBCS}"/><text x="26" y="5" ${FONT(15,600,'var(--ink)','start')}>button: not agglutinated</text></g>
+   <text x="526" y="160" class="sublbl">more dilute &#8594;</text>${ME_TUBE(260,110,.5,SERUM,'you (serum)','metube')}`},
+ chal:{type:'find',q:'Tap the well that gives this volunteer\'s titer.',hint:'Mats mean agglutination, buttons mean none. The titer is one specific well.',
+  check(i){if(i===3)return {ok:true,why:'The titer is the highest dilution that still agglutinates: 1:160. A higher titer means antibody is still detectable when diluted further, so there is more of it.'};
+   if(i<3)return {why:'This well agglutinated, but so did more dilute wells to its right. Report this and you would undercount the volunteer\'s antibody. The titer is the highest dilution still positive, not the strongest well.'};
+   if(i===6)return {why:'The control well has no serum. Its button only shows the coated red cells do not clump on their own, which is what makes the other wells believable.'};
+   return {why:'That is a button: the cells rolled to the bottom because too little antibody was left to link them. This well is negative, so it cannot be the titer.'}}},
+ async win(i){setLoad(ST.load-5);const w=stage.querySelector('#t3');if(w)w.classList.add('glow');const a=add(`<g><path d="M524,180 L524,228" stroke="var(--hot)" stroke-width="4" marker-end=""/><path d="M516,220 L524,234 L532,220" fill="var(--hot)"/></g>`);await pop(a);
+   add(T(720,160,'titer = 1:160','youlbl'))},
+ take:'A titer is the highest dilution that still gives a positive signal, so it is semi-quantitative: 1:160 means more antibody than 1:40. Comparing to a standard control sample tells you roughly how much more.',map:'#idea-coombs'},
+
+{id:'dat',title:'Already coated',where:'Blood bank, Coombs bench',clock:'10:15 AM',body:[LAB],
+ narr:`Your patient is a 35-year-old man: short of breath, pale, mildly jaundiced, with dark urine and a big spleen. His hemoglobin is low and his reticulocytes are high. His team suspects autoimmune hemolytic anemia, his own IgG coating his red cells and marking them for destruction. Under the microscope his coated cells still float apart.`,
+ draw(){const P=[[400,220],[520,200],[640,240],[430,360],[560,350],[680,380]];return benchBG('microscope view')+THRU+`<circle cx="540" cy="295" r="230" fill="var(--paper)" stroke="var(--muted)" stroke-width="3"/>
+   ${P.map((p,k)=>G(p[0],p[1],rbc(0,0,34)+[0,1,2,3,4].map(j=>{const a=j*1.257+k*.6,x=Math.cos(a)*45,y=Math.sin(a)*45;return yab(x,y,a*57.3-90,'var(--you)')}).join(''),'rb','r'+k)).join('')}
+   <g transform="translate(250,470)">${yab(0,0,0,'var(--you)')}<text x="14" y="4" ${FONT(15,600,'var(--ink)','start')}>his IgG</text></g>
+   ${ME_TUBE(820,120,.75,BLOOD,'you','metube')}`},
+ chal:{type:'choice',q:'The team asks whether his red cells are coated with antibody. What does the lab add to make that visible?',opts:[
+   {t:'Anti-human Ig, added to his washed red cells',ok:true,why:'One arm of the anti-human Ig grabs IgG on one cell and the other arm grabs IgG on the next, and the cells clump. That is a positive direct Coombs test: antibody is already on his red cells.'},
+   {t:'His serum, mixed with RhD-positive test cells',why:'That is the indirect setup, which looks for free antibody in serum. His problem is antibody stuck to his own cells, so you would be asking the wrong question while he keeps hemolyzing.'},
+   {t:'Standard anti-A and anti-B typing antisera',why:'Typing antisera tell you which blood group antigens his cells carry. They say nothing about IgG coating them, and the work-up stalls.'},
+   {t:'Fluorescent anti-CD19 for the flow cytometer',why:'CD19 marks B cells, and red cells have none. You would count his B cells and learn nothing about his red cells.'}]},
+ async win(){setLoad(ST.load-6);const fx=stage.querySelector('#fx');const C=[[470,250],[540,240],[610,262],[490,320],[560,315],[630,330]];
+   for(let k=0;k<8;k++){const a=add(G(540,40,yab(0,0,180,'var(--hot)')),fx);moveTo(a,480+(k%4)*46,270+Math.floor(k/4)*50,900);await wait(60)}
+   await Promise.all(C.map((c,k)=>moveTo('#r'+k,c[0],c[1],1300)));add(T(540,48,'clumped: direct Coombs positive','youlbl'))},
+ take:'Direct Coombs: antibody already bound to the patient\'s own red cells. Wash the cells, add anti-human Ig, look for clumping. It answers one question: is antibody already on these cells? In autoimmune hemolytic anemia it is.',map:'#idea-coombs'},
+
+{id:'which',title:'Four request slips',where:'Blood bank, order desk',clock:'11:00 AM',body:[LAB],
+ narr:`Four tubes arrive at once, each with a request slip. The blood bank runs two Coombs tests. The direct test asks about antibody already stuck to a person's red cells. The indirect test asks about antibody floating free in serum, by mixing that serum with test red cells first and then adding anti-human Ig.`,
+ draw(){const S=[['Newborn, jaundiced on day 1.','Mother is RhD negative. Are','the baby\'s red cells coated','with her anti-D?'],
+     ['Pregnant, 28 weeks, RhD','negative. Has she made anti-D','since her last pregnancy?',''],
+     ['Before a transfusion: will','this recipient\'s serum attack','the donor\'s red cells?',''],
+     ['Lupus work-up: does her','serum contain anti-dsDNA?','','']];
+   const pos=[[370,170],[710,170],[370,380],[710,380]],ord=[2,0,3,1];
+   return benchBG('order desk')+THRU+ord.map((s,k)=>G(pos[k][0],pos[k][1],`<rect x="-160" y="-82" width="320" height="164" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2" class="cellb"/>
+     <rect x="-160" y="-82" width="320" height="30" rx="10" fill="var(--hot)" opacity=".14"/><text x="-146" y="-61" ${FONT(14,700,'var(--muted)','start')}>REQUEST ${k+1}</text>
+     ${S[s].map((l,j)=>`<text x="-146" y="${-24+j*27}" ${FONT(18,600,'var(--ink)','start')}>${l}</text>`).join('')}<g class="stamp"></g>`,'tc',['tn','tp','tx','tl'][s])).join('')},
+ async play(){const ts=[...stage.querySelectorAll('.tc')];idle(()=>{ts.forEach(t=>{if(t.dataset.lock)return;const b=t.dataset.bx?[+t.dataset.bx,+t.dataset.by]:[+t.dataset.x,+t.dataset.y];t.dataset.bx=b[0];t.dataset.by=b[1];moveTo(t,b[0]+Math.random()*10-5,b[1]+Math.random()*8-4,1800,'ease-in-out')})},2000)},
+ chal:{type:'find',q:'Tap the one request that needs a DIRECT Coombs test.',hint:'For each slip, ask: is the antibody already on someone\'s red cells, or free in serum?',
+  check(i){if(i==='tn')return {ok:true,why:'The mother\'s anti-D IgG crossed the placenta and is already stuck to the baby\'s RhD-positive red cells: hemolytic disease of the newborn. Direct Coombs on the baby\'s cells.'};
+   if(i==='tp')return {why:'This one is indirect. Her anti-D, if she made any, floats in her serum, so her serum goes onto RhD-positive test cells. A direct test would check her own RhD-negative cells and miss it, and the baby would go unprotected.'};
+   if(i==='tx')return {why:'A crossmatch is indirect: recipient serum plus donor red cells, then anti-human Ig. The antibody you fear is still in the recipient\'s serum, not yet on anyone\'s cells.'};
+   return {why:'Not a Coombs question at all. Anti-dsDNA is measured on serum by ELISA. Red cells have nothing to do with it.'}}},
+ async win(i){clearIdle();setLoad(ST.load-6);const L={tn:'DIRECT',tp:'INDIRECT',tx:'INDIRECT',tl:'ELISA'};
+   for(const id of ['tn','tp','tx','tl']){const t=stage.querySelector('#'+id);if(!t)return;t.dataset.lock=1;const s=t.querySelector('.stamp');
+     s.innerHTML=`<g transform="translate(96,-67) rotate(-4)"><rect x="-58" y="-13" width="116" height="26" rx="5" fill="var(--paper)" stroke="${id==='tn'?'var(--you)':'var(--hot)'}" stroke-width="3"/><text x="0" y="6" ${FONT(15,800,'var(--hot)')}>${L[id]}</text></g>`;
+     if(id==='tn')t.classList.add('glow');await pop(s,300)}},
+ take:'Direct Coombs: antibody already on the cells (autoimmune hemolytic anemia; hemolytic disease of the newborn, tested on the baby). Indirect Coombs: antibody free in serum against red cell antigens (the prenatal anti-D screen in an RhD-negative mother, the pre-transfusion crossmatch).',map:'#idea-coombs'},
+
+{id:'elisa',title:'Build the well',where:'ELISA bench, 96-well plate',clock:'1:00 PM',body:[LAB],
+ narr:`Your patient is a 24-year-old woman with joint pain and a rash. Her ANA came back positive: her antibodies lit up the nuclei of fixed cells under a fluorescence microscope. Now the team wants something more specific, anti-dsDNA. You are her serum, about to go into a plastic well.`,
+ draw(){return benchBG('one well, side view')+THRU+`<path id="eliq" d="M306,170 V430 Q306,464 340,464 H660 Q694,464 694,430 V170Z" fill="var(--you)" opacity="0"/>
+   <path d="M300,160 V430 Q300,470 340,470 H660 Q700,470 700,430 V160" stroke="var(--muted)" stroke-width="6" fill="none"/>
+   <g id="ew"></g><text x="500" y="140" class="sublbl">plastic well</text>${ME_TUBE(810,170,.6,SERUM,'you (serum)','metube')}`},
+ chal:{type:'order',q:'Build the indirect ELISA that finds her anti-dsDNA. Tap the steps in order.',steps:[
+   {t:'Coat the well with dsDNA',anim:async()=>{const ew=stage.querySelector('#ew');if(!ew)return;const ps=[];
+     [350,410,470,530,590,650].forEach((x,k)=>{const h=add(G(x,120,helix(0,0),'ed'),ew);ps.push(wait(k*70).then(()=>moveTo(h,x,446,900)))});await Promise.all(ps)}},
+   {t:'Add her serum and let antibodies bind',anim:async()=>{const ew=stage.querySelector('#ew');if(!ew)return;const ps=[];
+     [350,470,530,650].forEach((x,k)=>{const a=add(G(x,110,yab(0,0,180,'var(--you)',4)),ew);ps.push(wait(k*80).then(()=>moveTo(a,x,422,1000)))});
+     [[380,260],[560,300],[440,340],[620,240],[500,220]].forEach(([x,y],k)=>{const o=add(G(x,110,k<2?yab(0,0,0,'var(--muted)'):blobP(0,0,k+3),'junk'),ew);ps.push(moveTo(o,x,y,1000))});
+     await Promise.all(ps);add(T(500,300,'',''),ew)}},
+   {t:'Wash away everything that did not stick',anim:async()=>{const j=[...stage.querySelectorAll('#ew .junk')];await Promise.all(j.map(o=>moveTo(o,+o.dataset.x,90,900).then(()=>fade(o,0,300))))}},
+   {t:'Add enzyme-linked anti-human Ig',anim:async()=>{const ew=stage.querySelector('#ew');if(!ew)return;const ps=[];
+     [350,470,530,650].forEach((x,k)=>{const a=add(G(x,110,enzY(0,0)),ew);ps.push(wait(k*80).then(()=>moveTo(a,x,404,1000)))});await Promise.all(ps)}},
+   {t:'Add substrate and read the color',anim:async()=>{const l=stage.querySelector('#eliq');if(!l)return;await fin(l.animate([{opacity:0},{opacity:.42}],{duration:RED?1:1200,fill:'forwards'}),1200);
+     l.style.opacity=.42;add(T(500,250,'color: anti-dsDNA present','youlbl'),stage.querySelector('#ew'))}}],
+  bad:'Out of order, the well gives a color that means nothing and the test has to be redone.'},
+ async badAnim(){const ew=stage.querySelector('#ew');if(ew){await fade(ew,0,300);ew.innerHTML='';ew.style.opacity=1}const l=stage.querySelector('#eliq');if(l){l.getAnimations().forEach(a=>a.cancel());l.style.opacity=0}},
+ async win(){setLoad(ST.load-6)},
+ take:'Indirect ELISA: antigen on the plastic, the patient\'s antibody binds it, an enzyme-linked anti-human Ig finds that antibody, substrate turns color. It detects antibodies, like anti-dsDNA in lupus or antibodies to HIV. The ANA works the same way with a whole fixed cell as the antigen and light as the readout. A Western blot spreads the antigens out by size first: more detail (the classic HIV confirmatory test) but not very quantitative, so it is rarely used now.',map:'#idea-elisa'},
+
+{id:'crp',title:'How much is there?',where:'ELISA bench, capture plate',clock:'2:00 PM',body:[LAB],
+ narr:`Same patient, new question: how inflamed is she? This time the target is not one of her antibodies. It is a protein floating in you, C-reactive protein (CRP), and the team wants a number.`,
+ draw(){return benchBG('capture plate')+THRU+`<path d="M220,250 V440 Q220,466 246,466 H394 Q420,466 420,440 V250" stroke="var(--muted)" stroke-width="5" fill="none"/>
+   <g id="cw"></g><text x="320" y="230" class="sublbl">plastic well</text>
+   ${G(320,340,crp(0,0)+crp(-40,40)+crp(44,-30)+T(0,-38,'CRP in you','sublbl'),'','crps')}
+   <g id="curve"></g>${ME_TUBE(800,150,.6,SERUM,'you (serum)','metube')}`},
+ chal:{type:'choice',q:'To measure her CRP, what goes on the bottom of the well first?',opts:[
+   {t:'An antibody that grabs CRP',ok:true,why:'This is a capture (sandwich) ELISA. Anti-CRP on the plastic catches CRP out of her serum, then a second, enzyme-linked anti-CRP sits on top. More CRP, more color.'},
+   {t:'Purified CRP protein',why:'That would catch antibodies against CRP, which she does not make. The well stays clear and an inflamed patient gets reported as normal.'},
+   {t:'Anti-human Ig antibody',why:'That captures her antibodies of every kind. CRP is not an antibody, so it washes straight down the sink.'},
+   {t:'Her whole serum, dried on',why:'Thousands of serum proteins would crowd the plastic and CRP would be a sliver of them. Putting the sample itself on the plastic (direct ELISA) is not commonly used diagnostically.'}]},
+ async win(){setLoad(ST.load-6);const cw=stage.querySelector('#cw'),cv=stage.querySelector('#curve');if(!cw||!cv)return;fade('#crps',0,400);fade('#metube',0,400);
+   const xs=[262,320,378];for(const x of xs)add(yab(x,452,0,'var(--hot)'),cw);await wait(300);
+   for(const x of xs){const c=add(G(x,250,crp(0,0)),cw);moveTo(c,x,432,700)}await wait(750);
+   for(const x of xs){const e=add(G(x,240,enzY(0,0)),cw);moveTo(e,x,414,700)}await wait(750);
+   add(T(320,500,'antibody, CRP, antibody','sublbl'),cw);
+   const X=l=>490+l/3.6*340,Y=o=>440-o/2.2*290,pts=[[0,.23],[.6,.35],[1.2,.58],[1.8,.97],[2.4,1.56],[3,1.88],[3.6,2]];
+   add(`<g><line x1="490" y1="440" x2="850" y2="440" stroke="var(--muted)" stroke-width="2"/><line x1="490" y1="140" x2="490" y2="440" stroke="var(--muted)" stroke-width="2"/>
+     <text x="670" y="474" class="sublbl">CRP, known standards (log scale)</text><text x="478" y="128" ${FONT(14,600,'var(--muted)','start')}>color (O.D.)</text>
+     <path id="scurve" d="M${pts.map(p=>X(p[0])+','+Y(p[1])).join(' L')}" stroke="var(--hot)" stroke-width="3.5" fill="none"/>${pts.map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="var(--hot)"/>`).join('')}</g>`,cv);
+   await wait(500);const sx=X(1.88),sy=Y(1.05);const s=add(`<path d="M490,${sy} H${sx} V440" stroke="var(--you)" stroke-width="4" stroke-dasharray="7 5" fill="none"/>`,cv);
+   const L=s.getTotalLength();s.style.strokeDasharray=L;await fin(s.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:RED?1:1100,fill:'forwards'}),1100);s.style.strokeDasharray='7 5';
+   add(T(sx-110,sy-14,'her color','youlbl'),cv);add(`<text x="${sx}" y="430" ${FONT(14,700,'var(--hot)')}>her CRP</text>`,cv)},
+ take:'Capture (sandwich) ELISA: an antibody on the plastic grabs the antigen and a second enzyme-linked antibody to the same antigen sits on top. It measures antigens such as CRP, hormones and cytokines. Known standards give a standard curve, so the color (optical density) converts into a concentration: a quantitative test.',map:'#idea-elisa'},
+
+{id:'strip',title:'The line that must appear',where:'Point of care, a home test',clock:'3:30 PM',body:[LAB],
+ narr:`You get a break and watch the next bench. A few drops of urine go onto a home pregnancy test. In the reagent pad wait mouse anti-hCG antibodies stuck to colored particles. Farther along, the T line holds more anti-hCG, and the C line holds anti-mouse Ig.`,
+ draw(){const strip=(y,id)=>`<g id="${id}"><rect x="200" y="${y}" width="660" height="50" rx="8" fill="var(--paper)" stroke="var(--muted)" stroke-width="2"/>
+     <rect x="200" y="${y}" width="104" height="50" rx="8" fill="var(--line)" opacity=".7"/><rect x="304" y="${y}" width="110" height="50" fill="var(--hot)" opacity=".12"/>
+     ${[0,1,2,3,4,5,6].map(k=>dot(320+k*14,y+15+(k%2)*18,3,'var(--hot)')).join('')}<rect x="800" y="${y}" width="60" height="50" rx="8" fill="var(--line)" opacity=".7"/>
+     <rect x="555" y="${y+6}" width="12" height="38" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/><rect x="675" y="${y+6}" width="12" height="38" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>
+     <rect class="wet" x="200" y="${y}" width="0" height="50" rx="8" fill="var(--hot)" opacity=".1"/><rect class="tl" x="555" y="${y+6}" width="12" height="38" fill="var(--hot)" opacity="0"/><rect class="cl" x="675" y="${y+6}" width="12" height="38" fill="var(--hot)" opacity="0"/></g>`;
+   return benchBG('lateral flow strip')+THRU+`<text x="252" y="222" class="sublbl">sample pad</text><text x="359" y="200" class="sublbl">anti-hCG on</text><text x="359" y="218" class="sublbl">color particles</text>
+     <text x="561" y="222" class="sublbl">T: anti-hCG</text><text x="700" y="222" class="sublbl">C: anti-mouse Ig</text>${strip(240,'s1')}
+     <text x="561" y="320" class="lbl">T</text><text x="681" y="320" class="lbl">C</text><text x="520" y="150" class="lbl" id="cap1" opacity="0">dried: no line at T, no line at C</text><g id="s2w"></g>
+     ${ME_TUBE(830,110,.7,BLOOD,'','metube')}`},
+ async play(){const w=stage.querySelector('#s1 .wet');if(!w)return;await fin(w.animate([{width:'0px'},{width:'186px'}],{duration:RED?1:2200,fill:'forwards'}),2200);
+   const c=stage.querySelector('#cap1');if(c)fade(c,1,400)},
+ chal:{type:'choice',q:'The strip dries with no line at T and no line at C. What do you tell her?',opts:[
+   {t:'Negative: there is no hCG in her urine',why:'A real negative still shows a C line, because the colored anti-hCG antibodies flow past T and get caught by anti-mouse Ig at C. No C line means the liquid or the reagents never got there. Tell her she is not pregnant and you may be wrong.'},
+   {t:'Invalid: repeat it on a new strip',ok:true,why:'The C line is the built-in control. It proves the sample flowed the whole way and the colored antibodies worked. Without it the strip means nothing, positive or negative.'},
+   {t:'Positive: C only lights up with hCG',why:'Backwards. C catches the colored mouse antibody whether or not hCG is there. It is the T line that needs hCG to form.'},
+   {t:'Too early: check this strip tomorrow',why:'Lines that never formed will not appear overnight, and an old strip cannot be read. The run failed and has to be repeated.'}]},
+ async win(){setLoad(ST.load-6);const s2=stage.querySelector('#s2w');if(!s2)return;const s1=stage.querySelector('#s1');
+   s2.innerHTML=s1.outerHTML.replace('id="s1"','id="s2" transform="translate(0,140)"');const w=s2.querySelector('.wet');
+   await fin(w.animate([{width:'0px'},{width:'660px'}],{duration:RED?1:2000,fill:'forwards'}),2000);w.style.width='660px';
+   for(const q of ['.tl','.cl']){const l=s2.querySelector(q);if(l){l.style.opacity=.9;l.animate([{opacity:0},{opacity:.9}],{duration:RED?1:500})}}
+   add(T(530,460,'new strip: T and C both show, so positive and valid','youlbl'))},
+ take:'Lateral flow: the sample wicks along the strip, picks up colored anti-hCG, and if hCG is there it is caught at T by a second anti-hCG (a sandwich). The leftover colored antibody is caught at C by anti-mouse Ig. C must always appear, or the test is invalid. COVID antigen tests use the same design.',map:'#idea-elisa'},
+
+{id:'scatter',title:'Single file',where:'Flow cytometer',clock:'4:00 PM',body:[LAB],
+ narr:`Last order of the day: a 4-month-old boy with thrush, diarrhea and pneumonias that keep coming back. You are his blood. The flow cytometer squeezes your white cells into single file past a laser, more than 10,000 a second. Light scattered forward depends on each cell's size; light scattered to the side depends on how complex its cytoplasm is.`,
+ draw(){const X=f=>300+f*520,Y=s=>470-s*370;const C={tl:[.34,.12,.07,.05,70,'A'],tm:[.6,.32,.07,.06,38,'C'],tg:[.56,.72,.09,.08,80,'B'],td:[.07,.05,.04,.035,26,'D']};
+   const cloud=(id,c)=>{const R=rng(id.charCodeAt(1)*7);let s='';for(let k=0;k<c[4];k++){const u=(R()+R()+R()-1.5)/1.5,v=(R()+R()+R()-1.5)/1.5;s+=dot(X(c[0]+u*c[2]*1.6),Y(c[1]+v*c[3]*1.6),2.8,'var(--muted)')}
+     return `<g class="mv tc" id="${id}">${s}<ellipse cx="${X(c[0])}" cy="${Y(c[1])}" rx="${c[2]*520*1.4}" ry="${c[3]*370*1.4}" fill="#000" fill-opacity="0" stroke="var(--line)" stroke-dasharray="3 4"/><text x="${X(c[0])+c[2]*520*1.4+14}" y="${Y(c[1])+6}" class="lbl">${c[5]}</text></g>`};
+   return benchBG('every dot is one cell')+THRU+`<rect x="290" y="80" width="560" height="400" fill="var(--paper)" stroke="var(--line)"/>
+     <line x1="300" y1="470" x2="840" y2="470" stroke="var(--muted)" stroke-width="2"/><line x1="300" y1="90" x2="300" y2="470" stroke="var(--muted)" stroke-width="2"/>
+     <text x="570" y="512" class="lbl">forward scatter (size) &#8594;</text><text x="270" y="290" class="lbl" transform="rotate(-90 270 290)">side scatter (granularity) &#8594;</text>
+     ${Object.entries(C).map(([k,c])=>cloud(k,c)).join('')}<g id="gate"></g>${ME_TUBE(186,410,.6,BLOOD,'you','metube')}`},
+ chal:{type:'find',q:'The doctor wants his lymphocytes looked at first. Tap their cloud.',hint:'Read both axes. Every dot is one cell; each lettered cloud is one kind of cell.',
+  check(i){if(i==='tl')return {ok:true,why:'Small and simple: low forward scatter, low side scatter. Lymphocytes have little, plain cytoplasm.'};
+   if(i==='tg')return {why:'High side scatter means a granule-packed, complex cytoplasm: granulocytes, mostly neutrophils. Gate here and every marker you read next belongs to the wrong cells.'};
+   if(i==='tm')return {why:'Bigger than lymphocytes (more forward scatter) with a moderately complex cytoplasm: monocytes.'};
+   return {why:'Smaller than any whole cell, hugging the corner: dead cells and debris. Nothing useful to read here.'}}},
+ async win(){setLoad(ST.load-6);['#tg','#tm','#td'].forEach(q=>fade(q,.25,500));const g=stage.querySelector('#gate'),l=stage.querySelector('#tl');if(!g)return;
+   if(l)l.querySelectorAll('circle').forEach(c=>c.setAttribute('fill','var(--hot)'));
+   const p=add(`<path d="M432,452 L440,400 L520,388 L548,418 L536,458 Z" fill="var(--hot)" fill-opacity=".08" stroke="var(--you)" stroke-width="3.5"/>`,g);await pop(p);
+   add(T(400,372,'gate: lymphocytes','youlbl'),g)},
+ take:'Forward scatter reads size; side scatter reads cytoplasmic complexity (granularity). Together they give a rough differential: small, simple lymphocytes; bigger monocytes; granular neutrophils. A gate drawn around one cloud keeps only those cells for the fluorescence plots.',map:'#idea-flow'},
+
+{id:'scid',title:'Who is missing',where:'Flow cytometer, gated lymphocytes',clock:'4:20 PM',body:[LAB],
+ narr:`The boy is 4 months old with thrush and pneumonias that will not clear. His gated lymphocytes were stained with fluorescent antibodies: anti-CD3 for T cells in one color, anti-CD19 for B cells in another, anti-CD56 for NK cells in a third. Each dot is placed by how brightly that cell glowed in each color.`,
+ draw(){const R=rng(91);const B=Array.from({length:120},()=>dot(230+(R()+R()-1)*32+30,150+(R()+R()-1)*38+30,2.6,'var(--muted)')).join(''),DN=Array.from({length:14},()=>dot(250+(R()+R()-1)*36,410+(R()+R()-1)*24,2.6,'var(--muted)')).join('');
+   return benchBG('gated on lymphocytes')+THRU+`<g transform="translate(40,0)"><rect x="200" y="90" width="360" height="360" fill="var(--paper)" stroke="var(--line)"/>
+     <line x1="330" y1="90" x2="330" y2="450" stroke="var(--muted)" stroke-dasharray="5 4"/><line x1="200" y1="300" x2="560" y2="300" stroke="var(--muted)" stroke-dasharray="5 4"/>
+     <text x="380" y="486" class="lbl">CD3 (T cells) &#8594;</text><text x="186" y="270" class="lbl" transform="rotate(-90 186 270)">CD19 (B cells) &#8594;</text>
+     <g id="bq">${B}</g>${DN}<ellipse cx="450" cy="390" rx="62" ry="42" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/><text x="450" y="394" class="sublbl">healthy: T cells</text>
+     <text x="300" y="116" ${FONT(16,800,'var(--hot)')}>91%</text><text x="530" y="116" ${FONT(16,800,'var(--hot)')}>0%</text><text x="300" y="440" ${FONT(16,800,'var(--hot)')}>9%</text><text x="530" y="440" ${FONT(16,800,'var(--hot)')}>0%</text></g><g transform="translate(18,0)">
+     <rect x="610" y="170" width="250" height="230" fill="var(--paper)" stroke="var(--line)"/><path d="M620,390 C640,390 650,200 670,200 C690,200 700,390 730,390 L850,390" stroke="var(--muted)" stroke-width="3" fill="var(--muted)" fill-opacity=".15"/>
+     <path d="M760,206 V384" stroke="var(--you)" stroke-width="2.5" stroke-dasharray="5 4"/><text x="805" y="230" class="sublbl">NK range</text><text x="805" y="250" ${FONT(15,800,'var(--hot)')}>under 1%</text>
+     <text x="735" y="430" class="lbl">CD56 (NK cells) &#8594;</text><text x="735" y="160" class="sublbl">number of cells</text></g><g id="sres"></g>`},
+ chal:{type:'choice',q:'Read his plots. Which defect fits?',opts:[
+   {t:'Common gamma chain defect',ok:true,why:'No T cells, B cells present, no NK cells: T negative, B positive, NK negative. The common gamma chain is shared by the IL-2, IL-4, IL-7 and IL-15 receptors, so T and NK cells cannot develop. JAK3 deficiency (autosomal recessive) gives the same picture.'},
+   {t:'Adenosine deaminase deficiency',why:'ADA deficiency takes out T, B and NK cells alike. His B cell corner is full, so this does not fit, and treating the wrong defect wastes time he does not have.'},
+   {t:'RAG1 or RAG2 deficiency',why:'Without RAG, neither T nor B cells can rearrange their receptor genes, so both are missing while NK cells are present. He has the opposite: B cells present, NK cells absent.'},
+   {t:'IL-7 receptor alpha deficiency',why:'IL-7 receptor loss blocks T cells but spares B and NK cells (T negative, B positive, NK positive). His NK cells are missing too.'}]},
+ async win(){setLoad(0);const s=stage.querySelector('#sres');if(!s)return;const q=stage.querySelector('#bq');if(q)q.querySelectorAll('circle').forEach(c=>c.setAttribute('fill','var(--hot)'));
+   for(const [x,y,t] of [[300,82,'B: present'],[490,342,'T: absent'],[753,470,'NK: absent']]){const e=add(T(x,y,t,'youlbl'),s);await pop(e,300)}
+   const b=add(`<g><rect x="618" y="84" width="270" height="44" rx="10" fill="var(--paper)" stroke="var(--you)" stroke-width="3"/><text x="753" y="113" ${FONT(17,800,'var(--hot)')}>T neg, B pos, NK neg</text></g>`,s);await pop(b)},
+ take:'Flow cytometry sorts SCID by which lymphocytes are left: T-B-NK- (ADA), T-B-NK+ (RAG, DNA repair), T-B+NK- (common gamma chain, X-linked; or JAK3), T-B+NK+ (IL-7 receptor, CD3). Newborn screening with the TREC assay now catches SCID before the infections start.',map:'#idea-scid'},
+
+{id:'report',title:'Results out',where:'Lab, end of the day',clock:'5:00 PM',body:[LAB],final:true,
+ narr:`Every answer today came from the same move: an antibody made to grab one thing, plus a way to see that it grabbed. Clumps, a color, a line on a strip, or a flash of light past a laser.`,
+ draw(){const R=[['Blood typing','which antigens sit on the red cells'],['Titer','how much antibody: highest positive dilution'],['Direct Coombs','antibody already on red cells'],['Indirect Coombs','free antibody in serum against red cells'],
+     ['Indirect ELISA','patient antibody (anti-dsDNA)'],['Sandwich ELISA','how much antigen (CRP), by standard curve'],['Lateral flow','antigen at T; C proves the strip ran'],['Flow cytometry','size, granularity and CD markers, cell by cell']];
+   return benchBG('the day\'s report')+`<rect x="190" y="40" width="690" height="460" rx="14" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/>
+     <text x="214" y="78" ${FONT(15,800,'var(--muted)','start')}>TEST</text><text x="430" y="78" ${FONT(15,800,'var(--muted)','start')}>WHAT IT MEASURED</text>
+     ${R.map((r,k)=>`<g class="rrow" opacity="0"><line x1="206" y1="${96+k*50}" x2="864" y2="${96+k*50}" stroke="var(--line)"/><text x="214" y="${126+k*50}" ${FONT(18,800,'var(--hot)','start')}>${r[0]}</text><text x="430" y="${126+k*50}" ${FONT(17,500,'var(--ink)','start')}>${r[1]}</text></g>`).join('')}`},
+ async play(){for(const r of stage.querySelectorAll('.rrow')){r.style.opacity=1;r.animate([{opacity:0},{opacity:1}],{duration:RED?1:350});await wait(220)}},
+ take:'For the boy with X-linked SCID, the cure is a hematopoietic stem cell transplant, and flow cytometry helps there too: a cell sorter (FACS) can purify the rare CD34-positive stem cells from donor blood.',map:'#idea-flow'}
+
+]});
+})();
+
+</script>
+<script>
+(()=>{
 /* ---------- local helpers (kept inside this closure so they never collide with other players) */
 const GAM='&#947;',BET='&#946;',KAP='&#954;';
 const sk=()=>skinBG();
@@ -2603,6 +3246,16 @@ const cut=(label)=>`<rect width="900" height="560" fill="var(--tissue)"/>${fiber
 
 /* find-game data */
 const OPS=[{k:'ops',p:[520,250]},{k:'ops',p:[700,430]},{k:'ops',p:[800,260]},{k:'bare',p:[610,330]},{k:'bare',p:[480,450]},{k:'bare',p:[780,500]},{k:'bare',p:[650,210]},{k:'self',p:[590,480]}];
+/* DAMPs spilling from the burst cell (damp scene) */
+const DMP=[{t:'HMGB1',p:[580,250],s:`<rect x="-7" y="-7" width="14" height="14" rx="2" fill="var(--pl)"/>`},
+  {t:'histones',p:[660,350],s:[-8,0,8].map(x=>`<circle cx="${x}" cy="0" r="5" fill="var(--pl)"/>`).join('')},
+  {t:'ATP',p:[545,330],s:`<circle r="7" fill="var(--pl)"/>`},
+  {t:'heat-shock protein',p:[620,180],s:`<circle r="7" fill="none" stroke="var(--pl)" stroke-width="4"/>`},
+  {t:'uric acid',p:[580,420],s:`<path d="M-10,6 L10,-6" stroke="var(--pl)" stroke-width="4" stroke-linecap="round"/>`}];
+/* inflammasome scene: starting positions so a wrong order can reset */
+const FMFCTX='<b>A different patient, for one scene.</b> No splinter and no bacteria: the same machinery you just built, switched on by itself. The next scene takes you back to the splinter.';
+const lab=(k,o)=>stage.querySelectorAll('#'+k+' text').forEach(t=>fade(t,o,400));
+const INF={atp:[215,190],nl:[440,220],ad:[360,360],cs:[520,380],pro:[700,400],p18:[610,470]};
 const EFF=[{k:'dead',p:[520,240]},{k:'dead',p:[690,440]},{k:'dead',p:[800,300]},{k:'live',p:[610,330]},{k:'live',p:[480,470]},{k:'live',p:[760,200]},{k:'self',p:[620,500]}];
 
 registerPlayer({id:'macrophage',name:'The macrophage',role:'A big eater who lives in the skin, raises the alarm, then cleans up and rebuilds',order:2,mark:'splinter',load0:20,
@@ -2636,6 +3289,24 @@ registerPlayer({id:'macrophage',name:'The macrophage',role:'A big eater who live
    await fin(r.animate([{r:8,opacity:1},{r:40,opacity:0}],{duration:900}),900);add(Y(480,330,'TLR2 firing'),fx);await wait(400)},
  take:'Innate receptors read broad patterns, such as "gram-positive wall." You do not know which Staph protein is which. You only know that something dangerous is here.',map:'#idea-tlr'},
 
+{id:'damp',title:'Wreckage',where:'Dermis, along the splinter track',clock:'10 min',body:['hand'],
+ narr:`The splinter did not only bring bacteria. It crushed skin cells on the way in. One burst open and is spilling its insides into the tissue around you. Farther off, another damaged cell is dying the tidy way: it shrinks and packs itself into sealed little bubbles. Bits of both are drifting toward your receptors.`,
+ draw(){return sk()+G(400,400,MEC(58,5),'','me')+G(470,200,staph(5,3),'','c1')
+   +G(740,250,`<g opacity=".8">${mblob(0,0,52,71,.38,9,40,'#d8b79a')}<ellipse cx="6" cy="4" rx="18" ry="12" class="nuc" opacity=".45"/></g>`+T(0,70,'burst cell (necrosis)','sublbl'),'','nec')
+   +G(790,450,`<g>${mblob(0,0,24,73,.08,9,21,'#d8b79a')}${[[-26,-8],[22,-16],[18,20],[-14,24]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="8" fill="#d8b79a" stroke="var(--muted)" stroke-width="1.2"/>`).join('')}<circle cx="-3" cy="-2" r="6" fill="var(--ink)" opacity=".55"/></g>`+T(0,60,'shrinking cell (apoptosis)','sublbl'),'','apo')
+   +DMP.map((d,i)=>G(740,250,d.s+T(0,24,d.t,'sublbl'),'dm','dm'+i)).join('')},
+ async play(){await Promise.all(DMP.map((d,i)=>wait(i*140).then(()=>moveTo('#dm'+i,d.p[0],d.p[1],1400,'ease-out'))))},
+ chal:{type:'choice',q:'Which debris drifting toward you should set off your alarm?',opts:[
+   {t:'Nuclear proteins and ATP from the burst cell',ok:true,why:'Those molecules belong inside a cell. Loose in the tissue, they are DAMPs (damage-associated molecular patterns), and your pattern receptors read them as danger: TLRs see heat-shock proteins and HMGB1, cytosolic NLRs respond to ATP and uric acid.'},
+   {t:'Sealed bubbles from the cell dying by apoptosis',why:'Apoptosis keeps the contents wrapped in membrane, so there is nothing to alarm you. You would raise a false alarm over a quiet death, and the real danger next door gets no extra attention.'},
+   {t:'Albumin seeping out of the torn capillary',why:'Albumin always floats in plasma and tissue fluid. It is a normal extracellular protein, not a sign of damage, so you stay calm while the burst cell keeps leaking.'},
+   {t:'Nothing of self; only microbes can do that',why:'Your receptors read danger from your own cells too. That is why a crush injury or a heart attack gets inflamed with no germ at all. Ignore the wreckage and the alarm goes out weaker.'}]},
+ async win(){const m=stage.querySelector('#me');if(!m)return;m.classList.add('glow');setLoad(ST.load-2);const fx=stage.querySelector('#fx');
+   await Promise.all(DMP.map((d,i)=>wait(i*120).then(()=>{const a=(i-2)*.5;stage.querySelectorAll('#dm'+i+' text').forEach(t=>fade(t,0,400));return moveTo('#dm'+i,400+Math.cos(a)*92,400+Math.sin(a)*86,1200)})));
+   const r=add(`<circle cx="400" cy="400" r="60" fill="none" stroke="var(--hot)" stroke-width="4"/>`,fx);await fin(r.animate([{r:60,opacity:1},{r:110,opacity:0}],{duration:900}),900);
+   add(Y(400,290,'danger from your own cells'),fx);add(Y(790,390,'no alarm from this one'),fx);await wait(300)},
+ take:'DAMPs are your own molecules that should never be outside a cell: heat-shock proteins, HMGB1, ATP, histones, uric acid. A burst (necrotic) cell spills them, and the same receptors that read microbes (TLRs, NLRs) raise the alarm. Apoptosis keeps its contents sealed, so it stays quiet. That is why sterile injury, like trauma or a heart attack, still inflames.',map:'#idea-pamp'},
+
 {id:'signal',title:'The message goes inward',where:'Inside you',clock:'10 min',body:['hand'],
  narr:`A receptor on your surface is only a doorbell. The signal has to travel through your cytoplasm to your nucleus, where the genes for alarm molecules sit switched off.`,
  draw(){return cut('cytoplasm')+`<ellipse cx="660" cy="320" rx="120" ry="95" class="nuc"/><text x="660" y="440" class="sublbl">your nucleus</text>
@@ -2656,8 +3327,56 @@ registerPlayer({id:'macrophage',name:'The macrophage',role:'A big eater who live
    await Promise.all([cytokine(660,330,820,150,'TNF',0),cytokine(660,330,840,260,'IL-1',200),cytokine(660,330,830,470,'IL-8',400)])},
  take:`TLR2 to MyD88 to NF-${KAP}B: that is how a pattern on a bacterium becomes a burst of cytokine genes. IL-1 needs one extra step: it is made as pro-IL-1, and the inflammasome (caspase-1) cuts it into its active form.`,map:'#idea-pamp'},
 
+{id:'inflam',title:'Two keys',where:'Inside you',clock:'15 min',body:['hand'],
+ narr:`NF-${KAP}B switched on the IL-1${BET} gene, but IL-1${BET} is too powerful to release by accident. You make it as an inactive precursor, and it stays locked inside you until a second danger signal arrives. ATP from the burst skin cell is right outside your membrane, and a sensor in your cytoplasm, NLRP3, is waiting for it.`,
+ draw(){return cut('cytoplasm')+`<ellipse cx="740" cy="400" rx="95" ry="72" class="nuc"/><text x="740" y="500" class="sublbl">your nucleus</text>
+   ${G(INF.atp[0],INF.atp[1],[[0,0],[16,10],[-6,18]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="var(--pl)"/>`).join('')+T(30,48,'ATP from the burst cell','sublbl'),'','atp')}
+   ${G(INF.nl[0],INF.nl[1],`<rect x="-30" y="-14" width="60" height="28" rx="12" fill="var(--hot)" opacity=".85"/><text x="0" y="5" style="font-size:12px;font-weight:700;fill:#fff;text-anchor:middle">NLRP3</text>`,'','nl')}
+   ${G(INF.ad[0],INF.ad[1],`<circle r="12" fill="var(--muted)"/>`+T(0,30,'adaptor','sublbl'),'','ad')}
+   ${G(INF.cs[0],INF.cs[1],`<path d="M-14,-10 L14,10 M-14,10 L14,-10" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>`+T(0,32,'caspase-1','sublbl'),'','cs')}
+   ${G(INF.pro[0],INF.pro[1],[[-14,0],[0,-10],[14,2]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="9" ry="6" fill="var(--muted)" class="pc"/>`).join('')+`<text x="0" y="-22" class="sublbl" id="prot">pro-IL-1${BET}</text>`,'','pro')}
+   ${G(INF.p18[0],INF.p18[1],[[-10,0],[10,0]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="8" ry="5" fill="var(--muted)" class="pc"/>`).join('')+T(0,26,'pro-IL-18','sublbl'),'','p18')}`},
+ async play(){const p=stage.querySelector('#pro');if(p)p.style.opacity=0},
+ chal:{type:'order',q:'Tap the steps in the order they happen, from the first danger signal to active IL-1.',steps:[
+   {t:`TLR2 and NF-${KAP}B make inactive pro-IL-1${BET}`,anim:async()=>{const p=stage.querySelector('#pro');if(!p)return;p.dataset.x=INF.pro[0];p.dataset.y=INF.pro[1];p.style.opacity=1;await moveTo(p,600,330,900)}},
+   {t:'ATP from the burst cell gives the second signal to NLRP3',anim:async()=>{lab('atp',0);await moveTo('#atp',400,205,900);const n=stage.querySelector('#nl');if(n)n.classList.add('glow');await wait(200)}},
+   {t:'NLRP3 gathers its adaptor and caspase-1',anim:async()=>{lab('ad',0);lab('cs',0);await Promise.all([moveTo('#ad',440,258,800),moveTo('#cs',440,292,800)]);
+     const fx=stage.querySelector('#fx');add(`<g id="ring"><ellipse cx="440" cy="255" rx="58" ry="62" fill="none" stroke="var(--hot)" stroke-width="3" stroke-dasharray="6 5"/><text x="440" y="180" class="youlbl" text-anchor="middle">inflammasome</text></g>`,fx);await wait(200)}},
+   {t:`Caspase-1 cuts pro-IL-1${BET} and pro-IL-18 into active cytokines`,anim:async()=>{lab('p18',0);lab('pro',0);await Promise.all([moveTo('#pro',452,282,800),moveTo('#p18',428,300,800)]);
+     stage.querySelectorAll('.pc').forEach(e=>e.setAttribute('fill','var(--you)'));const t=stage.querySelector('#prot');if(t)t.textContent='active IL-1\u03b2 and IL-18';
+     await Promise.all([moveTo('#pro',640,300,900),moveTo('#p18',640,330,900)]);lab('pro',1);
+     await Promise.all([cytokine(650,300,860,110,`IL-1${BET}`,0),cytokine(650,330,860,200,'IL-18',250)])}}],
+  bad:'Out of order. The precursor sits locked inside you, nothing cuts it, and the alarm stays quiet while the bacteria double.'},
+ async badAnim(){const n=stage.querySelector('#nl');if(n)n.classList.remove('glow');const r=stage.querySelector('#ring');if(r)r.remove();
+   stage.querySelectorAll('.pc').forEach(e=>e.setAttribute('fill','var(--muted)'));const t=stage.querySelector('#prot');if(t)t.textContent='pro-IL-1\u03b2';['atp','ad','cs','pro','p18'].forEach(k=>lab(k,1));
+   await Promise.all(['atp','nl','ad','cs','pro','p18'].map(k=>moveTo('#'+k,INF[k][0],INF[k][1],400)));const p=stage.querySelector('#pro');if(p)p.style.opacity=0},
+ async win(){setLoad(ST.load-3);add(Y(470,530,'pushed too far, this ends in pyroptosis'),stage.querySelector('#fx'));await wait(300)},
+ take:`Two signals. Signal 1 (TLR to NF-${KAP}B) makes the precursor. Signal 2 (ATP from dead cells, crystals, microbial toxins) assembles the inflammasome: a sensor such as NLRP3, an adaptor, and caspase-1. Caspase-1 cuts pro-IL-1${BET} and pro-IL-18 into active cytokines, and if it is pushed hard it kills the cell in an inflammatory death, pyroptosis. Uric acid crystals switch NLRP3 on in gout.`,map:'#idea-nlr'},
+
+{id:'fmf',title:'An alarm that will not switch off',where:'Another person, lining of the belly',clock:'Years of attacks',body:[],
+ note:FMFCTX,
+ narr:`Here you are a macrophage in the lining of the belly of a 12-year-old from an Armenian family. Both parents are healthy. Every few weeks, with no germ anywhere, your inflammasome fires by itself. The child gets two or three days of high fever, belly pain and a swollen knee, then is completely well again.`,
+ draw(){return `<rect width="900" height="560" fill="var(--tissue)"/>${fibers(23,300,560)}<path d="M0,250 q75,-22 150,0 t150,0 t150,0 t150,0 t150,0 t150,0" stroke="var(--vwall)" stroke-width="10" fill="none"/>
+   <text x="16" y="545" class="zone">lining of the belly (peritoneum)</text>
+   ${G(300,400,MEC(58,5,`<g id="infl" class="glow"><ellipse cx="0" cy="-6" rx="20" ry="20" fill="none" stroke="var(--hot)" stroke-width="4" stroke-dasharray="5 4"/></g>`),'','me')}${Y(300,500,'you, in another person')}
+   <g><rect x="520" y="30" width="360" height="250" rx="14" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="700" y="60" class="lbl">Temperature, 3 months</text>
+   <line x1="550" y1="240" x2="860" y2="240" stroke="var(--muted)" stroke-width="2"/>
+   <path id="fev" d="M550,222 H585 L595,110 L615,110 L625,222 H685 L695,110 L715,110 L725,222 H785 L795,110 L815,110 L825,222 H860" stroke="var(--hot)" stroke-width="4" fill="none"/>
+   ${[605,705,805].map(x=>T(x,98,'attack','sublbl')).join('')}<text x="700" y="266" class="sublbl">well between attacks</text></g>
+   <g><rect x="520" y="310" width="360" height="150" rx="14" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/>
+   ${T(700,345,'Cultures: no bacteria','sublbl')}${T(700,380,'Autoantibodies: none','sublbl')}${T(700,415,'CRP: high in attacks, normal between','sublbl')}</g>`},
+ async play(){idle(()=>{if(!stage.querySelector('#me'))return;cytokine(300,390,180+Math.random()*260,290,`IL-1${BET}`,0)},2200)},
+ chal:{type:'choice',q:'Which gene and which drug fit this child\'s attacks?',opts:[
+   {t:'Pyrin, recessive; colchicine prevents attacks',ok:true,why:'Pyrin is itself an inflammasome sensor. In familial Mediterranean fever a mutated pyrin fires with no trigger. Healthy carrier parents fit autosomal recessive inheritance, and familial Mediterranean fever is most common in Armenian, Turkish and Jewish families. Colchicine prevents the attacks.'},
+   {t:'NLRP3, dominant; an IL-1 blocker like anakinra',why:'That is CAPS (cryopyrin-associated periodic syndromes), and IL-1 blockers are its treatment. But CAPS is autosomal dominant, so a parent is usually affected, and the mildest form is set off by cold. Treat the wrong disease and the attacks keep coming.'},
+   {t:'AIRE, recessive; steroids for the autoimmunity',why:'Without AIRE, self-reactive T cells escape the thymus and attack glands, with autoantibodies to match. This child has no autoantibodies and no autoreactive T cells. The fault is in you, an innate cell, not in the adaptive system.'},
+   {t:'NADPH oxidase, X-linked; daily antibiotics',why:'That is chronic granulomatous disease: real, repeated infections with catalase-positive bugs. Every culture here is clean. This inflammation is sterile, so antibiotics change nothing.'}]},
+ async win(){clearIdle();setLoad(ST.load-2);const i=stage.querySelector('#infl');if(i){i.classList.remove('glow');fade(i,.25,700)}const fx=stage.querySelector('#fx');
+   fade('#fev',.2,700);const f=add(`<path d="M550,222 H860" stroke="var(--you)" stroke-width="5" fill="none"/>`,fx);await drawOn(f,1200);add(T(700,170,'on colchicine: no attacks','lbl'),fx);await wait(300)},
+ take:`Autoinflammatory disease is the innate system firing with no trigger: recurrent fevers and sterile inflammation (serositis, arthritis, rashes), no infection, no autoantibodies, no autoreactive T cells. Familial Mediterranean fever: pyrin, autosomal recessive, prevented by colchicine. CAPS: NLRP3, autosomal dominant, treated with IL-1 blockers (anakinra blocks the IL-1 receptor; canakinumab is an anti-IL-1 antibody). Now back to the splinter, where your inflammasome fired for a real reason.`,map:'#idea-nlr'},
+
 {id:'il8',title:'Calling for help',where:'Dermis, near the wound',clock:'15 min',body:['hand'],
- narr:`There are more bacteria than you can eat alone, and they are doubling. You need fast killers from the blood. A capillary runs just above you, full of neutrophils racing past.`,
+ narr:`Back at the splinter, there are more bacteria than you can eat alone, and they are doubling. You need fast killers from the blood. A capillary runs just above you, full of neutrophils racing past.`,
  draw(){return sk()+capillary(80,170,740)+G(380,400,MEC(60,5),'','me')+G(620,420,staph(9,5),'','c1')+G(700,470,staph(6,9),'','c2')},
  async play(){idle(()=>{if(stage.querySelectorAll('.newbug').length<4)grow(1,[560,360,760,500])},2800)},
  chal:{type:'choice',q:'Which cytokine do you release to call neutrophils out of the blood?',opts:[
@@ -4832,22 +5551,22 @@ registerTopic({id:'vaccines',order:9,name:'Vaccines and immunity across life',ro
 registerTopic({id:'autoimmunity',order:13,name:'Autoimmunity',role:'How a self-reactive cell gets past every safety net, and the damage it does',
  blurb:'Follow a T cell that can see your own heart: through the thymus, past every peripheral brake, and into rheumatic fever after a strep throat.',
  covers:['Central tolerance and AIRE, briefly','Molecular mimicry and signal 2 from infection: rheumatic fever (type II)','HLA associations, autoantibodies and treatment','Lupus: immune complexes, low C3 and C4, anti-dsDNA (type III)'],
- items:[['selfreactive','path',{ctx:'You are a T cell whose receptor happens to fit a piece of your own heart muscle.'}],['selfreactive','aire'],['selfreactive','strep'],['selfreactive','sig2'],['selfreactive','heart'],['selfreactive','hla',{ctx:'Back to the self-reactive T cell: why some people are more at risk.'}],['selfreactive','labs'],['selfreactive','treat'],LUPUS]});
+ items:[['selfreactive','path',{ctx:'You are a T cell whose receptor happens to fit a piece of your own heart muscle.'}],['selfreactive','aire'],['selfreactive','strep'],['selfreactive','sig2'],['selfreactive','heart'],['selfreactive','hla',{ctx:'Back to the self-reactive T cell: why some people are more at risk.'}],['selfreactive','labs'],['selfreactive','treat'],LUPUS,['lab','elisa',{ctx:'How her anti-dsDNA gets measured: a blood sample at the ELISA bench.'}]]});
 
 registerTopic({id:'complement',order:8,name:'Antibodies and complement',role:'What an antibody actually does once it is made, and the complement cascade',
  blurb:'An antibody does nothing alone: it blocks, tags, and calls in complement and other cells. Live it as one IgG molecule.',
- covers:['Antibody structure and the five isotypes','Neutralization and opsonization','Classical, lectin and alternative pathways meeting at C3','Anaphylatoxins and the membrane attack complex','Complement regulators and their diseases','ADCC, immune complexes, FcRn'],
- items:[['antibody','parts'],['antibody','iso'],['antibody','neut'],['antibody','opson'],['antibody','c1q'],['antibody','cascade'],['antibody','frag'],['antibody','mac'],['antibody','brake'],['antibody','adcc'],['antibody','ic'],['antibody','fcrn'],['antibody','last']]});
+ covers:['Antibody structure and the five isotypes','Neutralization and opsonization','Classical, lectin and alternative pathways meeting at C3','Anaphylatoxins and the membrane attack complex','Complement regulators and their diseases, hereditary angioedema','ADCC, immune complexes, FcRn'],
+ items:[['antibody','parts'],['antibody','iso'],['antibody','neut'],['antibody','opson'],['antibody','c1q'],['antibody','cascade'],['antigen','alt',{ctx:'The other two ways in. Seen from the Staph protein on day one, before any antibody exists.'}],['antigen','lectin'],['antibody','frag',{ctx:'Back to the IgG, now that complement is running.'}],['antibody','mac'],['antibody','brake'],['antibody','hae'],['antibody','adcc'],['antibody','ic'],['antibody','fcrn'],['antibody','last']]});
 
 registerTopic({id:'immunodeficiency',order:10,name:'Immunodeficiencies',role:'Children born missing one piece, and the labs that find it',
  blurb:'Every immunodeficiency is one missing step. Watch your own cells stall at that step, then name the piece, the test or the treatment.',
- covers:['B cell defects: XLA, IgA deficiency, CVID, hyper-IgM','T cell and combined defects: DiGeorge, SCID, Wiskott-Aldrich','Phagocyte defects: LAD1, CGD','IL-12 and IFN-gamma axis, terminal complement','Matching the germ to the broken arm','Flow cytometry, immunoglobulins, DHR, CH50'],
- items:[['clinic','xla'],['clinic','iga'],['clinic','cvid'],['clinic','higm'],['clinic','digeorge'],['clinic','scid'],['clinic','was'],['clinic','lad'],['clinic','cgd'],['clinic','il12'],['clinic','mac9'],['clinic','sort']]});
+ covers:['B cell defects: XLA, IgA deficiency, CVID, hyper-IgM','T cell and combined defects: DiGeorge, SCID, Wiskott-Aldrich','Phagocyte defects: LAD1, CGD','IL-12 and IFN-gamma axis, terminal complement','Matching the germ to the broken arm','Flow cytometry, immunoglobulins, DHR, CH50','Autoinflammatory disease: FMF'],
+ items:[['clinic','xla'],['clinic','iga'],['clinic','cvid'],['clinic','higm'],['clinic','digeorge'],['clinic','scid'],['lab','scid',{ctx:'How the lab sorts a SCID: a blood sample on the flow cytometer.'}],['clinic','was'],['clinic','lad'],['clinic','cgd'],['clinic','il12'],['clinic','mac9'],['macrophage','fmf',{ctx:'Not every immune disease is a missing piece: an alarm stuck on.'}],['clinic','sort']]});
 
 registerTopic({id:'hypersensitivity',order:11,name:'Hypersensitivity and allergy',role:'Types I to IV, anaphylaxis, food and drug allergy',
  blurb:'Hypersensitivity is the immune system doing its job against the wrong thing, or too hard. Start with a mast cell meeting peanut, then see the other three types.',
- covers:['Type I: sensitization, IgE, mast cell degranulation','Anaphylaxis: epinephrine first, tryptase','Late phase and eosinophils','Type II antibodies, type III immune complexes, type IV T cells','Food and drug allergy, testing, prevention'],
- items:[['mast','th2'],['mast','fce'],['mast','xlink'],['mast','degran'],['mast','body'],['mast','epi'],['mast','tryp'],['mast','late'],['mast','types'],['graft','hyper',{ctx:'Type II, the fastest version: preformed antibody against a transplanted kidney.'}],['selfreactive','heart',{ctx:'Type II again, in rheumatic fever: antibodies and T cells against heart tissue after strep throat.'}],LUPUS,['macrophage','th1',{ctx:'Type IV runs on this: a Th1 cell arming macrophages with IFN-gamma, as in a PPD skin test or a granuloma. It takes 48 to 72 hours.'}],['mast','test',{ctx:'Back to the mast cell and peanut allergy.'}],['mast','drugs'],['mast','omal'],['mast','leap']]});
+ covers:['Type I: sensitization, IgE, mast cell degranulation','Anaphylaxis: epinephrine first, tryptase','Late phase and eosinophils','Type II antibodies and the Coombs tests, type III immune complexes, type IV T cells','Food and drug allergy, testing, prevention'],
+ items:[['mast','th2'],['mast','fce'],['mast','xlink'],['mast','degran'],['mast','body'],['mast','epi'],['mast','tryp'],['mast','late'],['mast','types'],['graft','hyper',{ctx:'Type II, the fastest version: preformed antibody against a transplanted kidney.'}],['lab','dat',{ctx:'How the lab proves antibody is coating red cells: a blood sample at the Coombs bench.'}],['lab','which'],['selfreactive','heart',{ctx:'Type II again, in rheumatic fever: antibodies and T cells against heart tissue after strep throat.'}],LUPUS,['macrophage','th1',{ctx:'Type IV runs on this: a Th1 cell arming macrophages with IFN-gamma, as in a PPD skin test or a granuloma. It takes 48 to 72 hours.'}],['mast','test',{ctx:'Back to the mast cell and peanut allergy.'}],['mast','drugs'],['mast','omal'],['mast','leap']]});
 
 registerTopic({id:'transplant',order:12,name:'Transplant immunology',role:'Matching, rejection on three timescales, immunosuppressants, GVHD',
  blurb:'A transplanted organ carries someone else\'s HLA. Live as a donor kidney through matching, every kind of rejection, and the drugs that protect you.',
@@ -4864,13 +5583,13 @@ registerTopic({id:'organs',order:1,name:'Cells and organs',role:'Where immune ce
 
 registerTopic({id:'innate',order:2,name:'Innate immunity',role:'Sensing danger in the first minutes, before any antibody exists',
  blurb:'The innate system recognizes patterns that only microbes carry and reacts in minutes. Watch it from the cells that do the sensing.',
- covers:['Pattern recognition: TLRs and PAMPs','The signal inside the cell: MyD88 and NF-kappaB','Complement tagging and phagocytosis','Killing inside the phagolysosome','NK cells and missing self'],
- items:[['macrophage','tlr',{ctx:'A splinter has carried Staph aureus into the skin of the right hand. You are the macrophage that lives there.'}],['macrophage','signal'],['antigen','c3b',{ctx:'Same splinter, seen from the bacterial protein itself. Complement in the plasma has found it.'}],['macrophage','phago',{ctx:'Back to the macrophage, now that the bacteria are coated.'}],['macrophage','kill'],['nk','boost',{ctx:'New story: influenza virus is infecting the airway lining of the lung. NK cells are the innate answer to a virus hiding inside your own cells.'}],['nk','ids'],['nk','stress'],['nk','miss'],['nk','kill']]});
+ covers:['Pattern recognition: TLRs and PAMPs','The signal inside the cell: MyD88 and NF-kappaB','Danger signals from dying cells','Complement without antibody: alternative and lectin pathways, then phagocytosis','Killing inside the phagolysosome','Type I interferon and the antiviral state','NK cells and missing self'],
+ items:[['macrophage','tlr',{ctx:'A splinter has carried Staph aureus into the skin of the right hand. You are the macrophage that lives there.'}],['macrophage','damp'],['macrophage','signal'],['antigen','c3b',{ctx:'Same splinter, seen from the bacterial protein itself. Complement in the plasma has found it.'}],['antigen','alt'],['antigen','lectin'],['macrophage','phago',{ctx:'Back to the macrophage, now that the bacteria are coated.'}],['macrophage','kill'],['airway','sense',{ctx:'New story: influenza virus is infecting the airway lining of the lung. You are one of the lining cells it gets into.'}],['airway','alarm'],['airway','antiviral'],['airway','pdc'],['nk','boost',{ctx:'Same flu infection, now from an NK cell: the innate answer to a virus hiding inside your own cells.'}],['nk','ids'],['nk','stress'],['nk','miss'],['nk','kill']]});
 
 registerTopic({id:'inflammation',order:3,name:'Inflammation',role:'The alarm, the flood of neutrophils, the burst, and the cleanup',
  blurb:'Inflammation is the body bringing cells and fluid to one spot, killing what is there, and then shutting it down. Live the whole arc.',
- covers:['Cytokines that start it: TNF, IL-1, IL-6, IL-8','Extravasation: rolling, adhesion, diapedesis, chemotaxis','Oxidative burst, granules and NETs','Fever and the acute phase response','Resolution: efferocytosis and repair'],
- items:[['neutrophil','n-call',{ctx:'A splinter has carried Staph aureus into the skin of the right hand. A resident macrophage has already sensed the bacteria and sounded an alarm. You are a neutrophil passing by in the blood.'}],['neutrophil','n-extrav'],['neutrophil','n-grab'],['neutrophil','n-burst'],['neutrophil','n-cgd'],['neutrophil','n-degran'],['neutrophil','n-net'],['macrophage','fever',{ctx:'Same infection, now from the macrophage: the cytokines it released are reaching the rest of the body.'}],['neutrophil','n-death',{ctx:'Back to the neutrophil, a day later, at the end of its life.'}],['macrophage','effero',{ctx:'The macrophage again, cleaning up the dead neutrophils.'}],['macrophage','m2']]});
+ covers:['Cytokines that start it: TNF, IL-1, IL-6, IL-8','Extravasation: rolling, adhesion, diapedesis, chemotaxis','Oxidative burst, granules and NETs','The inflammasome, IL-1 and autoinflammatory disease','Fever and the acute phase response','Resolution: efferocytosis and repair'],
+ items:[['neutrophil','n-call',{ctx:'A splinter has carried Staph aureus into the skin of the right hand. A resident macrophage has already sensed the bacteria and sounded an alarm. You are a neutrophil passing by in the blood.'}],['neutrophil','n-extrav'],['neutrophil','n-grab'],['neutrophil','n-burst'],['neutrophil','n-cgd'],['neutrophil','n-degran'],['neutrophil','n-net'],['macrophage','inflam',{ctx:'Same infection, now from the macrophage that sounded the alarm: how it arms its most powerful cytokine.'}],['macrophage','fmf'],['macrophage','fever',{ctx:'Back to the splinter: the cytokines the macrophage released are reaching the rest of the body.'}],['neutrophil','n-death',{ctx:'Back to the neutrophil, a day later, at the end of its life.'}],['macrophage','effero',{ctx:'The macrophage again, cleaning up the dead neutrophils.'}],['macrophage','m2']]});
 
 registerTopic({id:'receptors',order:4,name:'Antigen receptors',role:'How B and T cells build a receptor for something they have never seen',
  blurb:'Every B and T cell cuts and pastes its own receptor genes. See how the B cell receptor and the T cell receptor are built, tested and used.',
@@ -4889,8 +5608,8 @@ registerTopic({id:'tolerance',order:6,name:'Development and tolerance',role:'How
 
 registerTopic({id:'adaptive',order:7,name:'Humoral and cellular immunity',role:'T cell activation, help for B cells, antibodies and killers',
  blurb:'The adaptive response, start to finish: a naive T cell finds its match, gets permission, multiplies, and helps B cells and killers do their jobs.',
- covers:['Three signals and IL-2','Th1, Th2, Th17 and Tfh','CD40L help and the germinal center','Plasma cells and memory','CD8 killing: perforin, granzymes, Fas ligand'],
- items:[['cd4','hev'],['cd4','sig2'],['cd4','il2'],['cd4','sig3'],['macrophage','th1'],['cd4','tfh'],['bcell','help'],['bcell','gc'],['bcell','fate'],['dc','license',{ctx:'The dendritic cell from the splinter, now licensing a CD8 killer by cross-presentation.'}],['cd8','sig2',{ctx:'New story: influenza is infecting the lung. You are a naive CD8 killer in the lymph node that drains it.'}],['cd8','kill'],['cd8','serial'],['cd8','memory']]});
+ covers:['Three signals and IL-2','Th1, Th2, Th17 and Tfh','CD40L help and the germinal center','Plasma cells and memory','CD8 killing: perforin, granzymes, Fas ligand','Exhaustion, PD-1 and checkpoint blockade'],
+ items:[['cd4','hev'],['cd4','sig2'],['cd4','il2'],['cd4','sig3'],['macrophage','th1'],['cd4','tfh'],['bcell','help'],['bcell','gc'],['bcell','fate'],['dc','license',{ctx:'The dendritic cell from the splinter, now licensing a CD8 killer by cross-presentation.'}],['cd8','sig2',{ctx:'New story: influenza is infecting the lung. You are a naive CD8 killer in the lymph node that drains it.'}],['cd8','kill'],['cd8','serial'],['cd8','memory'],['airway','chronic',{ctx:'When the virus never leaves: what constant antigen does to killer T cells.'}],['airway','brake']]});
 
 </script>
 
