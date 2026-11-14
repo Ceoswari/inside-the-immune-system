@@ -14,7 +14,7 @@
   --node:#eef1f7;--follicle:#e3e9f6;
   --skin:#f6dcc4;--skin2:#e8bf9e;--skinl:#a97c5d;--hair:#4a3526;--shirt:#cfdcee;--shorts:#5f7fae;--shoe:#3b4652;--lymphc:#3fa49a;--heart:#c98a9a;
   --bug:#e2a72e;--bug2:#b07c12;--you:#f2c230;
-  --mac:#8fb3d9;--neu:#a9c6e8;--dc:#6f97c9;--t:#5f86c4;--b:#3f6db3;--pl:#2f5596;--ab:#2a63c4;
+  --mac:#d6c5da;--neu:#f2d8de;--dc:#c9cde9;--t:#a9caee;--b:#9cbfe9;--pl:#4467ad;--ab:#2a63c4;--nucl:#4b2c78;--azur:#8a3a8e;--eosg:#e0693a;--mastg:#3a1d66;
   --hot:#1f5fbf;--good:#2a63c4;--bad:#a8740c;--comp:#7d8aa6;
   --f-head:"Space Grotesk","Helvetica Neue",Arial,sans-serif;--f-body:"Source Sans 3","Helvetica Neue",Arial,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
@@ -22,10 +22,10 @@
   --bg:#141a20;--paper:#1b232b;--paper2:#212b34;--ink:#e7edf2;--muted:#9aa7b2;--line:#33414d;
   --tissue:#2a2420;--fiber:#3b322b;--epi:#3a2f27;--epi2:#463829;
   --vessel:#262537;--vwall:#45406a;--lymph:#1e2d2b;--lwall:#355650;--node:#1d2430;--follicle:#232d3e;
-  --mac:#5d83ad;--neu:#6f8fb6;--dc:#4f78ab;--t:#4c72b0;--b:#3b66ab;--pl:#3a5f9e;--ab:#7ea6ee;--hot:#7ea6ee;--good:#7ea6ee;--comp:#8f9bb5;--skin:#c89a7a;--skin2:#a87b5c;--skinl:#5e4333;--hair:#2a1d14;--shirt:#3a4a63;--shorts:#2d4266;--shoe:#11161b;--lymphc:#5cc2b6;--heart:#b27585;}}
+  --mac:#a8979f;--neu:#c7a7b0;--dc:#9a9fc6;--t:#86aad6;--b:#7b9fcf;--pl:#3e609f;--nucl:#2e1650;--azur:#b066b4;--eosg:#e88457;--mastg:#22103f;--ab:#7ea6ee;--hot:#7ea6ee;--good:#7ea6ee;--comp:#8f9bb5;--skin:#c89a7a;--skin2:#a87b5c;--skinl:#5e4333;--hair:#2a1d14;--shirt:#3a4a63;--shorts:#2d4266;--shoe:#11161b;--lymphc:#5cc2b6;--heart:#b27585;}}
 :root[data-theme="dark"]{--bg:#141a20;--paper:#1b232b;--paper2:#212b34;--ink:#e7edf2;--muted:#9aa7b2;--line:#33414d;
   --tissue:#2a2420;--fiber:#3b322b;--epi:#3a2f27;--epi2:#463829;--vessel:#262537;--vwall:#45406a;--lymph:#1e2d2b;--lwall:#355650;--node:#1d2430;--follicle:#232d3e;
-  --mac:#5d83ad;--neu:#6f8fb6;--dc:#4f78ab;--t:#4c72b0;--b:#3b66ab;--pl:#3a5f9e;--ab:#7ea6ee;--hot:#7ea6ee;--good:#7ea6ee;--comp:#8f9bb5;--skin:#c89a7a;--skin2:#a87b5c;--skinl:#5e4333;--hair:#2a1d14;--shirt:#3a4a63;--shorts:#2d4266;--shoe:#11161b;--lymphc:#5cc2b6;--heart:#b27585;}
+  --mac:#a8979f;--neu:#c7a7b0;--dc:#9a9fc6;--t:#86aad6;--b:#7b9fcf;--pl:#3e609f;--nucl:#2e1650;--azur:#b066b4;--eosg:#e88457;--mastg:#22103f;--ab:#7ea6ee;--hot:#7ea6ee;--good:#7ea6ee;--comp:#8f9bb5;--skin:#c89a7a;--skin2:#a87b5c;--skinl:#5e4333;--hair:#2a1d14;--shirt:#3a4a63;--shorts:#2d4266;--shoe:#11161b;--lymphc:#5cc2b6;--heart:#b27585;}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;display:flex;flex-direction:column}
@@ -96,7 +96,7 @@ footer{border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:10px;
 .you{fill:var(--you);stroke:var(--hot);stroke-width:2.4}
 .youlbl{font-family:var(--f-mono)!important;font-size:12px;font-weight:700;fill:var(--hot)!important;paint-order:stroke;stroke:var(--paper);stroke-width:4px}
 .cellb{stroke:color-mix(in srgb,var(--ink) 35%,transparent);stroke-width:1.6}
-.nuc{fill:color-mix(in srgb,var(--ink) 30%,var(--paper));opacity:.55}
+.nuc{fill:var(--nucl);opacity:.82}
 .wob{animation:wob 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .wob2{animation:wob 5.3s ease-in-out infinite reverse;transform-box:fill-box;transform-origin:center}
 @keyframes wob{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.035,.97) rotate(1.5deg)}}
@@ -138,17 +138,86 @@ footer{border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:10px;
 .cmp{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}.cmp th,.cmp td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.cmp th{background:var(--paper2)}
 @media (max-width:600px){svg .lbl{font-size:24px;stroke-width:6px}svg .sublbl{font-size:20px;stroke-width:5px}#clock{white-space:nowrap}.hitem{white-space:nowrap}}
 @media (prefers-reduced-motion:reduce){.wob,.wob2,.jit,.pulse,.flow{animation:none}}
+
+/* brand + help */
+.brand{background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}
+.helpbtn{display:flex;align-items:center;gap:6px;border:1.5px solid var(--hot);color:var(--hot);background:var(--paper);border-radius:999px;padding:5px 12px 5px 9px;font-weight:700;font-size:14px;cursor:pointer;min-height:36px}
+.helpbtn span{font-weight:600}
+/* drag-to-order list */
+.ohint{font-size:14.5px;color:var(--muted);margin:0 0 8px}
+.olist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.otile{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);background:var(--paper2);border-radius:11px;padding:8px 8px 8px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font-size:14.5px;line-height:1.3;min-height:52px;position:relative;transition:border-color .15s,background .15s}
+.otile:hover{border-color:var(--hot)}
+.otile.drag{cursor:grabbing;z-index:5;box-shadow:0 8px 22px rgba(0,0,0,.18);border-color:var(--hot);transition:none}
+.otile.otarget{border-style:dashed;border-color:var(--hot);background:color-mix(in srgb,var(--hot) 8%,var(--paper2))}
+.otile.lock,.otile.done{cursor:default;border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--paper2))}
+.otile.play{outline:3px solid var(--you);outline-offset:1px}
+.onum{font-family:var(--f-mono);font-weight:700;font-size:13px;min-width:18px;color:var(--muted)}
+.ograb{color:var(--muted);font-size:14px;letter-spacing:-3px;width:14px}
+.otile.lock .ograb{color:var(--good);letter-spacing:0}
+.otxt{flex:1}
+.olk{font-family:var(--f-mono);font-size:11px;color:var(--good);text-transform:uppercase;letter-spacing:.06em}
+.oarr{display:flex;flex-direction:column;gap:3px}
+.oarr button{border:1px solid var(--line);background:var(--paper);border-radius:7px;width:40px;height:22px;font-size:11px;cursor:pointer;color:var(--ink);padding:0}
+.oarr button:disabled{opacity:.3;cursor:default}
+.ocheck{margin-top:10px;width:100%}
+/* start screens */
+#intro{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;display:flex;justify-content:center}
+#intro .in{max-width:880px;width:100%;padding:28px 16px 40px}
+#intro h1.big{font-size:clamp(30px,5vw,46px);margin:4px 0 10px}
+#intro .lead{font-size:18px;line-height:1.55;max-width:680px;margin:0 0 14px}
+#intro .key{background:var(--paper);border:1px solid var(--line);border-radius:16px;margin:16px 0}
+#intro .key svg{display:block;width:100%;height:auto}
+#intro .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+#intro .cta .btn{font-size:17px;padding:14px 22px}
+.how3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.how3 div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.45}
+.how3 b{display:block;font-family:var(--f-head);font-size:16px;margin-bottom:3px}
+.mpick3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.mbig{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;font:inherit;color:var(--ink)}
+.mbig:hover{border-color:var(--hot)}
+.mbig h2{font-family:var(--f-head);font-size:21px;margin:0}
+.mbig p{margin:0;font-size:15px;line-height:1.45}
+.mbig .best{font-size:14px;color:var(--muted)}
+.mbig .go{margin-top:auto;font-weight:700;color:var(--hot)}
+.mbig.rec{border-color:var(--you);box-shadow:0 0 0 3px color-mix(in srgb,var(--you) 35%,transparent)}
+.mbig .tag{align-self:flex-start;background:var(--you);color:#2b1d10;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px}
+.path{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:15.5px;line-height:1.5}
+.path ol{margin:6px 0 0;padding-left:20px}
+.linkbtn{background:none;border:0;color:var(--hot);text-decoration:underline;cursor:pointer;font:inherit;font-size:15px;padding:6px 0}
+/* guided tour */
+#coach{position:fixed;inset:0;z-index:60}
+#coach .dim{position:fixed;inset:0;background:rgba(15,20,26,.62)}
+#coach .hole{position:fixed;border-radius:12px;outline:3px solid var(--you);transition:all .25s ease;pointer-events:none}
+#coach .card{position:fixed;max-width:340px;width:calc(100vw - 32px);background:var(--paper);color:var(--ink);border-radius:14px;padding:14px 16px;box-shadow:0 12px 36px rgba(0,0,0,.3);font-size:15.5px;line-height:1.45}
+#coach .card h3{font-family:var(--f-head);font-size:18px;margin:0 0 6px}
+#coach .card .cnt{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+#coach .row{display:flex;gap:8px;align-items:center;margin-top:12px}
+#coach .row .btn{padding:10px 16px;font-size:15px}
+#coach .skip{margin-right:auto;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;font-size:14px}
+/* help sheet */
+#help{position:fixed;inset:0;z-index:50;background:rgba(15,20,26,.55);display:flex;justify-content:flex-end}
+#help .sheet{background:var(--paper);width:min(460px,100%);height:100%;overflow:auto;padding:18px 20px 30px;box-shadow:-10px 0 30px rgba(0,0,0,.2)}
+#help h2{font-family:var(--f-head);font-size:22px;margin:0 0 10px}
+#help h3{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+#help p,#help li{font-size:15.5px;line-height:1.5}
+#help .now{border-left:4px solid var(--you);background:var(--paper2);border-radius:0 10px 10px 0;padding:10px 12px}
+#help .x{float:right;border:1.5px solid var(--line);background:var(--paper2);border-radius:999px;width:38px;height:38px;font-size:18px;cursor:pointer}
+#help .key svg{width:100%;height:auto;display:block;background:var(--paper2);border-radius:10px}
+#help .acts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+@media (max-width:820px){.how3,.mpick3{grid-template-columns:1fr}.helpbtn span{display:none}.helpbtn{padding:5px 12px}#intro .lead{font-size:16.5px}}
 </style>
 <style>.maplink{display:none!important}</style>
 </head>
 <body>
 <header>
-  <div class="brand">Inside the Immune System</div>
+  <button class="brand" id="brand" title="Back to the start screen">Inside the Immune System</button>
   <div class="who" id="who">Playing as: the antigen</div>
   <div class="hud">
     <div class="hitem">Time <b id="clock">0 min</b></div>
     <div class="hitem"><span id="mlabel">Infection</span> <span class="meter"><i id="load" style="width:20%"></i></span></div>
     <div class="hitem">Stars <b id="stars">0</b></div>
+    <button class="helpbtn" id="helpbtn" aria-label="Help: what to do here">?<span>Help</span></button>
   </div>
 </header>
 <main>
@@ -270,8 +339,10 @@ function virus(x,y,s){s=s||1;return `<g transform="translate(${x},${y}) scale(${
 function epi(x,y,w,h,seed,infected){return `<g filter="url(#soft)"><path d="${blob(x,y,w/2,seed||31,.06,10,h/2)}" fill="${infected?'#e9dcef':'var(--epi)'}" class="cellb"/><path d="${blob(x,y,w/2,seed||31,.06,10,h/2)}" fill="url(#shine)"/></g><ellipse cx="${x}" cy="${y}" rx="${w*.14}" ry="${h*.16}" class="nuc"/>`}
 function mhc1(x,y,pep){return `<g transform="translate(${x},${y})"><path d="M-6,10 L-6,-2 M6,10 L6,-2" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round"/>${pep?`<circle cx="0" cy="-4" r="3.6" fill="${pep}" stroke="var(--ink)" stroke-width="1"/>`:''}</g>`}
 function mhc2(x,y,pep){return `<g transform="translate(${x},${y})"><path d="M-9,10 L-9,-2 M9,10 L9,-2" stroke="var(--hot)" stroke-width="4" stroke-linecap="round"/>${pep?`<path d="M-7,-2 L0,-13 L7,-2Z" fill="${pep}" stroke="var(--hot)" stroke-width="2"/>`:''}</g>`}
-function nkcell(x,y,seed){return `<g>${mblob(x,y,30,seed||41,.1,10,30,'#7a8fc9')}${[0,1,2,3,4,5].map(i=>`<circle cx="${x-12+(i%3)*12}" cy="${y-6+Math.floor(i/3)*12}" r="3.4" fill="#2c3f7a"/>`).join('')}</g>`}
-function plasma(x,y,seed){return `<g>${mblob(x,y,28,seed||51,.08,10,22,'var(--pl)')}<circle cx="${x-12}" cy="${y}" r="9" class="nuc"/>${[0,1,2,3].map(i=>`<path d="M${x+2+i*4},${y-12} q4,12 0,24" stroke="#fff" stroke-opacity=".35" fill="none"/>`).join('')}</g>`}
+/* NK: large granular lymphocyte, pale blue with pink-purple (azurophilic) granules around a dark nucleus */
+function nkcell(x,y,seed){return `<g>${mblob(x,y,30,seed||41,.1,10,30,'#c2d7f1')}<ellipse cx="${x-3}" cy="${y+1}" rx="15" ry="13" class="nuc"/>${[[-20,-12],[16,-14],[20,6],[-18,12],[6,20],[-6,-20],[22,-4]].map(p=>`<circle cx="${x+p[0]}" cy="${y+p[1]}" r="3" fill="var(--azur)"/>`).join('')}</g>`}
+/* plasma cell: deep blue cytoplasm, eccentric clock-face nucleus, pale hof (Golgi) beside it */
+function plasma(x,y,seed){return `<g>${mblob(x,y,28,seed||51,.08,10,22,'var(--pl)')}<ellipse cx="${x-2}" cy="${y}" rx="7" ry="9" fill="#fff" opacity=".32"/><circle cx="${x-13}" cy="${y}" r="10" class="nuc" style="opacity:.95"/>${[0,1,2,3,4,5].map(i=>`<circle cx="${(x-13+Math.cos(i*1.047)*6).toFixed(1)}" cy="${(y+Math.sin(i*1.047)*6).toFixed(1)}" r="1.7" fill="#fff" opacity=".45"/>`).join('')}</g>`}
 function nodeBG(label){const R=rng(8);return `<rect width="900" height="560" fill="var(--node)"/>${Array.from({length:30},(_,i)=>`<path d="M${R()*900},${R()*560} l${R()*80-40},${R()*80-40}" stroke="var(--line)" stroke-width="1.5"/>`).join('')}${label?`<text x="16" y="545" class="zone">${label}</text>`:''}`}
 function vesselBG(label){return `<rect width="900" height="560" fill="var(--tissue)"/>${fibers(9,330,560)}<rect x="0" y="60" width="900" height="230" fill="var(--vessel)"/><rect x="0" y="52" width="900" height="14" fill="var(--vwall)"/>
    ${Array.from({length:12},(_,i)=>`<path d="${blob(38+i*76,290,38,i+60,.08,9,11)}" fill="var(--vwall)" stroke="var(--muted)" stroke-width="1"/>`).join('')}
@@ -310,7 +381,7 @@ function lineup(){const ps=sortedPlayers();const n=ps.length;const cols=n>12?5:M
     h+=`<g class="tc pick" data-p="${p.id}" style="cursor:pointer"><g transform="translate(${x},${y}) scale(${sc})"><circle r="56" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><g transform="translate(0,-6) scale(.85)">${icon}</g></g>
       <text x="${x}" y="${y+64*sc+12}" class="lbl" style="font-size:${sc<.8?12:14}px">${p.name.replace(/^The /,'')}</text>${PROG[p.id]&&PROG[p.id].done?`<text x="${x}" y="${y+64*sc+27}" class="sublbl">&#9733; ${PROG[p.id].best} / ${PROG[p.id].of}</text>`:''}</g>`});
   return h}
-function home(){clearIdle();if(MODE&&MODE.stop){try{MODE.stop()}catch(e){console.error(e)}}MODE=null;P=null;SCENES=[];stage.innerHTML=DEFS+lineup();$('#who').textContent='Choose a player';$('#clock').textContent='-';$('#stars').textContent='-';
+function home(tabWant){clearIdle();if(window.closeIntro)closeIntro();if(MODE&&MODE.stop){try{MODE.stop()}catch(e){console.error(e)}}MODE=null;P=null;SCENES=[];stage.innerHTML=DEFS+lineup();$('#who').textContent='Choose a player';$('#clock').textContent='-';$('#stars').textContent='-';
   $('#body').style.visibility='hidden';
   panel.innerHTML=`<div class="eyebrow">Inside the Immune System</div><h1>How do you want to play?</h1><p class="narr">Live an infection as one cell, walk through one part of the course scene by scene, or take command of the whole immune system. Wrong moves have consequences: the infection grows.</p>
    <div class="htabs" role="tablist"><button data-tab="cells">Play as a cell</button>${TOPICS.length?'<button data-tab="topics">Study by topic</button>':''}${MODES.length?'<button data-tab="modes">Command the defense</button>':''}</div>
@@ -320,8 +391,8 @@ function home(){clearIdle();if(MODE&&MODE.stop){try{MODE.stop()}catch(e){console
    <a class="maplink" href="${MAP}" target="_blank" rel="noopener">Open the Big Picture map &#8599;</a>`;
   panel.querySelectorAll('.pcard').forEach(b=>b.onclick=()=>b.dataset.t?startTopic(b.dataset.t):b.dataset.m?startMode(b.dataset.m):start(b.dataset.p));
   const tab=t=>{panel.querySelectorAll('.htabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));panel.querySelectorAll('.hpane').forEach(x=>x.hidden=x.dataset.pane!==t);store.set('ij-tab',t)};
-  panel.querySelectorAll('.htabs button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));const st=store.get('ij-tab');tab(panel.querySelector(`.htabs [data-tab="${st}"]`)?st:'cells');stage.querySelectorAll('.pick').forEach(g=>g.onclick=()=>start(g.dataset.p));
-  $('#dots').innerHTML='';$('#back').disabled=true;$('#next').disabled=true;$('#next').textContent='Pick a player';setHash('')}
+  panel.querySelectorAll('.htabs button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));const st=tabWant||store.get('ij-tab');tab(panel.querySelector(`.htabs [data-tab="${st}"]`)?st:'cells');if(window.guideFor)guideFor('home-'+(panel.querySelector('.htabs button.on')||{dataset:{}}).dataset.tab);stage.querySelectorAll('.pick').forEach(g=>g.onclick=()=>start(g.dataset.p));
+  $('#dots').innerHTML='';$('#back').disabled=false;$('#back').textContent='All modes';$('#next').disabled=true;$('#next').textContent='Pick one';setHash('')}
 function setHash(h,k){try{history.replaceState(null,'',h?'#'+(k||'p')+'='+h:location.pathname+location.search)}catch(e){}}
 function runKey(){return P?(P.topic?'t='+P.topic.id:'p='+P.id):null}
 let NOSAVE=false;function readRun(){try{return JSON.parse(sessionStorage.getItem('ij-run')||'null')}catch(e){return null}}
@@ -379,19 +450,34 @@ function buildChal(sc){const c=sc.chal,box=$('#chal');ST.tried=ST.tried||{};let 
     box.querySelectorAll('.opt').forEach(b=>b.onclick=async()=>{const o=c.opts[+b.dataset.k];
       if(o.ok){box.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('yes');await solve(sc,first,o.why)}
       else{b.classList.add('no');b.disabled=true;fail(o.why)}})}
-  else if(c.type==='order'){const idx=shuf(c.steps.map((_,k)=>k),true);let at=0;
-    box.innerHTML=`<div class="tiles">${idx.map(k=>`<button class="tile" data-k="${k}">${c.steps[k].t}</button>`).join('')}</div>`+REVEAL;
-    box.querySelectorAll('.tile').forEach(b=>b.onclick=async()=>{const k=+b.dataset.k;if(b.classList.contains('done'))return;
-      if(k===at){b.classList.add('done');b.dataset.n=at+1;box.querySelectorAll('.tile').forEach(x=>x.disabled=true);$('#fbk').innerHTML='';await c.steps[k].anim();at++;
-        box.querySelectorAll('.tile:not(.done)').forEach(x=>x.disabled=false);if(at===c.steps.length)await solve(sc,first,'All '+(['','one','two','three','four','five','six','seven'][c.steps.length]||c.steps.length)+' steps, in order.')}
-      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);fail((c.steps[k].no||'')+' '+c.bad+` <br><span style="opacity:.8">You tapped "${c.steps[k].t}", which is step ${k+1} of ${c.steps.length}. The step that had to come ${at?'next':'first'} was "${c.steps[at].t}". Start again from the top.</span>`);box.querySelectorAll('.tile').forEach(x=>x.disabled=true);
-        await sc.badAnim();at=0;box.querySelectorAll('.tile').forEach(x=>{x.classList.remove('done');x.disabled=false})}})}
+  else if(c.type==='order'){ORDER(sc,c,box,first,fail,()=>first)}
   else if(c.type==='find'){box.innerHTML=`<p class="narr" style="font-size:15px;color:var(--muted)">${c.hint||'Tap the right one on the stage. Read the labels before you tap.'}</p>`+REVEAL;
     stage.querySelectorAll('.tc').forEach(t=>t.onclick=async()=>{if(ST.solved[kid(sc)])return;const i=/^t\d+$/.test(t.id)?+t.id.slice(1):t.id,r=c.check(i,t);
       if(r.ok){stage.querySelectorAll('.tc').forEach(x=>x.onclick=null);await solve(sc,first,r.why,i)}else{t.style.opacity=.35;fail(r.why)}})}}
+function ORDER(sc,c,box,first0,fail){const n=c.steps.length;let ord=shuf(c.steps.map((_,k)=>k),true);const lock=new Set();let busy=false;let first=first0;
+  box.innerHTML=`<p class="ohint">Drag the steps into order, first step at the top. You can also use the arrows. Then check.</p><ol class="olist" id="olist"></ol><button class="btn ocheck" id="ocheck">Check the order</button>`+REVEAL;
+  const ol=box.querySelector('#olist'),ck=box.querySelector('#ocheck');
+  const free=()=>ord.map((_,i)=>i).filter(i=>!lock.has(i));
+  const moveFree=(from,to)=>{const F=free(),a=F.indexOf(from),b=F.indexOf(to);if(a<0||b<0||a===b)return;const vals=F.map(i=>ord[i]);const [v]=vals.splice(a,1);vals.splice(b,0,v);F.forEach((i,j)=>ord[i]=vals[j]);draw()};
+  const draw=()=>{ol.innerHTML=ord.map((k,i)=>{const L=lock.has(i);return `<li class="otile${L?' lock':''}" data-i="${i}" data-k="${k}"><span class="onum">${i+1}</span><span class="ograb" aria-hidden="true">${L?'&#10003;':'&#8942;&#8942;'}</span><span class="otxt">${c.steps[k].t}</span>${L?'<span class="olk">locked</span>':`<span class="oarr"><button class="oup" aria-label="Move up" ${free()[0]===i||busy?'disabled':''}>&#9650;</button><button class="odn" aria-label="Move down" ${free().slice(-1)[0]===i||busy?'disabled':''}>&#9660;</button></span>`}</li>`}).join('');
+    ol.querySelectorAll('.otile:not(.lock)').forEach(li=>{const i=+li.dataset.i;const F=()=>free();
+      li.querySelector('.oup').onclick=e=>{e.stopPropagation();const f=F();moveFree(i,f[f.indexOf(i)-1])};li.querySelector('.odn').onclick=e=>{e.stopPropagation();const f=F();moveFree(i,f[f.indexOf(i)+1])};
+      li.onpointerdown=e=>{if(busy||e.button>0||e.target.closest('button'))return;e.preventDefault();const y0=e.clientY;let tgt=null,moved=false;li.setPointerCapture(e.pointerId);li.classList.add('drag');
+        const mv=ev=>{const dy=ev.clientY-y0;if(Math.abs(dy)>4)moved=true;li.style.transform=`translateY(${dy}px)`;li.style.pointerEvents='none';const el=document.elementFromPoint(ev.clientX,ev.clientY);li.style.pointerEvents='';const o=el&&el.closest('.otile:not(.lock)');
+          ol.querySelectorAll('.otarget').forEach(x=>x.classList.remove('otarget'));tgt=o&&o!==li?+o.dataset.i:null;if(o&&o!==li)o.classList.add('otarget');
+          const r=panel.getBoundingClientRect();if(ev.clientY<r.top+40)panel.scrollTop-=12;else if(ev.clientY>r.bottom-40)panel.scrollTop+=12};
+        const up=()=>{li.removeEventListener('pointermove',mv);li.removeEventListener('pointerup',up);li.removeEventListener('pointercancel',up);li.classList.remove('drag');li.style.transform='';if(moved&&tgt!=null)moveFree(i,tgt);else draw()};
+        li.addEventListener('pointermove',mv);li.addEventListener('pointerup',up);li.addEventListener('pointercancel',up)}})};
+  ck.onclick=async()=>{if(busy)return;busy=true;ck.disabled=true;const wrong=ord.map((k,i)=>k===i?null:i).filter(x=>x!==null);
+    if(!wrong.length){lock.clear();draw();$('#fbk').innerHTML='';const lis=[...ol.children];for(let i=0;i<n;i++){lis[i].classList.add('play');await c.steps[i].anim();lis[i].classList.remove('play');lis[i].classList.add('done')}ck.remove();
+      await solve(sc,first,'All '+(['','one','two','three','four','five','six','seven'][n]||n)+' steps, in order.');return}
+    first=false;ord.forEach((k,i)=>{if(k===i)lock.add(i)});const i0=wrong[0],k0=ord[i0];
+    fail(`${c.steps[k0].no||''} ${c.bad||''} <br><span style="opacity:.85">Slot ${i0+1} is wrong: "${c.steps[k0].t}" is step ${k0+1} of ${n}. ${lock.size?`The ${lock.size===1?'step':lock.size+' steps'} already in the right place ${lock.size===1?'is':'are'} now locked.`:'None are in the right place yet.'} Move the rest and check again.</span>`);
+    draw();try{if(sc.badAnim)await sc.badAnim()}catch(e){console.error(e)}busy=false;ck.disabled=false;draw()};
+  window.__ord={set(a){ord=a.slice();draw()},show(){ord=c.steps.map((_,k)=>k);lock.clear();busy=true;draw();ck.remove()}};draw()}
 const REVEAL='<button class="reveal" id="reveal">Show me the answer (no star)</button>';
 function wireReveal(sc){const b=$('#reveal');if(!b)return;b.onclick=async()=>{if(ST.solved[kid(sc)])return;const c=sc.chal;ST.tried[kid(sc)]=1;b.remove();
-  if(c.type==='order'){$('#chal').querySelectorAll('.tile').forEach(x=>x.disabled=true);await solve(sc,false,'The order: '+c.steps.map((s,i)=>`<br>${i+1}. ${s.t}`).join(''))}
+  if(c.type==='order'){if(window.__ord)window.__ord.show();await solve(sc,false,'The order: '+c.steps.map((s,i)=>`<br>${i+1}. ${s.t}`).join(''))}
   else{let hit=null;for(const el of stage.querySelectorAll('.tc')){const i=/^t\d+$/.test(el.id)?+el.id.slice(1):el.id;let r;try{r=c.check(i,el)}catch(e){continue}if(r&&r.ok){hit={i,r,el};break}}
     if(hit){hit.el.classList.add('glow');stage.querySelectorAll('.tc').forEach(x=>x.onclick=null);await solve(sc,false,hit.r.why,hit.i)}}}}
 async function solve(sc,first,why,arg){const rv=$('#reveal');if(rv)rv.remove();ST.solved[kid(sc)]={first};if(sc._from)ST.solved[sc.id]=ST.solved[kid(sc)];if(first)ST.stars++;hud(sc);saveProg();saveRun();
@@ -421,9 +507,160 @@ function finale(){const others=sortedPlayers().filter(p=>p.id!==P.id);
     <ol class="recap">${ST.log.map(l=>`<li>${l.t}${l.first?' &#9733;':''}</li>`).join('')}</ol></div>
     <div class="goal"><b class="h">Now live it as someone else</b><div class="plist">${others.map(p=>`<button class="pcard" data-p="${p.id}"><b>${p.name}</b><span>${p.role||''}</span>${PROG[p.id]&&PROG[p.id].done?`<em>&#9733; ${PROG[p.id].best} / ${PROG[p.id].of}</em>`:''}</button>`).join('')}</div></div>`}
 $('#next').onclick=()=>{if(MODE){if(MODE.next)MODE.next();return}if(!P)return;const sc=SCENES[ST.i];if(sc.final){home();return}if(ST.i<SCENES.length-1)show(ST.i+1)};
-$('#back').onclick=()=>{if(MODE){if(MODE.back)MODE.back();else home();return}if(!P)return;if(ST.i===0){home();return}TRAIL.pop();show(ST.i-1)};
+$('#back').onclick=()=>{if(MODE){if(MODE.back)MODE.back();else home();return}if(!P){if(window.modePicker)modePicker();return}if(ST.i===0){home();return}TRAIL.pop();show(ST.i-1)};
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('#next').disabled&&document.activeElement===document.body){$('#next').click()}});
-window.addEventListener('load',()=>{ST.tried={};const bd=$('#body');if(bd){{const mv=store.get('ij-mini');if(mv==='1'||(mv==null&&innerWidth<600))bd.classList.add('mini')}bd.title='Tap to hide or show the body map';bd.onclick=()=>{bd.classList.toggle('mini');store.set('ij-mini',bd.classList.contains('mini')?'1':'0')}}setLoad(20);if(/[ptm]=/.test(location.hash))route();else home()});
+window.addEventListener('load',()=>{ST.tried={};const bd=$('#body');if(bd){{const mv=store.get('ij-mini');if(mv==='1'||(mv==null&&innerWidth<600))bd.classList.add('mini')}bd.title='Tap to hide or show the body map';bd.onclick=()=>{bd.classList.toggle('mini');store.set('ij-mini',bd.classList.contains('mini')?'1':'0')}}setLoad(20);if(/[ptm]=/.test(location.hash))route();else if(window.welcome&&!/noguide/.test(location.search))welcome();else home()});
+
+</script>
+<script>
+/* ---------- start screens, first-time guides, help sheet
+   welcome() -> modePicker() -> home(tab) or a mode. Each mode gets a short spotlight tour the first time it is used
+   (seen list in localStorage 'ij-guides'); Help (header) explains the current screen, shows the cell key, replays tours.
+   Add ?noguide to the URL to skip the start screen and all tours (tests use it). */
+(function(){
+const NOG=/noguide/.test(location.search);
+let SEEN={};try{SEEN=JSON.parse(store.get('ij-guides')||'{}')}catch(e){}
+const seenSave=()=>store.set('ij-guides',JSON.stringify(SEEN));
+const esc=s=>String(s).replace(/</g,'&lt;');
+
+/* ---- cell key: the cells as they look on a stained (Wright-Giemsa) smear, the way Step material shows them */
+function eosK(x,y){return `<g>${mblob(x,y,24,61,.1,10,22,'#f4d6d2')}<circle cx="${x-7}" cy="${y}" r="7" class="nuc"/><circle cx="${x+7}" cy="${y}" r="7" class="nuc"/>${[0,1,2,3,4,5,6,7,8,9].map(i=>`<circle cx="${(x+Math.cos(i*.63)*16).toFixed(1)}" cy="${(y+Math.sin(i*.63)*14).toFixed(1)}" r="2.8" fill="var(--eosg)"/>`).join('')}</g>`}
+function mastK(x,y){return `<g>${mblob(x,y,27,13,.06,12,25,'#cdb8df')}<ellipse cx="${x-2}" cy="${y+2}" rx="8" ry="7" class="nuc"/>${Array.from({length:22},(_,i)=>{const a=i*2.4,d=9+(i*7%14);return `<circle cx="${(x+Math.cos(a)*d).toFixed(1)}" cy="${(y+Math.sin(a)*d*.9).toFixed(1)}" r="2.6" fill="var(--mastg)" opacity=".85"/>`}).join('')}</g>`}
+const KEY=[
+ ['Neutrophil','multilobed nucleus, pale pink',(x,y)=>neu(x,y,26)],
+ ['Eosinophil','two lobes, orange-red granules',eosK],
+ ['Mast cell','packed dark purple granules',mastK],
+ ['Macrophage','big, pale, kidney nucleus',(x,y)=>mac(x,y,34,5)],
+ ['Dendritic cell','long arms (not on a smear)',(x,y)=>`<g transform="translate(${x},${y}) scale(.62)">${dc(0,0,11)}</g>`],
+ ['NK cell','large lymphocyte, purple granules',(x,y)=>nkcell(x,y,41)],
+ ['T cell','lymphocyte: thin blue rim; TCR on top',(x,y)=>tcell(x,y,'tri','',2)],
+ ['B cell','looks like a T cell; antibody receptors',(x,y)=>bcell(x,y,3)],
+ ['Plasma cell','deep blue, off-center clock-face nucleus',(x,y)=>plasma(x,y,51)]];
+function cellKey(cols){cols=cols||9;const big=cols<=3,rows=Math.ceil(KEY.length/cols),cw=900/cols,rh=big?250:150,h=rows*rh+10,sc=big?1.7:1;
+  return `<svg viewBox="0 0 900 ${h}" role="img" aria-label="Cell key">${DEFS}${KEY.map((k,i)=>{const r=Math.floor(i/cols),c=i%cols,x=cw*c+cw/2,y=r*rh+(big?90:62);let g='';try{g=k[2](0,0)}catch(e){}
+    const d=k[1].split(/[,;] /);
+    return `<g transform="translate(${x},${y}) scale(${sc})">${g}</g><text x="${x}" y="${y+(big?96:60)}" style="font:700 ${big?30:14}px var(--f-body);fill:var(--ink);text-anchor:middle">${k[0]}</text>${big?d.map((t,j)=>`<text x="${x}" y="${y+126+j*26}" style="font:22px var(--f-body);fill:var(--muted);text-anchor:middle">${t}</text>`).join(''):''}`}).join('')}</svg>`}
+window.cellKey=cellKey;
+
+/* ---- start screen */
+function intro(html){let el=$('#intro');if(!el){el=document.createElement('div');el.id='intro';document.body.appendChild(el)}el.innerHTML=`<div class="in">${html}</div>`;el.scrollTop=0;return el}
+window.closeIntro=()=>{const el=$('#intro');if(el)el.remove()};
+function runName(r){if(!r||!r.k)return null;const [t,id]=r.k.split('=');const o=t==='p'?PLAYERS.find(p=>p.id===id):TOPICS.find(x=>x.id===id);return o?(t==='p'?'Playing as '+o.name.replace(/^The /,'the '):'Topic: '+o.name)+(r.i?', scene '+(r.i+1):''):null}
+window.welcome=function(){if(MODE&&MODE.stop){try{MODE.stop()}catch(e){}}MODE=null;P=null;clearIdle();setHash('');
+  const r=readRun(),rn=runName(r);
+  const el=intro(`<div class="eyebrow">An immunology game for medical students</div><h1 class="big">Inside the Immune System</h1>
+   <p class="lead">Lectures and flashcards hand you the immune system one cell and one molecule at a time. Here you live it from the inside. You become a cell, follow an infection through the body, and meet every cell and mediator that passes the message along. The goal is that by the end you can tell the whole story, from the first danger signal to memory, and name what carries the signal at each step.</p>
+   <div class="key">${cellKey(9)}</div>
+   <div class="how3"><div><b>You decide what happens next</b>Every scene asks what your cell, or the body, does now.</div><div><b>Mistakes have consequences</b>A wrong move lets the infection grow, and the explanation shows you why.</div><div><b>Every scene ends with the point</b>One line to keep, plus where the same molecules show up again elsewhere.</div></div>
+   <div class="cta"><button class="btn" id="enter">Enter</button>${rn?`<button class="btn ghost" id="cont">Continue: ${esc(rn)}</button>`:''}</div>
+   <p style="color:var(--muted);font-size:14px;margin-top:14px">The cells are drawn the way they look on a stained smear, the way First Aid and UWorld images show them. Bacteria stay gold so they stand out.</p>`);
+  el.querySelector('#enter').onclick=modePicker;
+  const c=el.querySelector('#cont');if(c)c.onclick=()=>{closeIntro();try{history.replaceState(null,'','#'+r.k+(r.i?'&s='+r.i:''))}catch(e){}route()};
+  el.querySelector('#enter').focus()};
+
+window.modePicker=function(){if(MODE&&MODE.stop){try{MODE.stop()}catch(e){}}MODE=null;P=null;clearIdle();setHash('');
+  const ag=PLAYERS.find(p=>p.id==='antigen'),nAg=ag?ag.scenes.length:0;
+  const el=intro(`<div class="eyebrow">Inside the Immune System</div><h1 class="big" style="font-size:clamp(26px,4vw,36px)">Where do you want to start?</h1>
+   <div class="mpick3">
+    <div class="mbig rec" data-go="cells"><span class="tag">Start here</span><h2>Play as a cell</h2><p>Live one infection from inside one cell: the antigen, a macrophage, a T cell, a B cell and ${Math.max(0,PLAYERS.length-4)} more.</p><p class="best">Best for building the big picture. Each cell sees a different part of the same response.</p>
+     ${ag?`<button class="btn" data-start="antigen">Start with the antigen</button><span class="best">${nAg} scenes: a splinter, all the way to memory.</span>`:''}<button class="linkbtn" data-go="cells">See all ${PLAYERS.length} cells</button></div>
+    <div class="mbig" data-go="topics"><h2>Study by topic</h2><p>${TOPICS.length} topics that follow your lectures: innate, MHC, tolerance, hypersensitivity, transplant and more. Each one plays the key scenes in order.</p><p class="best">Best right after a lecture, and again before the exam.</p><span class="go">Choose a topic &#8594;</span></div>
+    <div class="mbig" data-go="cmd"><h2>Command the defense</h2><p>You are the whole immune system. An invader gets in, and you decide which cells and molecules to send, and when.</p><p class="best">Best once you know the players. It tests the right weapon at the right time.</p><span class="go">Choose a mission &#8594;</span></div>
+   </div>
+   <div class="path"><b>A good path through the app</b><ol><li>Play the antigen once, start to finish. It is the whole response in one story.</li><li>Replay that story as the other cells. Each one fills in a piece you only glimpsed the first time.</li><li>After each lecture, play its topic.</li><li>Before the exam, test yourself in Command the defense.</li></ol></div>
+   <p><button class="linkbtn" id="aboutback">&#8592; Back to the start screen</button></p>`);
+  el.querySelectorAll('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();closeIntro();start(b.dataset.start)});
+  el.querySelectorAll('[data-go]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-start]'))return;e.stopPropagation();const g=b.dataset.go;closeIntro();if(g==='cmd'&&MODES.length)startMode(MODES[0].id);else home(g)});
+  el.querySelector('#aboutback').onclick=welcome};
+
+/* ---- spotlight tours */
+const TOURS={
+ cell:[{sel:'#stage',t:'This is the scene',x:'Look for the yellow label "you": that is your cell (or, as the antigen, your protein). The animation shows what is happening in the body right now.'},
+  {sel:'#panel',t:'The story and the question',x:'Read what your cell senses here, then decide what it does next. Every answer, right or wrong, explains what really happens.'},
+  {sel:'#load',up:'.hitem',t:'The infection meter',x:'Wrong answers let the infection grow, and you will see the bacteria multiply on the stage.'},
+  {sel:'#stars',up:'.hitem',t:'Stars',x:'A right answer on the first try earns a star. Missing one is fine: the explanation is the lesson.'},
+  {sel:'#body',t:'Where you are',x:'The body map tracks where you are and the path you have traveled. Tap it to hide or show it.'},
+  {sel:'#dots',t:'Your progress',x:'One dot per scene. Tap a dot to jump back to a scene.'},
+  {sel:'#helpbtn',t:'Stuck? Tap Help',x:'Help tells you what to do on the screen you are on, shows the cell key, and can replay this guide.'},
+  {t:'How to get the most out of it',x:'Before you tap, say your answer and why. After every scene, read "The point": that is the fact to keep. When you finish, replay the same infection as another cell to see the next piece of the picture.'}],
+ topic:[{sel:'#panel',t:'One part of the course, in order',x:'A topic pulls the key scenes for one part of your lectures and plays each one from whichever cell sees it best.'},
+  {sel:'#stage',t:'Who you will be',x:'These are the cells you will play. In every scene a yellow banner tells you who you are right now.'},
+  {sel:'#helpbtn',t:'Stuck? Tap Help',x:'Help explains the screen you are on and shows the cell key.'},
+  {t:'Best use',x:'Play a topic right after its lecture, then again before the exam. At the end you get a list of the scenes you missed, each with its point.'}],
+ cmd:[{sel:'#panel .goal',t:'You run the whole immune system',x:'An invader gets in and you choose which cells and molecules to send, one phase at a time, from the first minutes to weeks later.'},
+  {sel:'#panel .plist',t:'Pick a mission',x:'Each mission is a different invader. Start with mission 1; the later ones assume you know the players.'},
+  {t:'Best use',x:'Play Command after you have played a few cells. It checks whether you know which weapon fits which invader, and how soon it can arrive.'}],
+ 'cmd-phase':[{sel:'#cmdmeters',t:'Three meters',x:'The invader, your energy, and collateral damage to the body. A strong plan keeps all three in check.'},
+  {sel:'.cmd-deck',t:'Your deck',x:'Tap up to two cards this phase. The number in the corner is the energy it costs, and the line under the name is its job.'},
+  {sel:'.cmd-card[disabled]',t:'Locked cards',x:'T and B cells stay locked until days 4 to 7, and only after a dendritic cell has carried the invader to a lymph node. That delay is real biology.'},
+  {sel:'#next',t:'Deploy',x:'When you have picked, deploy. Holding saves energy, but the invader keeps growing.'}],
+ order:[{sel:'#chal',t:'Put the steps in order',x:'Drag each step into place with the first step at the top, or use the arrows, then tap Check. Steps you get right lock in place, so a miss never wipes out your work.'}],
+ find:[{sel:'#stage',t:'Find it in the picture',x:'This question is answered on the stage. Tap the right cell or molecule in the scene, and read the labels before you tap.'}]};
+let TOUR=null;const QUEUE=[];
+function rectOf(st){let el=st.sel?document.querySelector(st.sel):null;if(el&&st.up)el=el.closest(st.up)||el;if(!el)return null;const r=el.getBoundingClientRect();if(r.width<2||r.height<2)return null;
+  const vw=innerWidth,vh=innerHeight;const x=Math.max(4,r.left-6),y=Math.max(4,r.top-6);return{x,y,w:Math.min(vw-4,r.right+6)-x,h:Math.min(vh-4,r.bottom+6)-y}}
+function place(){if(!TOUR)return;const {steps,i,el}=TOUR,st=steps[i],r=rectOf(st);const hole=el.querySelector('.hole'),card=el.querySelector('.card');const vw=innerWidth,vh=innerHeight;
+  if(r){Object.assign(hole.style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px',outlineWidth:'3px'})}else Object.assign(hole.style,{left:vw/2+'px',top:vh/2+'px',width:'0px',height:'0px',outlineWidth:'0px'});
+  const dim=el.querySelector('.dim');dim.style.clipPath=r?`path(evenodd,'M0 0H${vw}V${vh}H0Z M${r.x} ${r.y}h${r.w}v${r.h}h${-r.w}Z')`:'none';
+  const cw=card.offsetWidth,ch=card.offsetHeight;let x,y;
+  if(!r){x=(vw-cw)/2;y=(vh-ch)/2}
+  else if(r.y+r.h+ch+12<vh){y=r.y+r.h+10;x=r.x+r.w/2-cw/2}
+  else if(r.y-ch-12>0){y=r.y-ch-10;x=r.x+r.w/2-cw/2}
+  else if(r.x+r.w+cw+12<vw){x=r.x+r.w+10;y=r.y+r.h/2-ch/2}
+  else if(r.x-cw-12>0){x=r.x-cw-10;y=r.y+r.h/2-ch/2}
+  else{x=(vw-cw)/2;y=vh-ch-16}
+  card.style.left=Math.max(12,Math.min(vw-cw-12,x))+'px';card.style.top=Math.max(12,Math.min(vh-ch-12,y))+'px'}
+function step(){const {steps,i,el}=TOUR,st=steps[i],n=steps.length;
+  el.querySelector('.card').innerHTML=`${n>1?`<div class="cnt">${i+1} of ${n}</div>`:''}<h3>${st.t}</h3><div>${st.x}</div><div class="row">${n>1&&i<n-1?'<button class="skip" id="cskip">Skip the guide</button>':'<span style="margin-right:auto"></span>'}${i>0?'<button class="btn ghost" id="cback">Back</button>':''}<button class="btn" id="cnext">${i<n-1?'Next':n>1?'Got it, let\'s play':'Got it'}</button></div>`;
+  const e=el.querySelector('#cnext');e.onclick=()=>{if(TOUR.i<n-1){TOUR.i++;step()}else endTour()};const b=el.querySelector('#cback');if(b)b.onclick=()=>{TOUR.i--;step()};const s=el.querySelector('#cskip');if(s)s.onclick=endTour;
+  const target=st.sel&&document.querySelector(st.sel);if(target&&target.scrollIntoView&&target.closest('#panel'))target.scrollIntoView({block:'nearest'});
+  requestAnimationFrame(place);e.focus({preventScroll:true})}
+function endTour(){if(!TOUR)return;TOUR.el.remove();TOUR=null;if(QUEUE.length){const k=QUEUE.shift();setTimeout(()=>tour(k,true),250)}}
+function tour(key,force){const steps=TOURS[key];if(!steps||NOG)return;if(!force&&SEEN[key])return;SEEN[key]=1;seenSave();
+  if(TOUR||$('#intro')||$('#help')){if(!QUEUE.includes(key))QUEUE.push(key);return}
+  const el=document.createElement('div');el.id='coach';el.innerHTML='<div class="dim"></div><div class="hole"></div><div class="card" role="dialog" aria-live="polite"></div>';document.body.appendChild(el);TOUR={key,steps,i:0,el};step()}
+window.guideFor=k=>tour(k,false);
+addEventListener('resize',()=>requestAnimationFrame(place));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(TOUR)endTour();else if($('#help'))closeHelp()}},true);
+
+/* ---- watch the panel: first time each mode or puzzle type appears, show its guide */
+function curChal(){const sc=P&&SCENES[ST.i];return sc&&sc.chal&&!ST.solved[kid(sc)]?sc.chal.type:null}
+let pend=0;function check(){if(NOG||$('#intro'))return;
+  if(MODE&&MODE.id==='commander'){if(panel.querySelector('.cmd-deck'))tour('cmd-phase');else if(panel.querySelector('.plist'))tour('cmd');return}
+  if(!P)return;if(P.topic&&ST.i===0)tour('topic');else if(!P.topic&&ST.i===0)tour('cell');
+  const t=curChal();if(t==='order'&&$('#olist'))tour('order');else if(t==='find')tour('find')}
+new MutationObserver(()=>{clearTimeout(pend);pend=setTimeout(check,450)}).observe(panel,{childList:true});
+
+/* ---- help sheet */
+function nowText(){if($('#intro'))return 'Pick how you want to play. New here? Start with the antigen: it walks one infection from a splinter all the way to memory.';
+  if(MODE){if(panel.querySelector('.cmd-deck'))return 'Tap up to two cards (the number on each is its energy cost), then tap Deploy at the bottom. Locked cards tell you why they are locked.';
+    if(panel.querySelector('.plist'))return 'Pick a mission from the list. Mission 1 is the gentlest.';return 'Read what happened, then tap the button at the bottom right to go on.'}
+  if(!P)return 'Pick a cell, a topic or a mission from the list. The tabs at the top switch between the three ways to play.';
+  const sc=SCENES[ST.i],t=curChal();
+  if(t==='choice')return 'Pick what you think your cell, or the body, does next. A wrong answer explains itself and the infection grows, then you can try again.';
+  if(t==='order')return 'Drag the steps into order with the first step at the top (or use the arrows), then tap Check the order. Steps in the right place lock after each check.';
+  if(t==='find')return 'The answer is in the picture. Tap the right cell or molecule on the stage. If you are truly stuck, "Show me the answer" sits under the question (no star).';
+  if(sc&&sc.final)return 'Your run is done. Look over the scenes you missed, then pick another cell or topic below.';
+  return 'Read the scene and "The point", then tap Continue at the bottom right.'}
+function tourKey(){if(MODE)return panel.querySelector('.cmd-deck')?'cmd-phase':'cmd';if(P)return P.topic?'topic':'cell';return null}
+window.closeHelp=()=>{const h=$('#help');if(h)h.remove()};
+function openHelp(){if(TOUR)endTour();closeHelp();const k=tourKey(),t=curChal();
+  const h=document.createElement('div');h.id='help';h.innerHTML=`<div class="sheet" role="dialog" aria-label="Help"><button class="x" id="hx" aria-label="Close">&#215;</button><h2>Help</h2>
+   <h3>What to do right now</h3><p class="now">${nowText()}</p>
+   <h3>Get the most out of it</h3><ul>
+    <li>Say your answer and the reason before you tap. A guess teaches you less than a committed wrong answer.</li>
+    <li>Read "The point" after every scene. That one line is what to remember.</li>
+    <li>Watch for "Same handshake, another branch". The immune system reuses the same molecules in different places, and those links are high yield.</li>
+    <li>Play the same infection as a second cell. Together they give you the full picture.</li>
+    <li>Use a topic after its lecture, and Command the defense to test yourself before the exam.</li></ul>
+   <h3>Cell key</h3><div class="key">${cellKey(3)}</div>
+   <h3>More</h3><div class="acts">${k?`<button class="btn ghost" id="hreplay">Replay the guide for this screen</button>`:''}${t==='order'||t==='find'?`<button class="btn ghost" id="hpuz">Show the tip for this puzzle</button>`:''}<button class="btn ghost" id="hmodes">Choose a different mode</button><button class="btn ghost" id="hstart">Back to the start screen</button></div></div>`;
+  document.body.appendChild(h);h.onclick=e=>{if(e.target===h)closeHelp()};h.querySelector('#hx').onclick=closeHelp;
+  const rp=h.querySelector('#hreplay');if(rp)rp.onclick=()=>{closeHelp();tour(k,true)};const pz=h.querySelector('#hpuz');if(pz)pz.onclick=()=>{closeHelp();tour(t,true)};
+  h.querySelector('#hmodes').onclick=()=>{closeHelp();modePicker()};h.querySelector('#hstart').onclick=()=>{closeHelp();welcome()};h.querySelector('#hx').focus()}
+window.openHelp=openHelp;
+$('#helpbtn').onclick=openHelp;$('#brand').onclick=()=>{closeHelp();welcome()};
+})();
 
 </script>
 <script>
@@ -655,7 +892,7 @@ const scenes=[
      pd1:x=>`<path d="M${x},372 V300" stroke="var(--hot)" stroke-width="4"/><circle cx="${x}" cy="295" r="7.5" fill="var(--hot)"/>`,
      lfa:x=>`<path d="M${x-8},372 L${x},298 L${x+8},372" stroke="var(--hot)" stroke-width="3.5" fill="none"/><ellipse cx="${x}" cy="293" rx="9" ry="6" fill="var(--hot)"/>`};
    return `<rect width="900" height="560" fill="var(--tissue)"/>${fibers(31,0,560)}${mblob(540,115,335,61,.04,14,98,'#cbbfd6')}<ellipse cx="740" cy="105" rx="62" ry="36" class="nuc"/>${T(420,110,'lung cancer cell','lbl')}
-     <g id="tcb">${mblob(540,455,335,62,.04,14,92,'var(--t)')}</g><text x="540" y="505" class="lbl" style="fill:#fff;stroke:none">exhausted CD8 T cell</text>`
+     <g id="tcb">${mblob(540,455,335,62,.04,14,92,'var(--t)')}</g><text x="540" y="505" class="lbl">exhausted CD8 T cell</text>`
      +xs.map((x,i)=>{const k=keys[i];return `<g class="tc" id="${k}" style="cursor:pointer"><rect x="${x-62}" y="200" width="124" height="230" fill="transparent"/>${G(0,0,top[k](x),'',k==='pd1'?'pdl1':'')}${bot[k](x)}<text x="${x}" y="415" style="font-size:13.5px;font-weight:700;fill:#fff;text-anchor:middle">${labs[i]}</text></g>`}).join('')},
  chal:{type:'find',q:'Tap the pair a drug should cut to wake this T cell up.',hint:'Each pair joins the cancer cell (top) to the T cell (bottom). Cutting the wrong one leaves the T cell worse off.',
   check(i){if(i==='pd1')return {ok:true,why:'That is the brake. Drugs against PD-1 (pembrolizumab, nivolumab) or against PD-L1 cut it, and the exhausted T cell starts killing again. A drug against CTLA-4 (ipilimumab) lifts a related brake that acts earlier, when T cells are first being switched on.'};
@@ -3561,7 +3798,7 @@ registerPlayer({id:'macrophage',name:'The macrophage',role:'A big eater who live
 /* ---------- Mast cell player: peanut allergy (type I hypersensitivity, anaphylaxis, the four types, drug allergy).
    Helpers are local so they cannot collide with other player files. */
 const PN='#b98a55',PS='#6b4f2c';          // peanut protein (Ara h 2), tan with brown edge
-const MC='#b3a7d6',GR='#4a3d8f';          // mast cell body, granules
+const MC='#cdb8df',GR='var(--mastg)';          // mast cell body, granules
 const igeY=c=>`<path d="M0,-3 L0,-13 M0,-13 L-7,-22 M0,-13 L7,-22" stroke="${c||'var(--ab)'}" stroke-width="3.2" stroke-linecap="round" fill="none"/>`;
 const fce=()=>`<path d="M-5,-4 L-5,2 L5,2 L5,-4" stroke="var(--hot)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
 const pnut=(x,y,r,seed,ry)=>`<path d="${blob(x,y,r||9,seed||5,.22,8,ry||(r||9)*.8)}" fill="${PN}" stroke="${PS}" stroke-width="1.6"/>`;
@@ -3579,7 +3816,7 @@ function mastC(r,seed,o){o=o||{};const ry=r*.92,nuc=[-r*.08,r*.12,r*.27,r*.21];
   s+=grans(r,ry,seed,o.n||Math.round(r*.5),nuc).map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${p[2].toFixed(1)}" fill="${GR}" opacity="${o.empty?.22:.85}"/>`).join('');
   if(o.ige||o.fc)s+=(o.ang||EDGE).map(a=>onEdge(r,ry,a,fce()+(o.ige?igeY():''))).join('');
   return s+'</g>'}
-function eos(x,y,seed){return `<g>${mblob(x,y,24,seed||61,.1,10,22,'#ead3ad')}<circle cx="${x-7}" cy="${y}" r="7" class="nuc"/><circle cx="${x+7}" cy="${y}" r="7" class="nuc"/>${[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${(x+Math.cos(i*.8+seed)*15).toFixed(1)}" cy="${(y+Math.sin(i*.8+seed)*14).toFixed(1)}" r="2.6" fill="#a8742e"/>`).join('')}</g>`}
+function eos(x,y,seed){return `<g>${mblob(x,y,24,seed||61,.1,10,22,'#f4d6d2')}<circle cx="${x-7}" cy="${y}" r="7" class="nuc"/><circle cx="${x+7}" cy="${y}" r="7" class="nuc"/>${[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${(x+Math.cos(i*.8+seed)*15).toFixed(1)}" cy="${(y+Math.sin(i*.8+seed)*14).toFixed(1)}" r="2.8" fill="var(--eosg)"/>`).join('')}</g>`}
 function gutBG(label){let s=`<rect width="900" height="560" fill="var(--tissue)"/>${fibers(17,180,560)}`;
   for(let i=0;i<14;i++)s+=epi(150+i*56,60,52,96,70+i);
   return s+`<text x="180" y="132" class="zone">gut lining</text><text x="180" y="545" class="zone">${label||'connective tissue under the gut lining'}</text>`}
@@ -3862,8 +4099,8 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
 <script>
 (function(){
 /* ---------- neutrophil-only drawing helpers (scoped so they cannot collide with other player files) */
-const NF='style="fill:color-mix(in srgb,var(--ink) 58%,var(--paper));opacity:.88"';
-const NSK='style="stroke:color-mix(in srgb,var(--ink) 58%,var(--paper));opacity:.88"';
+const NF='style="fill:var(--nucl);opacity:.85"';
+const NSK='style="stroke:var(--nucl);opacity:.85"';
 function lobes(pts,r){let s='';for(let k=0;k<pts.length-1;k++)s+=`<line x1="${pts[k][0]}" y1="${pts[k][1]}" x2="${pts[k+1][0]}" y2="${pts[k+1][1]}" stroke-width="2.4" ${NSK}/>`;
   return s+pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${r}" ${NF}/>`).join('')}
 function nucK(kind){
@@ -3878,7 +4115,7 @@ function nucK(kind){
   return ''}
 function gran(r,seed,kind){if(kind==='blast')return '';const R=rng(seed*7+3);let s='';const az=kind==='pro'?16:6,sp=kind==='pro'?0:kind==='myelo'?5:9;
   for(let i=0;i<az+sp;i++){const a=R()*Math.PI*2,d=Math.sqrt(R())*r*.78;const x=(Math.cos(a)*d).toFixed(1),y=(Math.sin(a)*d).toFixed(1);
-    s+=i<az?`<circle cx="${x}" cy="${y}" r="2.5" fill="var(--pl)" opacity=".5"/>`:`<circle cx="${x}" cy="${y}" r="1.7" fill="var(--paper)" opacity=".85"/>`}return s}
+    s+=i<az?`<circle cx="${x}" cy="${y}" r="2.5" fill="var(--azur)" opacity=".55"/>`:`<circle cx="${x}" cy="${y}" r="1.7" fill="var(--paper)" opacity=".85"/>`}return s}
 function cellK(kind,r,seed,col){return `<g class="sz"><g class="wob" style="animation-delay:-${seed%4}s">${mblob(0,0,r,seed,.1,10,r,col||'var(--neu)')}${gran(r,seed,kind)}<g class="nk" transform="scale(${(r/30).toFixed(2)})">${nucK(kind)}</g></g></g>`}
 function marrowBG(){const R=rng(77);let s=`<rect width="900" height="560" fill="var(--tissue)"/>
   <path d="M520,560 C580,500 690,520 760,476 S880,436 900,446 V560Z" fill="var(--epi2)" opacity=".85"/><text x="720" y="540" class="sublbl">bone</text>`;
