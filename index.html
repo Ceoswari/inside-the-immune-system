@@ -3358,6 +3358,25 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
  async play(){const k=stage.querySelector('#kid .kfill');if(k)idle(()=>{if(k.isConnected)k.animate([{opacity:1},{opacity:.82},{opacity:1}],{duration:1400})},2600)},
  extra:`<div class="goal"><b class="h">How this works</b>You are the donor kidney. You cannot run or hide; everything you live through is the recipient's immune system deciding what to do about you, and the doctors deciding how to protect you. Each scene asks for the next move. The meter at the top is your danger level: a wrong move brings more of his T cells and antibodies to your door. A first-try answer earns a star.</div>`},
 
+{id:'alloc',title:'The national list',where:'Dialysis unit, three mornings a week',clock:'Two years before surgery',body:[IF],
+ note:'<b>Before your sister offered.</b> He waited for a kidney from a deceased donor.',
+ narr:`Long before anyone asked your owner, he was registered on the national waiting list. Many times more people are on that list than organs arrive each year, so a national network has to decide who is offered each organ. The rules are not the same for every organ.`,
+ draw(){const xs=Array.from({length:12},(_,i)=>250+i*44);
+   return bg('var(--paper2)')+`<rect x="215" y="150" width="560" height="120" rx="16" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/>`
+   +xs.map((x,i)=>G(x,215,`<circle cx="0" cy="-14" r="10" fill="var(--skin)" stroke="var(--skinl)" stroke-width="1.3"/><path d="M-15,20 Q-15,-2 0,-2 Q15,-2 15,20Z" fill="${i===7?'var(--shorts)':'var(--muted)'}" opacity="${i===7?1:.55}"/>`,'wq','q'+i)).join('')
+   +T(495,135,'registered and waiting','sublbl')+T(558,178,'him','lbl')
+   +`<rect x="790" y="170" width="90" height="80" rx="10" fill="#e8f0f8" stroke="var(--hot)" stroke-width="2.4"/>`+G(835,212,small(.26,kidney(0,0,1,PALE)),'','dk')+T(835,272,'one organ','sublbl')
+   +`<g id="rules" opacity="0">${[['All organs','blood type and organ size',310],['Kidney','time waited, immune match',378],['Heart and liver','medical urgency, distance',446]].map(([a,b,y])=>`<rect x="250" y="${y-24}" width="520" height="56" rx="12" fill="var(--paper)" stroke="var(--hot)" stroke-width="2"/>${T(360,y+10,a)}${T(600,y+10,b,'sublbl')}`).join('')}</g>`
+   +G(840,480,small(.3,kidney(0,0,1))+ME(0,0,40),'','kid')+T(840,540,'you, still in your owner','sublbl')},
+ async play(){const qs=[...stage.querySelectorAll('.wq')];idle(()=>qs.forEach((q,i)=>{if(q.isConnected)q.animate([{transform:q.style.transform},{transform:q.style.transform+' translateY(-3px)'},{transform:q.style.transform}],{duration:900,delay:i*60})}),2400)},
+ chal:{type:'choice',q:'For a deceased donor\'s kidney, the rules weigh one thing heavily that hearts and livers do not. Which?',opts:[
+   {t:'How long he has been on the list',ok:true,why:'Kidney allocation counts waiting time, along with immune match, children first, prior living donors and distance. Dialysis can keep a kidney patient alive for years, so time waited is fair to count. A failing heart or liver cannot wait, so those are ranked by medical urgency.'},
+   {t:'Whether his blood type is compatible',why:'Blood type is checked for every organ, not only kidneys, because an ABO mismatch means hyperacute rejection. Rank by this alone and the queue never moves in a fair order.'},
+   {t:'Whether the organ size fits his body',why:'Organ size matters for every organ, hearts and lungs most of all. It is not what sets kidneys apart, and the list stays frozen while you guess.'},
+   {t:'How close he is to dying without one',why:'Medical urgency is how hearts and livers are ranked. A kidney patient has dialysis as a bridge, so urgency is not the main kidney rule, and he would be passed over by mistake.'}]},
+ async win(){await fade('#rules',1,600);const q=stage.querySelector('#q7');if(q)q.classList.add('glow');say(495,530,'the rules differ by organ; scarcity makes the wait long')},
+ take:'A national network (OPTN) sets allocation rules. Every organ: blood type and size. Kidney: time waited and immune match. Heart and liver: urgency. Lung: survival benefit. Scarcity creates disparities: Black patients are referred later and wait longer for a kidney, and patients of non-European ancestry are far less likely to find a matched unrelated stem cell donor.',map:'#idea-rej'},
+
 {id:'hla',title:'Your ID card',where:'Tissue typing lab',clock:'6 weeks before surgery',body:[IF],
  narr:`A sample of your owner's blood goes to the typing lab. The ID card on your cells is HLA, the human version of MHC, coded on chromosome 6. Class I sits on every one of your cells with a nucleus. Class II sits on your antigen-presenting cells, and on your blood vessel lining, even more once it gets inflamed.`,
  draw(){const L=[['DP',300],['DQ',380],['DR',460],['class III',560],['B',660],['C',740],['A',820]];
@@ -3393,6 +3412,57 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
    const fx=stage.querySelector('#fx');add(`<g><rect x="366" y="354" width="28" height="72" rx="10" fill="none" stroke="var(--hot)" stroke-width="3.5" class="pulse"/><rect x="626" y="354" width="28" height="72" rx="10" fill="none" stroke="var(--hot)" stroke-width="3.5" class="pulse"/></g>`,fx);
    say(460,520,'she shares one haplotype (a): a half match')},
  take:'Each sibling has a 25% chance of a full HLA match, 50% of a half match, 25% of none. You are a half match: closer than a stranger, but half of your ID is still foreign to him.',map:'#idea-mhc1'},
+
+{id:'kinds',title:'Four kinds of graft',where:'Transplant clinic',clock:'5 weeks before surgery',body:[IF],
+ narr:`The team writes your type on his chart. Transplant names come from where the tissue comes from. A nurse asks what you would have been called if he had an identical twin who offered instead of your owner.`,
+ draw(){const C=[[350,175,'his own body','skin moved to a burn','auto'],[650,175,'his identical twin','same DNA as his','iso'],[350,395,'your owner, his sister','half his HLA is foreign','allo'],[650,395,'another species','a pig heart valve','xeno']];
+   return bg('var(--paper2)')+C.map(([x,y,a,b,id])=>`<g id="k_${id}"><rect x="${x-135}" y="${y-80}" width="270" height="160" rx="16" fill="var(--paper)" stroke="${id==='iso'?'var(--hot)':'var(--line)'}" stroke-width="${id==='iso'?4:2}"/>${T(x,y-38,'from: '+a)}${T(x,y-14,b,'sublbl')}<text x="${x}" y="${y+40}" class="lbl kname" style="font-size:22px">?</text></g>`).join('')
+   +G(840,500,small(.3,kidney(0,0,1))+ME(0,0,40),'','kid')+T(500,535,'what kind of graft is each one?','sublbl')},
+ chal:{type:'choice',q:'If his identical twin had donated the kidney instead, what kind of graft would it be?',opts:[
+   {t:'A syngeneic graft, or isograft',ok:true,why:'An identical twin shares every gene, so the kidney is syngeneic (an isograft). His T cells see nothing foreign, and little or no anti-rejection medicine is needed.'},
+   {t:'An autograft, since the DNA is his',why:'An autograft comes from the same person, like his own skin moved to a burn. The twin is a different person, and calling it an autograft would mislabel the chart.'},
+   {t:'An allograft, since it is another body',why:'An allograft comes from a genetically different person of the same species, like you. Call the twin\'s kidney an allograft and he gets years of drugs he never needed, with their infections and toxicity.'},
+   {t:'A haploidentical graft, like you',why:'Haploidentical means half matched, which is you: one shared haplotype. A twin shares both, so the drugs and the worry would be overestimated.'}]},
+ async win(){const N={auto:'autograft',iso:'isograft (syngeneic)',allo:'allograft: you',xeno:'xenograft'};for(const k of ['iso','auto','allo','xeno']){const t=stage.querySelector('#k_'+k+' .kname');if(t){t.textContent=N[k];t.style.fontSize='19px'}await wait(300)}
+   say(500,40,'only an allograft or xenograft meets a fully foreign immune system')},
+ take:'Autograft: from yourself. Syngeneic graft (isograft): from an identical twin. Allograft: from a genetically different person, the usual transplant, and you. Xenograft: from another species, still experimental except for treated pig heart valves.',map:'#idea-rej'},
+
+{id:'minor',title:'A perfect match, still rejected',where:'A different transplant clinic',clock:'Meanwhile',body:[IF],
+ note:'<b>A different pair.</b> A brother gives a kidney to his sister. They share both haplotypes and the same blood type.',
+ narr:`On paper this pair is perfect: every HLA gene matches and the blood types match. Weeks later, her T cells are still pushing into his kidney. They must be seeing something on his cells that her own cells never make.`,
+ draw(){return bg()+fibers(21,300,560)+person(260,170,'var(--shirt)','Donor','her brother')+person(260,400,'#c9a2e6','Recipient','his sister')
+   +hap(310,160,'a',HAPC.a)+hap(334,160,'c',HAPC.c)+hap(310,390,'a',HAPC.a)+hap(334,390,'c',HAPC.c)+T(380,290,'HLA: identical','lbl')
+   +`<g transform="translate(620,250)">${epi(0,0,190,170,61)}${[-60,-20,20,60].map((dx,i)=>`<g transform="translate(${dx},-98)"><path d="M-6,14 L-6,0 M6,14 L6,0" stroke="var(--hot)" stroke-width="3.6" stroke-linecap="round"/><circle cx="0" cy="-3" r="5" fill="${i===2?'var(--you)':'var(--paper)'}" stroke="var(--ink)" stroke-width="1.2" ${i===2?'id="hy"':''}/></g>`).join('')}</g>`
+   +T(620,370,'his kidney cell: shared HLA, his peptides','sublbl')+T(680,128,'?','lbl').replace('<text','<text id="hyq"')
+   +G(620,470,tcell(0,0,'tri','her T cell',3),'','her')},
+ async play(){idle(()=>{const t=stage.querySelector('#her');if(t)moveTo(t,600+Math.random()*40,460+Math.random()*20,1200)},1300)},
+ chal:{type:'choice',q:'Every HLA gene matches, yet her T cells react to his kidney. What are they seeing?',opts:[
+   {t:'A peptide of a protein on his Y chromosome',ok:true,why:'Her T cells see a peptide from a Y-chromosome protein (H-Y), sitting in the HLA they share. She has no Y chromosome, so that peptide was never there to teach tolerance. This is a minor histocompatibility antigen.'},
+   {t:'His HLA molecules, which differ from hers',why:'Their HLA is identical; that was the point of matching. Hunting for an HLA mismatch, the team finds none and the real target goes untreated.'},
+   {t:'His blood group sugars on his vessel linings',why:'They share a blood type, so there are no ABO antibodies. Blood group sugars are a target only when the types differ, and that is antibody, not her T cells.'},
+   {t:'Nothing; a full HLA match is never rejected',why:'A full HLA match lowers the risk but does not erase it. Assume it is safe, skip the drugs, and her T cells keep going.'}]},
+ async win(){clearIdle();const q=stage.querySelector('#hyq');if(q)q.textContent='H-Y peptide';await moveTo('#her',650,190,1000);const t=stage.querySelector('#her');if(t)t.classList.add('glow');say(620,40,'a minor antigen: a foreign peptide in shared HLA')},
+ take:'Three things make tissue foreign. One: different MHC (HLA), the biggest. Two: minor histocompatibility antigens, which are peptides from other proteins that differ, shown on shared HLA, such as H-Y in a woman given a male graft. Three: different sugars, the ABO blood groups.',map:'#idea-mhc1'},
+
+{id:'mlr',title:'The oldest test',where:'Research lab, down the hall',clock:'The week before',body:[IF],
+ narr:`A researcher runs a classic experiment on a spare tube of his blood. She puts his T cells in four wells. Each well gets something different to look at, and she waits five days to see which T cells start dividing.`,
+ draw(){const W=[[350,170,'medium only','w_med'],[650,170,'his own cells','w_self'],[350,395,'an identical donor\'s cells','w_twin'],[650,395,'your owner\'s cells','w_owner']];
+   const Rt=[[-34,-20],[30,-30],[-10,30],[38,22]],St=[[-2,-38],[-40,14],[12,4],[0,44]];
+   return bg('var(--paper2)')+W.map(([x,y,l,id])=>G(x,y,`<circle r="86" fill="var(--lymph)" stroke="var(--lwall)" stroke-width="5"/>`
+     +Rt.map(p=>lymph(p[0],p[1],p[0]+60,'var(--t)')).join('')
+     +(id==='w_med'?'':St.map(p=>`<g transform="translate(${p[0]},${p[1]})">${lymph(0,0,7,'var(--mac)')}${mhc1(0,-24)}</g>`).join(''))
+     +T(0,108,l,'lbl').replace('class="lbl"','class="lbl" style="font-size:14px"'),'tc',id)).join('')
+   +T(500,40,'darker blue = his T cells; lighter cells = what they are shown','sublbl')
+   +G(840,520,small(.25,kidney(0,0,1))+ME(0,0,34),'','kid')},
+ chal:{type:'find',q:'Tap the well where his T cells will divide.',hint:'His T cells were trained in his own thymus. Think about what looks foreign to them.',
+  check(i){if(i==='w_owner')return {ok:true,why:'Your owner\'s cells carry HLA that differs from his, so his T cells divide hard. This is the mixed lymphocyte reaction. About 1 to 10% of all T cells respond to foreign HLA, far more than ever respond to one microbe, because many T cells read foreign HLA as if it were his own HLA carrying a foreign peptide.'};
+    if(i==='w_twin')return {why:'An identical twin has the same HLA and the same proteins, so his T cells see "self" and stay quiet. The well sits still, while the well that matters goes unread.'};
+    if(i==='w_self')return {why:'His own cells passed the test of his thymus, which removed T cells that react to them. Nothing divides here.'};
+    return {why:'With nothing to look at, his T cells just sit there. No foreign HLA, no division.'}}},
+ async win(){const g=stage.querySelector('#w_owner');if(!g)return;g.classList.add('glow');const x=+g.dataset.x,y=+g.dataset.y;
+   for(let k=0;k<9;k++){const a=k/9*Math.PI*2,r=50+(k%2)*14;const c=add(G(x,y,small(.7,lymph(0,0,k+20,'var(--t)'))));moveTo(c,x+Math.cos(a)*r,y+Math.sin(a)*r,500);await wait(90)}
+   say(480,548,'foreign HLA wakes up a huge share of T cells')},
+ take:'The mixed lymphocyte reaction: T cells divide when shown cells with foreign HLA. A T cell can react to a graft three ways: his own HLA with a foreign peptide (a minor antigen), foreign HLA with a foreign peptide, or foreign HLA alone. That is why alloreactive responses are so strong.',map:'#idea-rej'},
 
 {id:'xmatch',title:'The crossmatch',where:'Transplant lab',clock:'The week before',body:[IF],
  narr:`One last test before the surgeons commit. The lab mixes his serum with your owner's white blood cells, which wear the same HLA you do, and watches.`,
@@ -3435,7 +3505,7 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
    stage.querySelectorAll('.hcp circle').forEach(c=>c.setAttribute('fill','var(--comp)'));stage.querySelectorAll('.hflow').forEach(f=>f.style.animationPlayState='');
    await Promise.all([...stage.querySelectorAll('.hab')].map((a,i)=>moveTo(a,HY.ab[i][0],HY.ab[i][1],500)).concat([...stage.querySelectorAll('.hcp')].map((c,i)=>moveTo(c,HY.cp[i][0],HY.cp[i][1],500)),[...stage.querySelectorAll('.hpl')].map((p,i)=>moveTo(p,HY.pl[i][0],HY.pl[i][1],500))))},
  async win(){setLoad(Math.max(0,ST.load-4))},
- take:'Hyperacute rejection: preformed anti-ABO or anti-HLA antibodies, complement, thrombosis, within minutes. It is a type II hypersensitivity, there is no rescue, and it is prevented before surgery by ABO typing and the crossmatch. That is why yours came back negative first.',map:'#idea-rej'},
+ take:'Hyperacute rejection: preformed anti-ABO or anti-HLA antibodies, complement, thrombosis, within minutes to hours. It is a type II hypersensitivity, there is no rescue, and it is prevented before surgery by ABO typing and the crossmatch. That is why yours came back negative first.',map:'#idea-rej'},
 
 {id:'reperf',title:'Pink again',where:'Recipient\'s right iliac fossa',clock:'Day 0, operating room',body:[IF],
  narr:`You spent hours on ice and you are pale and cold. The surgeon sews your artery and vein onto his iliac vessels in the lower right of his belly, and your ureter onto his bladder. His own kidneys stay where they are. Before the clamps come off, the team gives him a strong first dose of immune suppression, called induction.`,
@@ -3517,7 +3587,7 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
     return {why:'That glomerulus is healthy. Pointing at it leaves the real attack untreated, and more of his T cells arrive.'}}},
  async win(){const g=stage.querySelector('#b_acr');g.classList.add('glow');const p=add(G(860,120,pill('IV steroids',120)));await moveTo(p,380,80,1000);
    stage.querySelectorAll('.tly').forEach((c,i)=>c.animate([{opacity:1},{opacity:.1}],{duration:700,delay:i*120,fill:'forwards'}));await wait(1300);setLoad(Math.max(0,ST.load-10));say(520,300,'pulse steroids: the T cells pull back')},
- take:'Acute cellular rejection is T cells in your tubules and interstitium; it usually responds to pulse steroids (thymoglobulin if not). Antibody-mediated rejection shows C4d in the capillaries and needs antibody-directed treatment. Taking every dose is what prevents both.',map:'#cell-cd8'},
+ take:'Acute cellular rejection is T cells in your tubules and interstitium; it usually responds to pulse steroids (thymoglobulin if not). Antibody-mediated rejection shows C4d in the capillaries and needs antibody-directed treatment. Acute rejection is mixed hypersensitivity, mostly type IV, and it is the only kind that can be reversed. Because today\'s drugs mostly target T cells, antibody-mediated rejection now makes up a bigger share. Taking every dose is what prevents both.',map:'#cell-cd8'},
 
 {id:'cmv',title:'A stowaway wakes up',where:'Your tubules',clock:'Month 3',body:[IF],
  narr:`Something has been asleep inside a few of your cells for years, ever since your owner caught it as a child. He has never had it. Now his T cells are held down by the drugs, nobody is keeping it in check, and it wakes up. He gets fevers, and his white count drops.`,
@@ -3571,7 +3641,24 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
  async win(){const a=stage.querySelector('#art'),m=stage.querySelector('#intima');
    stage.querySelectorAll('.cflow').forEach(c=>fade(c,0,500));await fin(a.animate([{r:'142px'},{r:'34px'}],{duration:2200,fill:'forwards'}),2200);a.setAttribute('r',34);
    const th=stage.querySelector('#thinl');if(th)th.remove();add(T(500,215,'thick intima','lbl'));add(T(500,470,'media','sublbl'));stage.querySelectorAll('.cflow').forEach(c=>fade(c,0,500));await fade('#scar',.55,900);say(500,45,'the lumen narrows; scar fills in around it')},
- take:'Chronic rejection is the main reason kidneys fail years out. It is driven by indirect T cell help and donor-specific antibody, and nothing reverses it, so prevention (every dose, every year) is the whole game.',map:'#idea-rej'},
+ take:'Chronic rejection is the main reason kidneys fail years out. It is driven by indirect T cell help and donor-specific antibody (mixed, mostly type IV hypersensitivity), and nothing reverses it, so prevention (every dose, every year) is the whole game.',map:'#idea-rej'},
+
+{id:'privilege',title:'A graft nobody matched',where:'Eye clinic, another floor',clock:'Meanwhile',body:[IF],
+ note:'<b>A different patient.</b> A woman gets a cornea from a stranger.',
+ narr:`Down the hall, a woman's clouded cornea is replaced with one from a deceased stranger. Nobody checked how well their HLA matched. She will use only steroid drops in that eye, no pills, and the graft is likely to stay clear for years. You would not last a month like that.`,
+ draw(){return bg()+fibers(23,0,560)+`<g transform="translate(520,290)"><circle r="190" fill="var(--paper)" stroke="var(--muted)" stroke-width="5"/><circle r="176" fill="#f4ecdf"/>`
+   +`<path d="M128,-128 Q240,0 128,128" fill="#e8f0f8" stroke="var(--you)" stroke-width="6" stroke-dasharray="10 6" id="corn"/>`
+   +`<path d="M118,-70 L118,-24 M118,24 L118,70" stroke="var(--mac)" stroke-width="16" stroke-linecap="round"/><ellipse cx="80" cy="0" rx="30" ry="70" fill="#dfe7f0" stroke="var(--muted)" stroke-width="2"/>`
+   +[-150,-110,110,150].map(a=>{const r=a*Math.PI/180;return `<path d="M${(Math.cos(r)*176).toFixed(0)},${(Math.sin(r)*176).toFixed(0)} q-30,${a>0?-20:20} -60,${a>0?-8:8}" stroke="#c98a8a" stroke-width="3" fill="none"/>`}).join('')+`</g>`
+   +T(770,140,'donor cornea (gold edge)','lbl')+T(600,290,'lens','sublbl')+T(650,200,'iris','sublbl')+T(420,290,'inside of the eye','sublbl')+T(330,140,'vessels stop at the edge','sublbl')
+   +G(840,500,small(.3,kidney(0,0,1))+ME(0,0,40),'','kid')+T(840,555,'you, by contrast','sublbl')},
+ chal:{type:'choice',q:'Why can her cornea survive with so little suppression?',opts:[
+   {t:'No blood vessels or lymphatics reach it',ok:true,why:'The cornea has no blood vessels and no lymph drainage, so her T cells rarely find it and its antigens rarely reach a lymph node. It also carries little MHC and uses local brakes such as Fas ligand and calming cytokines. This is immune privilege.'},
+   {t:'Its cells carry extra HLA to calm T cells',why:'It is the opposite: corneal cells carry little MHC. More HLA would only give her T cells more to see, and the graft would cloud over.'},
+   {t:'Every cornea is matched to the recipient',why:'Corneas usually go in without HLA matching. If matching were the reason, an unmatched cornea would fail, and most of them do not.'},
+   {t:'Her body makes no T cells against cornea',why:'She has plenty of T cells that could react. If vessels grow into the cornea after inflammation, the privilege is lost and rejection becomes likely.'}]},
+ async win(){const c=stage.querySelector('#corn');if(c)c.classList.add('glow');say(520,40,'no vessels, no lymph drainage, low MHC, local brakes')},
+ take:'Immune privilege: the brain, the eye, the testis and the pregnant uterus (the fetus) tolerate foreign tissue better. Likely reasons: barriers like the blood-brain barrier, low MHC, suppressive cytokines and Fas ligand, local regulatory T cells, and few vessels or lymphatics. A corneal graft can last years with only local drops.',map:'#idea-rej'},
 
 {id:'gvhd',title:'The other direction',where:'A different patient, a different transplant',clock:'Meanwhile, on another floor',body:[IF],
  narr:`Your whole life has been his immune system against you. Upstairs, a man with leukemia is getting a bone marrow transplant. His own marrow was wiped out first. This time the graft IS an immune system, full of mature donor T cells.`,
@@ -3593,15 +3680,208 @@ registerPlayer({id:'graft',name:'The donor kidney',role:'A gift from a sister, l
    ['#o0','#o1','#o2'].forEach(s=>{const o=stage.querySelector(s);if(o)o.classList.add('glow')});say(705,440,'graft versus host')},
  take:'Rejection is host versus graft. GVHD is graft versus host: donor T cells against the host\'s skin, liver and gut, mostly after bone marrow, sometimes after liver or bowel transplants, or a transfusion into someone too weak to fight back (prevented by irradiating the blood).',map:'#idea-rej'},
 
+{id:'gvhdpath',title:'How the attack starts',where:'The marrow patient\'s gut and lymph nodes',clock:'Weeks 1 to 4 after the marrow',body:[IF],
+ note:'<b>Back to the marrow patient upstairs.</b>',
+ narr:`Before his stem cells went in, chemotherapy and radiation wiped out his marrow. That treatment, called conditioning, also bruised the lining of his gut. Tucked in the donor bag were mature donor T cells. Here is how they turn on him.`,
+ draw(){return bg()+`<rect x="170" y="430" width="730" height="130" fill="var(--tissue)"/><g id="gut">${Array.from({length:12},(_,i)=>`<g transform="translate(${200+i*60},460)">${epi(0,0,56,62,80+i)}</g>`).join('')}</g>`
+   +T(540,540,'his gut lining','sublbl')+`<g id="bolt"><path d="M260,60 L230,150 L262,150 L228,250" stroke="var(--you)" stroke-width="7" fill="none" stroke-linejoin="round"/></g>`+T(300,60,'conditioning','sublbl')
+   +G(520,250,dc(0,0,17,false),'','apc')+T(520,330,'his antigen-presenting cell','sublbl')
+   +[0,1,2].map(i=>G(760+(i%2)*44,140+i*50,small(.7,tcell(0,0,'tri','',i+9,'#e3c06a')),'dT','g'+i)).join('')+T(790,300,'donor T cells (gold)','sublbl')
+   +`<g id="tgt" opacity="0">${T(330,395,'skin','lbl')}${T(540,395,'gut','lbl')}${T(740,395,'liver','lbl')}</g>`
+   +G(850,60,small(.25,kidney(0,0,1))+ME(0,0,32),'','kid')},
+ chal:{type:'order',q:'Tap the steps of graft-versus-host disease, in order.',steps:[
+   {t:'Conditioning injures his tissues',anim:async()=>{const b=stage.querySelector('#bolt');if(b)await fin(b.animate([{opacity:1},{opacity:.2},{opacity:1}],{duration:700}),700);await fade('#gut',.6,500);
+     for(let k=0;k<6;k++){const d=add(G(240+k*100,430,`<circle r="5" fill="var(--hot)"/>`,'dmp'));moveTo(d,240+k*100,410,500)}}},
+   {t:'Damage signals and gut microbes wake his APCs',anim:async()=>{await Promise.all([...stage.querySelectorAll('#fx .dmp')].map((d,k)=>moveTo(d,500+(k%3)*20,262+(k%2)*14,900)));
+     const a=stage.querySelector('#apc');if(a)a.classList.add('glow');say(520,190,'his APC, now alarmed','youlbl')}},
+   {t:'Donor T cells see his HLA and multiply',anim:async()=>{await Promise.all([0,1,2].map(i=>moveTo('#g'+i,560+i*30,210+i*30,800)));
+     for(let k=0;k<5;k++){const c=add(G(600,240,small(.6,tcell(0,0,'tri','',k+20,'#e3c06a')),'dclone'));moveTo(c,640+k*40,150+(k%2)*70,500);await wait(80)}}},
+   {t:'Donor killers attack his skin, gut and liver',anim:async()=>{await fade('#tgt',1,400);const tg=[330,540,740];
+     await Promise.all([...stage.querySelectorAll('#fx .dclone')].map((c,k)=>moveTo(c,tg[k%3]+(k>2?30:-20),360,900)));await fade('#gut',.35,500)}}],
+  bad:'Out of order. Donor T cells need an alarmed APC showing his HLA before they multiply, and the alarm comes from the damage that conditioning causes. Meanwhile his gut lining keeps breaking down.'},
+ async badAnim(){const fx=stage.querySelector('#fx');[...fx.children].forEach(n=>{if(!n.classList.contains('newbug'))n.remove()});fade('#gut',1,300);fade('#tgt',0,200);
+   const a=stage.querySelector('#apc');if(a)a.classList.remove('glow');await Promise.all([0,1,2].map(i=>moveTo('#g'+i,760+(i%2)*44,140+i*50,400)))},
+ async win(){say(560,40,'graft versus host: skin rash, diarrhea, jaundice')},
+ take:'GVHD runs in three phases. Conditioning damages tissue and lets gut microbes in, releasing alarm signals and cytokines. His APCs present his HLA and minor antigens, and donor T cells expand. Donor killer cells then attack the skin, gut and liver.',map:'#idea-rej'},
+
+{id:'gvl',title:'The useful side of the attack',where:'The marrow patient\'s blood',clock:'Month 3 after the marrow',body:[IF],
+ note:'<b>Still the marrow patient.</b>',
+ narr:`His rash is settling on treatment. The team talks about the next patient: they could strip every mature T cell out of the donor bag, and GVHD would almost disappear. Then someone asks what else those donor T cells were doing.`,
+ draw(){const L=[[600,170],[700,240],[620,330],[760,380],[680,450]];return bg()+fibers(25,0,560)
+   +`<rect x="200" y="150" width="200" height="300" rx="30" fill="#f1e9e9" stroke="var(--muted)" stroke-width="3"/>`+T(300,140,'the donor bag','lbl')
+   +[[250,220],[340,250],[270,320],[350,380]].map((p,i)=>`<g>${mblob(p[0],p[1],20,90+i,.1,9,20,'var(--paper2)')}<circle cx="${p[0]}" cy="${p[1]}" r="10" class="nuc"/></g>`).join('')+T(300,475,'stem cells','sublbl')
+   +[0,1,2].map(i=>G(250+i*50,410-i*120+(i===2?60:0),small(.65,tcell(0,0,'tri','',i+3,'#e3c06a')),'dg','v'+i)).join('')+T(300,500,'and donor T cells (gold)','sublbl')
+   +L.map((p,i)=>G(p[0],p[1],`${mblob(0,0,30,95+i,.12,10,28,'#c2d7f1')}<ellipse cx="0" cy="0" rx="20" ry="18" class="nuc"/>`,'lk','k'+i)).join('')+T(680,530,'leftover leukemia cells','sublbl')
+   +G(850,60,small(.25,kidney(0,0,1))+ME(0,0,32),'','kid')},
+ chal:{type:'choice',q:'If every mature T cell is removed from the donor bag, what does the patient lose?',opts:[
+   {t:'Donor T cells that kill leftover leukemia',ok:true,why:'Donor T cells see the leukemia cells as foreign too. That is the graft-versus-leukemia effect, and it is why allogeneic transplants relapse less. Remove the T cells, and the leukemia is more likely to come back.'},
+   {t:'The stem cells that rebuild all of his marrow',why:'Stem cells are kept; only mature T cells are removed. His marrow still rebuilds, but the leftover leukemia gets a free run.'},
+   {t:'Every red cell and platelet the graft makes',why:'Red cells and platelets come from the stem cells, which stay in the bag. The real loss is quieter, and the leukemia grows back.'},
+   {t:'Nothing; the donor T cells only cause harm',why:'They also fight leukemia and infection. Treating them as pure harm throws away the best weapon against relapse.'}]},
+ async win(){const L=[[600,170],[700,240],[620,330]];await Promise.all([0,1,2].map(i=>moveTo('#v'+i,L[i][0]-40,L[i][1],1200)));
+   for(let i=0;i<3;i++){const k=stage.querySelector('#k'+i);if(k)fade(k,.15,700)}await wait(700);say(560,40,'graft versus leukemia: the same T cells, aimed at the cancer')},
+ take:'The donor T cells that cause GVHD also kill leftover leukemia (graft versus leukemia). Removing them lowers GVHD but raises relapse. Gentler conditioning means less inflammation but a higher risk the graft fails. Stem cell transplants treat blood cancers, Fanconi anemia, SCID, Wiskott-Aldrich and some autoimmune disease. GVHD can follow a liver transplant too (about 1 to 2%), and then it is often fatal.',map:'#idea-rej'},
+
 {id:'final',title:'Still working',where:'His right iliac fossa',clock:'Year 10',body:[IF],final:true,
  narr:`You are ten years into someone else's body. You still make urine every hour. Every day, a few pills keep his T cells from finishing what they started on day three, and every day those pills cost him a little: some infection risk, some sugar, some of your own filtering. That trade is transplant medicine.`,
  draw(){return bg('var(--node)')+G(760,140,kidney(0,0,.6)+ME(0,0,74),'','kid')
    +`<g transform="translate(200,270)"><line x1="0" y1="80" x2="620" y2="80" stroke="var(--muted)" stroke-width="2"/><path id="tl" d="M0,80 L620,80" stroke="var(--hot)" stroke-width="5"/>
-   ${[[30,'minutes','Hyperacute','preformed antibody, clots'],[300,'weeks to months','Acute','T cells in tubules, or C4d'],[560,'months to years','Chronic','intima thickens, scar']].map(([x,t,a,b],i)=>`<g class="tlb" opacity="0"><circle cx="${x}" cy="80" r="9" fill="var(--you)" stroke="var(--hot)" stroke-width="2"/><text x="${x}" y="54" class="lbl">${a}</text><text x="${x}" y="112" class="sublbl">${t}</text><text x="${x}" y="132" class="sublbl">${b}</text></g>`).join('')}</g>`
+   ${[[30,'minutes to hours','Hyperacute','preformed antibody, clots','type II, no rescue'],[300,'weeks to months','Acute','T cells in tubules, or C4d','mostly type IV, treatable'],[560,'months to years','Chronic','intima thickens, scar','mostly type IV, no rescue']].map(([x,t,a,b,c],i)=>`<g class="tlb" opacity="0"><circle cx="${x}" cy="80" r="9" fill="var(--you)" stroke="var(--hot)" stroke-width="2"/><text x="${x}" y="54" class="lbl">${a}</text><text x="${x}" y="112" class="sublbl">${t}</text><text x="${x}" y="132" class="sublbl">${b}</text><text x="${x}" y="152" class="sublbl" style="font-weight:700">${c}</text></g>`).join('')}</g>`
    +`<text x="190" y="545" class="zone">the three clocks of rejection</text>`},
  async play(){const p=stage.querySelector('#tl');if(p){const L=p.getTotalLength();p.style.strokeDasharray=L;p.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:RED?1:1800,fill:'forwards'})}
    for(const g of stage.querySelectorAll('.tlb')){await wait(550);if(!g.isConnected)return;fade(g,1,500)}},
  take:'Matching and the crossmatch prevent hyperacute rejection. Drugs that cut the T cell activation chain prevent acute rejection, at the price of infection, cancer and drug toxicity. Chronic rejection is the slow threat that only adherence holds off.',map:'#idea-rej'}
+]});
+})();
+
+</script>
+<script>
+(()=>{
+/* ---------- "When defense hurts you": hypersensitivity types II, III and IV (type I lives in players/mast.js).
+   Each scene puts you in a different body as the antibody or T cell doing the damage. Helpers are local. */
+const S=q=>stage.querySelector(q);
+const fx=()=>stage.querySelector('#fx');
+const sweep=()=>{const f=fx();if(f)f.innerHTML=''};
+const IGG='var(--ab)';
+const igg=(c)=>`<path d="M0,10 L0,0 M0,0 L-7,-9 M0,0 L7,-9" stroke="${c||IGG}" stroke-width="3.2" stroke-linecap="round" fill="none"/>`;
+const rcpt=(c)=>`<path d="M-6,8 L-6,-4 M6,8 L6,-4" stroke="${c||'var(--ink)'}" stroke-width="3.4" stroke-linecap="round"/>`;
+const rbc=(x,y,s)=>{s=s||1;return `<g transform="translate(${x},${y}) scale(${s})"><ellipse rx="34" ry="28" fill="#d9b8c2" stroke="#b994a2" stroke-width="2.5"/><ellipse rx="16" ry="12" fill="#cfa7b3"/></g>`};
+const clump=(x,y,s)=>{s=s||1;return `<g transform="translate(${x},${y}) scale(${s})"><circle r="6" fill="var(--you)" stroke="var(--bug)" stroke-width="1.4"/>${[0,1,2,3].map(k=>`<g transform="rotate(${k*90+20}) translate(0,-7)"><path d="M0,0 L0,-6 M0,-6 L-4,-11 M0,-6 L4,-11" stroke="${IGG}" stroke-width="2.2" stroke-linecap="round" fill="none"/></g>`).join('')}</g>`};
+function mastLike(r,seed,n){const R=rng(seed);let s=mblob(0,0,r,seed,.06,12,r*.92,'#cdb8df')+`<ellipse cx="${-r*.08}" cy="${r*.12}" rx="${r*.27}" ry="${r*.21}" class="nuc"/>`;
+  for(let k=0;k<(n||16);k++){const a=R()*Math.PI*2,d=.35+R()*.45;s+=`<circle cx="${(Math.cos(a)*r*d).toFixed(1)}" cy="${(Math.sin(a)*r*.9*d).toFixed(1)}" r="${(3.5+R()*2).toFixed(1)}" fill="var(--mastg)" opacity=".85" class="hgr"/>`}return s}
+/* four-panel layout shared by the two find scenes */
+function panel(id,px,py,title,sub,art){return G(0,0,`<rect x="${px}" y="${py}" width="330" height="222" rx="16" fill="var(--paper)" stroke="var(--line)" stroke-width="2.5" class="cellb"/>${art}
+  <text x="${px+165}" y="${py+186}" class="lbl">${title}</text><text x="${px+165}" y="${py+206}" class="sublbl">${sub}</text>`,'tc','t'+id)}
+const PX=[[190,48],[545,48],[190,292],[545,292]];
+function skinStrip(px,py){return `<rect x="${px+20}" y="${py+70}" width="290" height="90" rx="10" fill="var(--tissue)"/><path d="M${px+20},${py+70} H${px+310} V${py+92} H${px+20}Z" fill="var(--epi)"/>`}
+
+/* wrong answers here add immune complexes or tissue damage marks instead of bacteria */
+const _grow=grow;
+grow=function(n,area){if(curPid()!=='hyper')return _grow(n,area);area=area||[260,140,860,320];const f=fx();if(!f)return;
+  for(let i=0;i<n;i++){const x=area[0]+Math.random()*(area[2]-area[0]),y=area[1]+Math.random()*(area[3]-area[1]);const el=add(G(x,y,clump(0,0,1.1),'newbug'),f);pop(el,500)}};
+
+registerPlayer({id:'hyper',name:'When defense hurts you',role:'The antibodies and T cells behind types II, III and IV hypersensitivity',order:17,load0:0,meter:'Tissue damage',
+ blurb:'Type I belongs to the mast cell. Here you are the IgG that lands on the wrong target, the immune complex that lodges in a vessel, and the T cell that arrives days late.',
+ icon:(x,y)=>`<g transform="translate(${x},${y})">${rbc(0,0,.9)}${[-60,0,60].map(a=>`<g transform="rotate(${a}) translate(0,-34)">${igg()}</g>`).join('')}</g>`,
+ scenes:[
+
+{id:'t2kinds',title:'Where you land',where:'Four patients',clock:'Type II',body:['heart'],
+ note:'<b>You are an IgG antibody</b> aimed at something in your own body.',
+ narr:`You are an IgG antibody, made by a plasma cell that should never have been aimed at its own body. In type II hypersensitivity you bind something fixed in place, a molecule on a cell surface or in a tissue. What happens next depends on where you land. Here are four patients, each with antibodies like you on a different target.`,
+ extra:`<div class="goal"><b class="h">How this works</b>Type I hypersensitivity has its own player, the mast cell. This run covers the other three types: IgG on a fixed target (II), immune complexes (III) and T cells (IV). The meter tracks tissue damage, and every wrong move adds to it. A first-try answer earns a star.</div>`,
+ draw(){const P0=PX[0],P1=PX[1],P2=PX[2],P3=PX[3];
+   const a0=rbc(P0[0]+120,P0[1]+92)+[-150,-100,-50,0].map(a=>{const t=a*Math.PI/180;return `<g transform="translate(${(P0[0]+120+Math.cos(t)*36).toFixed(1)},${(P0[1]+92+Math.sin(t)*30).toFixed(1)}) rotate(${a+90}) translate(0,-8)">${igg()}</g>`}).join('')+`<g transform="translate(${P0[0]+236},${P0[1]+92})">${mac(0,0,40,7)}</g>`;
+   const a1=`<rect x="${P1[0]+30}" y="${P1[1]+110}" width="270" height="14" rx="5" fill="var(--fiber)" stroke="var(--muted)" stroke-width="1.5"/>`+[0,1,2,3,4,5,6].map(k=>`<g transform="translate(${P1[0]+56+k*38},${P1[1]+100})">${igg()}</g>`).join('')+`<g transform="translate(${P1[0]+250},${P1[1]+62})">${neu(0,0,22,5)}</g>`;
+   const cellM=(px,py,c)=>`<rect x="${px+30}" y="${py+104}" width="270" height="56" rx="10" fill="${c}" stroke="var(--muted)" stroke-width="1.5"/>`+[0,1,2,3].map(k=>`<g transform="translate(${px+80+k*56},${py+96})">${rcpt()}</g><g transform="translate(${px+80+k*56},${py+78})">${k%2?'':igg()}</g>`).join('');
+   const a2=cellM(P2[0],P2[1],'var(--epi)');const a3=cellM(P3[0],P3[1],'#e8cfc9');
+   return `<rect width="900" height="560" fill="var(--node)"/>`+panel(0,P0[0],P0[1],'Hemolytic anemia','IgG on red cells',a0)+panel(1,P1[0],P1[1],'Goodpasture','IgG on basement membrane',a1)
+    +panel(2,P2[0],P2[1],'Graves disease','IgG on the TSH receptor',a2)+panel(3,P3[0],P3[1],'Myasthenia gravis','IgG on the ACh receptor',a3)},
+ chal:{type:'find',q:'In one of these patients you destroy nothing and inflame nothing. You just switch a receptor on. Tap that patient.',
+  hint:'Ask what the antibody does once it binds in each panel.',
+  check(i){if(i===2)return {ok:true,why:'You bind the TSH receptor and act like TSH itself, with no hormone needed. The thyroid grows and pours out hormone: hyperthyroidism, with no cell killed. That is receptor-mediated type II.'};
+   if(i===0)return {why:'Here you coat red cells, spleen macrophages grab you by your Fc tail and eat the cells, and complement helps. That is cytotoxic type II: cells destroyed, direct Coombs positive.'};
+   if(i===1)return {why:'Here you bind type IV collagen in the glomerular and alveolar basement membranes. Complement and Fc receptors call in neutrophils that inflame the tissue, causing glomerulonephritis and lung bleeding. That is inflammatory type II.'};
+   return {why:'You do sit on a receptor here, but you block acetylcholine from binding and help strip the receptor away, so the muscle weakens. That turns the signal off, not on.'}}},
+ async win(){const t=S('#t2');if(!t)return;t.classList.add('glow');[0,1,3].forEach(k=>fade('#t'+k,.35,600));const f=fx();
+   const hs=[0,1,2,3,4].map(k=>add(G(270+k*30,410,`<circle r="5" fill="var(--hot)"/>`),f));
+   await Promise.all(hs.map((h,k)=>wait(k*120).then(()=>moveTo(h,250+k*40,330,900))));add(T(355,320,'thyroid hormone, no TSH needed','youlbl'),f);await wait(400)},
+ take:'Type II is mostly IgG against a fixed antigen on a cell or in tissue, in three flavors. Cytotoxic: hemolytic anemia, immune thrombocytopenia, transfusion reactions, hemolytic disease of the newborn, hyperacute rejection, penicillin hemolytic anemia. Inflammatory: Goodpasture. Receptor-mediated, with no cell injury: Graves turns the receptor on, myasthenia gravis blocks it.',map:'#idea-hs24'},
+
+{id:'csu',title:'Hives with no allergen',where:'Allergy clinic',clock:'Six months of hives',body:['arm'],
+ note:'<b>A different patient:</b> a 27-year-old woman with type 1 diabetes.',
+ narr:`She has had itchy wheals nearly every day for six months, and sometimes her lips swell. Skin tests to foods and pollens are all negative. But a drop of her own serum injected into her skin raises a wheal and flare. You are one of the IgG molecules in that serum, and you bind the high-affinity IgE receptor, FcεRI, on her mast cells. Two of you grab two receptors and pull them together.`,
+ draw(){let g=`<rect width="900" height="560" fill="var(--tissue)"/>${fibers(37,160,560)}<path d="M0,0 H900 V96 Q700,112 450,92 T0,100Z" fill="var(--epi)"/><text x="200" y="130" class="zone">skin</text>`;
+   g+=G(560,350,mastLike(110,9,26),'','mc');
+   [-120,-100,-80,-60].forEach((a,k)=>{const t=a*Math.PI/180,x=560+Math.cos(t)*110,y=350+Math.sin(t)*101;g+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${a+90})"><g transform="translate(0,-6)">${rcpt('var(--hot)')}</g></g>`});
+   g+=G(560,190,`<g transform="rotate(-22) translate(-14,0)">${igg()}</g><g transform="rotate(22) translate(14,0)">${igg()}</g>`,'','pair');
+   g+=G(740,190,`<g transform="scale(1.2)">${igg()}</g>`+ME(0,0,26),'','me');
+   return g+T(560,505,'mast cell in her skin','sublbl')+T(380,240,'FcεRI, with no IgE on it','sublbl')},
+ async play(){await moveTo('#pair',560,236,1400)},
+ chal:{type:'choice',q:'Her mast cells empty and she gets hives. In the Gell-Coombs scheme, which type is this?',opts:[
+   {t:'Type II',ok:true,why:'You bind a molecule fixed on her own cells and switch it on, the way Graves antibodies switch on the TSH receptor. That is receptor-mediated type II, even though the cell that fires is a mast cell and the rash looks allergic. The type follows the antibody and its target, not the symptoms.'},
+   {t:'Type I',why:'The wheals look exactly like type I, but there is no allergen and no IgE: her skin tests are negative and her serum alone raises a wheal. Call it an allergy and she spends months cutting foods that were never the problem.'},
+   {t:'Type III',why:'Complexes in skin vessels cause urticarial vasculitis, with wheals that last more than a day, leave bruising and use up complement. Hers come and go within hours, and you act on a fixed receptor, not as a floating clump.'},
+   {t:'Type IV',why:'T cell reactions take 1 to 3 days to build. Her cell-free serum raises a wheal within minutes, so the culprit is something dissolved in the fluid: antibody.'}]},
+ async win(){const f=fx();S('#mc').classList.add('glow');const gs=[...stage.querySelectorAll('#mc .hgr')];
+   await Promise.all(gs.map((c,k)=>{const cx=+c.getAttribute('cx'),cy=+c.getAttribute('cy');return fin(c.animate([{transform:'translate(0,0)',opacity:.85},{transform:`translate(${cx*.9}px,${cy*.9}px)`,opacity:0}],{duration:900,delay:k*20,fill:'forwards'}),900+k*20)}));
+   const w=add(`<ellipse cx="560" cy="80" rx="60" ry="22" fill="var(--paper)" stroke="var(--hot)" stroke-width="3" stroke-dasharray="6 5"/>`,f);
+   add(T(300,160,'wheal and flare from IgG, no allergen','youlbl'),f);await pop(w,500)},
+ take:'Chronic autoimmune urticaria: IgG autoantibodies against FcεRI (or against IgE) make mast cells degranulate with no allergen. It is receptor-mediated type II, it often comes with other autoimmune disease such as type 1 diabetes or thyroid disease, and omalizumab helps many of these patients.',map:'#idea-hs24'},
+
+{id:'serum',title:'Ten days later',where:'Blood, vessel walls, joints',clock:'Days 0 to 21',body:['heart','groin'],
+ note:'<b>A different patient:</b> a 50-year-old man treated with horse-derived antivenom after a snake bite.',
+ narr:`You are a new IgG molecule in a man who was given a large dose of foreign protein straight into a vein: antivenom made in horses. Some monoclonal antibody drugs can do the same thing. For about a week nothing happens, because his B cells are still learning to make you. Then you start meeting the horse protein that is still circulating.`,
+ draw(){const ox=230,oy=300,w=620,h=220;
+   let g=`<rect width="900" height="560" fill="var(--paper2)"/><line x1="${ox}" y1="${oy}" x2="${ox+w}" y2="${oy}" stroke="var(--ink)" stroke-width="2"/><line x1="${ox}" y1="${oy}" x2="${ox}" y2="${oy-h}" stroke="var(--ink)" stroke-width="2"/>`;
+   g+=T(ox+w/2,oy+24,'days after the dose','sublbl')+T(ox+40,oy-h-10,'level in blood','sublbl');
+   [0,7,14,21].forEach(d=>{const x=ox+d/21*w;g+=`<line x1="${x}" y1="${oy}" x2="${x}" y2="${oy+6}" stroke="var(--ink)" stroke-width="2"/>`+T(x,oy+42,'day '+d,'sublbl')});
+   g+=`<rect x="0" y="380" width="900" height="70" fill="var(--vessel)"/><rect x="0" y="450" width="900" height="22" fill="var(--vwall)"/>`+T(200,500,'small vessel wall','zone')+T(200,372,'blood','zone');
+   g+=`<path d="M${ox},${oy-200} L${ox+w*.3},${oy-170}" stroke="var(--you)" stroke-width="5" fill="none" stroke-linecap="round"/>`+T(ox+70,oy-210,'horse protein','sublbl');
+   return g},
+ chal:{type:'order',q:'Tap what happens, in order.',steps:[
+   {t:'B cells spend a week learning to make IgG against the horse protein',anim:async()=>{const f=fx();add(`<path d="M230,300 L416,300 L540,170" stroke="var(--hot)" stroke-width="5" fill="none" stroke-linecap="round"/>`,f);add(T(560,160,'IgG (you)','youlbl'),f);await wait(600)}},
+   {t:'New IgG meets leftover protein and they lock into small soluble clumps',anim:async()=>{const f=fx();add(`<path d="M416,300 Q470,90 540,300Z" fill="var(--muted)" opacity=".45"/>`,f);add(T(470,120,'immune complexes','youlbl'),f);
+     const cs=[0,1,2,3,4].map(k=>add(G(80+k*30,415,clump(0,0,1.2),'cl'),f));await Promise.all(cs.map((c,k)=>moveTo(c,300+k*110,410+(k%2)*12,1100)))}},
+   {t:'The clumps lodge in small vessel walls, glomeruli and joints',anim:async()=>{const cs=[...stage.querySelectorAll('.cl')];await Promise.all(cs.map((c,k)=>wait(k*80).then(()=>moveTo(c,+c.dataset.x,452,700))))}},
+   {t:'Complement is used up (C3 and C4 fall) and neutrophils pour in',anim:async()=>{const f=fx();const cs=[...stage.querySelectorAll('.cl')];cs.forEach(c=>add(`<circle cx="${+c.dataset.x+12}" cy="440" r="5" fill="var(--comp)"/>`,f));
+     const ns=[0,1,2].map(k=>add(G(120+k*40,410,neu(0,0,18,k+3),'nn'),f));await Promise.all(ns.map((n,k)=>moveTo(n,360+k*220,418,1100)))}},
+   {t:'Fever, rash, aching joints and protein in the urine',anim:async()=>{const f=fx();const b=add(`<rect x="430" y="64" width="150" height="236" fill="var(--hot)" opacity="0"/>`,f);await fade(b,.12,500);add(T(420,58,'fever, vasculitis, arthritis, nephritis','youlbl'),f);await wait(300)}},
+   {t:'The horse protein is used up, the clumps are cleared, and it fades',anim:async()=>{const f=fx();add(`<path d="M416,130 L520,300" stroke="var(--you)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M540,170 L850,120" stroke="var(--hot)" stroke-width="5" fill="none" stroke-linecap="round"/>`,f);
+     await Promise.all([...stage.querySelectorAll('.cl,.nn')].map(c=>fade(c,0,800)));add(T(600,368,'antigen gone: no new clumps form','youlbl'),f)}}],
+  bad:'Out of order. Complexes cannot form before there is IgG to meet the antigen, and they cannot do damage until they lodge somewhere. The picture resets while the clumps keep circulating.'},
+ async badAnim(){sweep();await wait(400)},
+ async win(){await wait(300)},
+ take:'Serum sickness is systemic type III: about 1 to 2 weeks after a large dose of foreign protein, new IgG meets antigen still in the blood, and the complexes deposit in vessels, kidneys and joints, fix complement (low C3 and C4) and recruit neutrophils. It resolves on its own once the antigen is cleared. The Arthus reaction is the local version: antigen injected into the skin of someone with lots of IgG already (a booster given too soon) forms complexes right there, with swelling and sometimes necrosis within hours.',map:'#idea-hs24'},
+
+{id:'ppd',title:'A firm bump',where:'Forearm skin',clock:'48 hours',body:['arm'],
+ note:'<b>You are a memory Th1 cell</b> in a nurse who was exposed to tuberculosis years ago.',
+ narr:`You are a memory CD4 T cell, a Th1 cell, left over from an old, contained tuberculosis exposure. Two days ago a small amount of tuberculin protein (PPD) was injected into the skin of her forearm. A dendritic cell there showed you a piece of it on MHC II, and you woke up. Today the spot is red, raised and firm.`,
+ draw(){let g=`<rect width="900" height="560" fill="var(--tissue)"/>${fibers(43,190,560)}<path d="M0,0 H900 V96 Q680,96 600,40 Q520,-6 440,40 Q360,96 0,100Z" fill="var(--epi)"/><text x="200" y="130" class="zone">dermis</text>`;
+   g+=G(300,340,dc(0,0,17,true)+mhc2(0,-36,'var(--you)')+T(0,90,'Dendritic cell','sublbl'),'','dcg');
+   g+=G(430,300,tcell(0,0,'sq','CD4',3)+ME(0,0,34),'','me');
+   g+=G(620,330,mac(0,0,44,6),'','m1')+G(720,220,mac(0,0,38,8),'','m2')+G(760,430,mac(0,0,40,11),'','m3');
+   g+=G(560,200,tcell(0,0,'sq','CD4',7),'','t2')+G(640,470,tcell(0,0,'sq','CD4',9),'','t3');
+   return g+T(600,150,'the bump','sublbl')},
+ async play(){await Promise.all([cytokine(450,280,600,320,'IFN-gamma',0),cytokine(452,300,700,420,'TNF',400)])},
+ chal:{type:'choice',q:'The nurse reading the test presses on the bump. What makes it firm?',opts:[
+   {t:'Th1 cells and activated macrophages packed in',ok:true,why:'You made IFN-gamma and TNF. IFN-gamma activates macrophages (the IL-12, IFN-gamma, TNF axis), TNF opens the vessels, and monocytes and more T cells pour in along with fibrin. Cells, not fluid, make it firm. That is type IVa, classic delayed-type hypersensitivity.'},
+   {t:'Plasma leaked out of vessels by histamine',why:'A histamine wheal rises in 15 minutes and fades within an hour: that is a type I skin prick test. This bump took two days to build and feels hard because it is full of cells.'},
+   {t:'Immune complexes and the neutrophils they call',why:'That is an Arthus reaction, type III, which peaks within hours and needs lots of IgG already in the blood. The PPD test involves no antibody at all; it reads T cell memory.'},
+   {t:'Skin cells coated by her IgG and complement',why:'Antibody coating her own cells would be type II. Nothing in this test is aimed at her skin cells; the target is a bacterial protein, and the responders are T cells.'}]},
+ async win(){const f=fx();['#m1','#m2','#m3'].forEach(q=>{const m=S(q);if(m)m.classList.add('glow')});
+   const mo=[0,1,2].map(k=>add(G(860,300+k*60,`<g>${mblob(0,0,18,30+k,.12,9,18,'var(--mac)')}<ellipse cx="0" cy="0" rx="8" ry="6" class="nuc"/></g>`),f));
+   await Promise.all(mo.map((m,k)=>moveTo(m,520+k*70,380+(k%2)*40,1200)));add(T(600,70,'induration: cells, not fluid','youlbl'),f)},
+ take:'Type IV is T cell mediated and delayed, usually 1 to 3 days, and it needs 100 to 1000 times more protein antigen than an antibody reaction. Type IVa is Th1 cells and macrophages, as in the PPD test. If the antigen is never cleared, weeks of the same response build a granuloma, as in tuberculosis.',map:'#idea-hs24'},
+
+{id:'t4sub',title:'Four kinds of delayed',where:'Four patients',clock:'Type IV subtypes',body:['arm'],
+ note:'<b>You are a Th17 cell</b> activated after a new drug.',
+ narr:`Type IV is not one reaction. Which T cell leads, and which cytokines it makes, decides what the tissue looks like. Now you are a Th17 cell, switched on two days after a patient started a new antibiotic. You make IL-17, which tells the cells around you to pour out IL-8.`,
+ draw(){const P0=PX[0],P1=PX[1],P2=PX[2],P3=PX[3];
+   const a0=skinStrip(P0[0],P0[1])+`<path d="M${P0[0]+110},${P0[1]+92} Q${P0[0]+165},${P0[1]+40} ${P0[0]+220},${P0[1]+92}" fill="var(--epi)" stroke="var(--muted)" stroke-width="2"/>`;
+   const cx=P1[0]+165,cy=P1[1]+96;const a1=`<circle cx="${cx}" cy="${cy}" r="62" fill="var(--epi2)"/><circle cx="${cx}" cy="${cy}" r="48" fill="none" stroke="var(--mac)" stroke-width="16"/><circle cx="${cx}" cy="${cy}" r="22" fill="var(--paper2)" stroke="var(--muted)" stroke-width="1.5"/>`;
+   const a2=skinStrip(P2[0],P2[1])+`<path d="M${P2[0]+120},${P2[1]+70} q30,-34 70,-20 l-10,20z" fill="var(--epi)" stroke="var(--muted)" stroke-width="2"/>`;
+   const a3=skinStrip(P3[0],P3[1])+[0,1,2,3,4,5,6,7,8].map(k=>`<circle cx="${P3[0]+60+k*28}" cy="${P3[1]+78+(k%2)*6}" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1.5"/>`).join('');
+   return `<rect width="900" height="560" fill="var(--node)"/>`+panel(0,P0[0],P0[1],'PPD skin test','firm bump at 48 hours',a0)+panel(1,P1[0],P1[1],'Chronic asthma','thick, twitchy airways',a1)
+    +panel(2,P2[0],P2[1],'Stevens-Johnson','skin peeling, days after a drug',a2)+panel(3,P3[0],P3[1],'Pustular drug rash','pustules, days after a drug',a3)},
+ chal:{type:'find',q:'Tap the reaction you are driving.',hint:'Follow your cytokines: what does IL-8 call into the skin?',
+  check(i){if(i===3)return {ok:true,why:'Acute generalized exanthematous pustulosis (AGEP) is type IVd. Drug-activated T cells, Th17 among them, make IL-17, which drives IL-8, and IL-8 pulls neutrophils into the skin by the thousands. Sterile pustules form within days and clear when the drug stops.'};
+   if(i===0)return {why:'That one is type IVa: Th1 cells making IFN-gamma and TNF to activate macrophages. No neutrophil-filled pustules form in a PPD bump.'};
+   if(i===1)return {why:'Chronic allergic asthma is type IVb: Th2 cells making IL-4, IL-5 and IL-13, with eosinophils and type 2 innate lymphoid cells, often riding along with type I. Those are not your cytokines.'};
+   return {why:'Stevens-Johnson syndrome and toxic epidermal necrolysis are type IVc: drug-specific cytotoxic T cells kill skin cells and the top layer peels away (allopurinol is a classic trigger). Poison ivy contact dermatitis is IVc too. You call neutrophils; you do not kill skin cells yourself.'}}},
+ async win(){const t=S('#t3');if(!t)return;t.classList.add('glow');[0,1,2].forEach(k=>fade('#t'+k,.35,600));const f=fx();
+   const ns=[0,1,2,3].map(k=>add(G(560+k*90,540,neu(0,0,14,k+2)),f));await Promise.all(ns.map((n,k)=>moveTo(n,600+k*70,372,1000)));
+   add(T(545,284,'IL-17, then IL-8, then neutrophils','youlbl'),f)},
+ take:'Type IV subtypes by the lead cell: IVa, Th1 and macrophages (PPD test, granulomas); IVb, Th2 and eosinophils (chronic allergic asthma); IVc, cytotoxic T cells (poison ivy contact dermatitis, Stevens-Johnson syndrome and TEN); IVd, T cells with IL-17 and IL-8 bringing neutrophils (AGEP).',map:'#idea-hs24'},
+
+{id:'mixed',title:'Not always one type',where:'The big picture',clock:'Afterward',body:[],final:true,
+ narr:`The four types are a sorting tool, and a useful one: they show that allergy, autoimmunity and transplant rejection run on the same machinery. But many real diseases use more than one mechanism at once. Psoriasis, rheumatoid arthritis, Crohn disease, celiac disease and multiple sclerosis run on Th1 and Th17 cells, often with antibodies on top, and chronic asthma mixes type I with type IVb.`,
+ draw(){const box=(id,x,y,t,s)=>G(x,y,`<rect x="-120" y="-50" width="240" height="100" rx="14" fill="var(--paper)" stroke="var(--line)" stroke-width="2.5"/>`+T(0,-8,t)+T(0,16,s,'sublbl'),'',id);
+   return `<rect width="900" height="560" fill="var(--node)"/>`+box('b1',330,110,'Type I','IgE and mast cells')+box('b2',730,110,'Type II','IgG on a fixed target')+box('b3',330,450,'Type III','immune complexes')+box('b4',730,450,'Type IV','T cells, 1 to 3 days')
+    +G(530,280,`<circle r="86" fill="var(--paper2)" stroke="var(--hot)" stroke-width="3" stroke-dasharray="7 5"/>`+T(0,-30,'Mixed')+T(0,-6,'psoriasis, RA, Crohn','sublbl')+T(0,14,'celiac, MS','sublbl')+T(0,34,'chronic asthma','sublbl'),'','mix')},
+ async play(){const m=S('#mix');if(!m)return;m.style.opacity=0;await wait(300);
+   await Promise.all(['#b1','#b2','#b3','#b4'].map((q,k)=>{const e=S(q);if(!e)return;const x=+e.dataset.x,y=+e.dataset.y;return moveTo(e,x+(530-x)*.18,y+(280-y)*.18,1000)}));await pop(m,600)},
+ take:'Gell-Coombs: I is IgE and mast cells, II is IgG on a fixed target, III is immune complexes, IV is T cells. It shows the common machinery behind allergy, autoimmunity and rejection and helps recall the main mechanism, but it cannot cleanly sort diseases with several mechanisms, its categories keep changing, and a type alone does not choose a therapy.',map:'#idea-hs24'}
+
 ]});
 })();
 
@@ -3882,6 +4162,203 @@ registerPlayer({id:'lab',name:'The blood sample',role:'Ride through the immunolo
  async play(){for(const r of stage.querySelectorAll('.rrow')){r.style.opacity=1;r.animate([{opacity:0},{opacity:1}],{duration:RED?1:350});await wait(220)}},
  take:'For the boy with X-linked SCID, the cure is a hematopoietic stem cell transplant, and flow cytometry helps there too: a cell sorter (FACS) can purify the rare CD34-positive stem cells from donor blood.',map:'#idea-flow'}
 
+]});
+})();
+
+</script>
+<script>
+(()=>{
+/* ---------- lifespan player helpers (local to this file) */
+const S=id=>stage.querySelector(id);
+const fx=()=>stage.querySelector('#fx');
+const here=id=>curPid()==='lifespan'&&SCENES[ST.i]&&SCENES[ST.i].id===id;
+const YL=(x,y,t)=>`<text x="${x}" y="${y}" class="youlbl" style="text-anchor:middle">${t}</text>`;
+const say=(x,y,t)=>{if(!stage.querySelector('#fx'))return Promise.resolve();const el=add(YL(x,y,t));return pop(el,350)};
+/* a blood-forming stem cell: a small blast, big nucleus, thin rim of blue cytoplasm */
+const hsc=(x,y,seed)=>`<g>${mblob(x,y,24,seed||61,.08,10,24,'var(--b)')}<ellipse cx="${x}" cy="${y}" rx="16" ry="15" class="nuc"/></g>`;
+const rbc=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="5" fill="#d9b8c2" stroke="#b994a2" stroke-width="1"/>`;
+/* a labeled card for find puzzles */
+function card(w,h,lines,head){return `<rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="14" fill="var(--paper)" stroke="var(--line)" stroke-width="2" class="cellb"/>
+  ${head?`<text x="0" y="${-h/2+28}" class="lbl">${head}</text>`:''}${lines.map((t,k)=>`<text x="0" y="${(head?-h/2+58:-((lines.length-1)*11))+k*22}" style="font-size:13px;text-anchor:middle;fill:var(--ink)">${t}</text>`).join('')}`}
+function person(label,sub,h){h=h||1;return `<g transform="scale(${h})"><path d="M-26,60 Q-28,8 0,6 Q28,8 26,60Z" fill="var(--shirt)" stroke="var(--skinl)" stroke-width="1.4"/>
+  <circle cx="0" cy="-12" r="17" fill="var(--skin)" stroke="var(--skinl)" stroke-width="1.4"/></g>
+  <text x="0" y="${66*h+14}" class="lbl" style="font-size:13.5px">${label}</text>${sub?`<text x="0" y="${66*h+30}" class="sublbl">${sub}</text>`:''}`}
+const baby=()=>`<rect x="-58" y="-10" width="116" height="40" rx="18" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><ellipse cx="-10" cy="0" rx="34" ry="14" fill="var(--shirt)"/><circle cx="26" cy="-2" r="12" fill="var(--skin)" stroke="var(--skinl)"/>`;
+const hex=(x,y)=>`<path transform="translate(${x},${y})" d="M-5,-3 L0,-6 L5,-3 L5,3 L0,6 L-5,3Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.3"/>`;
+/* an encapsulated coccus: gold bug inside a ring of sugar */
+const capsBug=(x,y)=>`<g transform="translate(${x},${y})">${[0,1,2,3,4,5,6,7].map(k=>{const a=k/8*Math.PI*2;return hex((Math.cos(a)*19).toFixed(1),(Math.sin(a)*19).toFixed(1))}).join('')}${coccus(-5,0,8,x%7)}${coccus(6,0,8,y%5)}</g>`;
+async function redraw(sc){await wait(900);stage.innerHTML=DEFS+sc.draw()+'<rect width="900" height="560" fill="url(#tis)" pointer-events="none"/><g id="fx"></g>'}
+
+registerPlayer({id:'lifespan',name:'One lifetime',role:'Be one person\'s blood-forming stem cells, from the yolk sac to old age',order:18,load0:40,meter:'Risk',
+ blurb:'Move house three times before birth, raise an immune system that starts out calm, and watch it age.',
+ icon:(x,y)=>`<g>${hsc(x,y,61)}${rbc(x-34,y+22)}${rbc(x+34,y+20)}${tcell(x+30,y-30,'tri','',3).replace(/<text[^>]*>[^<]*<\/text>/,'')}</g>`,
+ scenes:[
+
+{id:'intro',title:'You',where:'Yolk sac, early pregnancy',clock:'Week 3',body:[],
+ narr:`You are the blood-forming stem cells of one person, a girl who is still a few millimeters long. Every red cell, platelet and immune cell she will ever have comes from you. Over her life you will move house, build an immune system that starts out calm and careful, and then watch it slowly wear down.`,
+ extra:`<div class="goal"><b class="h">How this works</b>You are her stem cells, and you live her whole life. The meter shows how vulnerable she is at each stage. Get the next step right and the risk drops. Get it wrong and you see what goes wrong, and the risk grows. A first-try answer earns a star.</div>`,
+ draw(){return `<rect width="900" height="560" fill="var(--paper2)"/>
+   <circle cx="520" cy="300" r="190" fill="var(--epi)" stroke="var(--epi2)" stroke-width="6"/><text x="520" y="530" class="zone" style="text-anchor:middle">yolk sac wall</text>
+   ${[[430,220],[600,230],[470,380],[620,370],[520,300]].map((p,k)=>`<g>${[0,1,2,3,4].map(j=>rbc(p[0]+Math.cos(j*1.3)*20,p[1]+Math.sin(j*1.3)*14)).join('')}</g>`).join('')}
+   <text x="700" y="150" class="sublbl">blood islands</text>
+   ${G(520,300,hsc(0,0,61)+ME(0,0,34),'','me')}`},
+ async play(){const m=S('#me');if(m)await pop(m,600)}},
+
+{id:'sites',title:'Moving house',where:'Inside the womb',clock:'Weeks 3 to 40',body:[[60,104],'marrow'],
+ narr:`A growing baby needs blood long before she has bones, so you cannot stay in one place. You will work in three main factories, one after another, and along the way you seed the organ where T cells go to school.`,
+ draw(){return `<rect width="900" height="560" fill="var(--paper2)"/>
+   <circle cx="270" cy="400" r="70" fill="var(--epi)" stroke="var(--epi2)" stroke-width="4"/><text x="270" y="500" class="lbl">yolk sac</text>
+   <path d="M390,250 Q440,170 560,190 Q610,210 590,270 Q560,330 450,320 Q380,310 390,250Z" fill="var(--mac)" opacity=".75" stroke="var(--muted)" stroke-width="2"/><text x="490" y="350" class="lbl">fetal liver</text>
+   <path d="${blob(640,120,30,4,.12,9,40)}" fill="var(--node)" stroke="var(--t)" stroke-width="3"/><path d="${blob(690,120,30,9,.12,9,40)}" fill="var(--node)" stroke="var(--t)" stroke-width="3"/><text x="665" y="185" class="lbl">thymus</text>
+   <path d="M730,300 q-30,-24 0,-40 q30,10 50,0 q30,16 0,40 L780,450 q30,24 0,40 q-20,-10 -50,0 q-30,-16 0,-40Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+   <rect x="742" y="300" width="26" height="150" rx="8" fill="var(--follicle)"/><text x="755" y="520" class="lbl">bone marrow</text>
+   <g id="ys"></g><g id="lv"></g><g id="th"></g><g id="bm"></g>
+   ${G(270,400,hsc(0,0,61)+ME(0,0,34),'','me')}`},
+ chal:{type:'order',q:'Tap where you make blood, in the order it happens.',steps:[
+   {t:'Blood islands in the yolk sac make the first red cells',anim:async()=>{const g=S('#ys');if(!g)return;g.innerHTML=[0,1,2,3,4,5].map(j=>rbc(270+Math.cos(j)*44,400+Math.sin(j)*36)).join('');await pop(g,400)}},
+   {t:'The fetal liver becomes the main blood factory',anim:async()=>{await moveTo('#me',490,255,1000);const g=S('#lv');if(!g)return;g.innerHTML=[0,1,2,3,4,5].map(j=>rbc(470+Math.cos(j)*70,255+Math.sin(j)*40)).join('')+neu(560,240,12,4);await pop(g,400)}},
+   {t:'Young T cell precursors leave to settle in the thymus',anim:async()=>{const g=S('#th');if(!g)return;g.innerHTML=[0,1,2].map(j=>`<circle cx="${520+j*10}" cy="${240}" r="7" fill="var(--t)" stroke="var(--ink)" stroke-width="1"/>`).join('');
+     await Promise.all([...g.children].map((c,j)=>fin(c.animate([{transform:'translate(0,0)'},{transform:`translate(${110+j*16-j*10}px,${-120+j*6}px)`}],{duration:RED?1:1000,fill:'forwards'}),1000)))}},
+   {t:'The bone marrow takes over, and keeps the job for life',anim:async()=>{await moveTo('#me',755,375,1100);const g=S('#bm');if(!g)return;g.innerHTML=[0,1,2,3].map(j=>rbc(755+(j%2?9:-9),320+j*36)).join('');await pop(g,400)}}],
+  bad:'Out of order. The marrow is not ready until late in pregnancy, and T cell precursors have to come from a factory that is already running. She is left short of blood cells for weeks.'},
+ async badAnim(){await redraw(this)},
+ async win(){setLoad(ST.load-4);say(600,540,'yolk sac, then liver, then marrow for life')},
+ take:'First trimester: the yolk sac (mostly red cells, very few lymphocytes). Second trimester: the fetal liver, with T cell precursors seeding the thymus. Third trimester on: the bone marrow. The order is part of why so many immune cells are still immature at birth.',map:'#cell-thy'},
+
+{id:'window',title:'When the gift crosses',where:'Placenta',clock:'Weeks 10 to 40',body:[[60,104]],
+ narr:`She cannot make much antibody of her own yet, so she borrows her mother's. FcRn receptors on the placenta pick up her mother's IgG and carry it across. They do not work at the same pace the whole time.`,
+ draw(){const seg=[['weeks','10 to 20'],['weeks','20 to 30'],['weeks','30 to 40'],['after','birth']];
+   return `<rect width="900" height="560" fill="var(--paper2)"/><rect x="0" y="0" width="900" height="140" fill="var(--vessel)"/><text x="190" y="30" class="zone">mother's blood</text>
+   ${[260,380,500,620,740].map((x,k)=>`<g transform="translate(${x},${80+(k%2)*24})"><g transform="scale(1.5)">${ab(0,0,0)}</g></g>`).join('')}
+   <path d="M0,140 Q225,120 450,140 T900,140 V190 Q675,210 450,190 T0,190Z" fill="var(--epi2)"/><text x="190" y="172" class="zone" style="fill:var(--ink)!important">placenta (FcRn)</text>
+   ${seg.map((s,k)=>G(270+k*170,350,card(150,110,[s[1]],s[0]),'tc','t'+k)).join('')}
+   <text x="525" y="460" class="sublbl">time line of her life before and just after birth</text>
+   ${G(525,510,baby(),'','bb')}`},
+ chal:{type:'find',q:'Tap the stretch when most of her mother\'s IgG crosses into her.',hint:'Transfer starts in the first trimester, but the amount is very different from one stretch to the next.',
+  check(i){const w=['Transfer starts around week 10 to 12, but only a trickle crosses this early. A baby born now would have almost no borrowed IgG.',
+     'The amount is climbing, but most has still not arrived. A baby born at 28 weeks carries far less maternal IgG than a baby born at term.','',
+     'After birth no more IgG crosses into her blood. Breast milk brings secretory IgA and some IgM into her gut, which guards the mucosa, not her bloodstream.'];
+   if(i===2)return {ok:true,why:'Most maternal IgG crosses after about week 30. So a baby born preterm misses much of the gift and starts life with limited borrowed protection, one reason preterm infants are so vulnerable to infection.'};
+   return {why:w[i]+' While the timing is wrong, her blood stays thin on antibody.'}}},
+ async win(){const c=S('#t2');if(c)c.classList.add('glow');const fxg=fx();const abs=[];
+   for(let k=0;k<6;k++){const el=add(G(300+k*80,90,`<g transform="scale(1.5)">${ab(0,0,0)}</g>`),fxg);abs.push(el)}
+   await Promise.all(abs.map((a,k)=>wait(k*90).then(()=>moveTo(a,560+(k%3)*24-24,488+Math.floor(k/3)*10,1300))));
+   setLoad(ST.load-4);say(525,550,'born at term: a full load of borrowed IgG')},
+ take:'Most IgG crosses after week 30, so preterm babies have little maternal immunity. Borrowed IgG is not all good: it can carry the mother\'s autoantibodies or anti-RhD into the baby, and it can neutralize some live vaccines such as measles. After birth, breast milk adds IgA and some IgM for the gut.',map:'#idea-fabfc'},
+
+{id:'skew',title:'Born calm',where:'Newborn nursery',clock:'Birth',body:['thymus'],
+ narr:`She is born. For nine months your T cells lived inside another person, surrounded by her proteins, and they learned to keep the peace. Now the world rushes in: milk, food, and trillions of new gut bacteria. The balance of her T helper cells is not the same as an adult's.`,
+ draw(){return `<rect width="900" height="560" fill="var(--paper2)"/>
+   ${G(320,420,baby()+T(0,60,'Newborn'),'','bb')}
+   ${G(600,260,`<line x1="0" y1="-120" x2="0" y2="90" stroke="var(--ink)" stroke-width="5"/><path d="M-40,90 L40,90 L0,60Z" fill="var(--ink)"/>
+     <g id="beam"><line x1="-180" y1="-120" x2="180" y2="-120" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+     <g id="panL"><line x1="-180" y1="-120" x2="-180" y2="-40" stroke="var(--muted)" stroke-width="2"/><path d="M-240,-40 Q-180,0 -120,-40Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>${tcell(-200,-74,'arc','?',2)}${tcell(-158,-74,'sq','?',4)}</g>
+     <g id="panR"><line x1="180" y1="-120" x2="180" y2="-40" stroke="var(--muted)" stroke-width="2"/><path d="M120,-40 Q180,0 240,-40Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>${tcell(180,-74,'tri','?',3)}</g></g>`,'','scale')}
+   <text x="600" y="400" class="sublbl">her T helper balance</text>`},
+ chal:{type:'choice',q:'Which way do her newborn T helper cells lean?',opts:[
+   {t:'Toward Tregs and Th2, away from Th1',ok:true,why:'Fetal and newborn immunity favors tolerance: Tregs and Th2 outweigh Th1. That kept her from attacking her mother and lets her accept foods and new gut flora. The cost is weaker Th1 defense and an easier path to IgE allergy (type I hypersensitivity).'},
+   {t:'Toward Th1 and Th17, ready to inflame',why:'If she were born that way, her T cells would have attacked her mother\'s cells in the womb, and every new food and gut bacterium would set off inflammation in her bowel. The real newborn balance runs the other way.'},
+   {t:'Evenly balanced, already like an adult',why:'Her cells change in number and in function through infancy and early childhood. Treat her like an adult and you miss why newborns get allergies more easily and handle some infections poorly.'},
+   {t:'No T helper cells at all until 6 months',why:'T cells leave the thymus well before birth, so she has plenty. They are tuned toward tolerance, not missing. A baby truly born without T cells has SCID.'}]},
+ async win(){const b=S('#beam');if(b)await fin(b.animate([{transform:'rotate(0deg)'},{transform:'rotate(-9deg)'}],{duration:RED?1:1200,fill:'forwards'}),1200);
+   if(!here('skew'))return;const L=S('#panL'),R=S('#panR');
+   if(L)L.querySelectorAll('text.sublbl').forEach((t,k)=>t.textContent=['Treg','Th2'][k]);if(R)R.querySelectorAll('text.sublbl').forEach(t=>t.textContent='Th1');
+   setLoad(ST.load-4);say(600,460,'tolerance first: Tregs and Th2 outweigh Th1')},
+ take:'Early life is plastic and relatively "hypo-immune": tolerance to foods and the environment builds, Th2 skewing makes type I hypersensitivity easier to set up, and pyogenic bacteria (streps and staphs) are a bigger threat. What she meets now shapes her immune balance for life.',map:'#idea-th'},
+
+{id:'subclass',title:'The slow subclass',where:'Pediatric clinic',clock:'14 months',body:['neck'],
+ narr:`Her mother's IgG faded away somewhere between 4 and 8 months. Her own IgG has been climbing ever since, and her total IgG is normal for her age. Still, this is her third ear infection with <em>Streptococcus pneumoniae</em>, a bacterium wrapped in a sugar capsule.`,
+ draw(){return `<rect width="900" height="560" fill="var(--epi)"/><rect x="0" y="0" width="900" height="120" fill="var(--epi2)"/><text x="190" y="30" class="zone" style="fill:var(--ink)!important">middle ear lining</text>
+   ${[[300,260],[430,330],[560,250],[690,330],[480,450],[760,440]].map((p,k)=>G(p[0],p[1],capsBug(0,0),'cb','b'+k)).join('')}
+   ${[[360,190],[620,180],[800,250]].map((p,k)=>G(p[0],p[1],`<g transform="scale(1.6)">${ab(0,0,180)}</g>`,'ab','a'+k)).join('')}
+   <text x="560" y="540" class="sublbl">sugar capsule: hexagons around each gold bacterium</text>`},
+ async play(){idle(()=>stage.querySelectorAll('.ab').forEach(a=>moveTo(a,+a.dataset.x+(Math.random()*30-15),+a.dataset.y+(Math.random()*20-10),1500,'ease-in-out')),1800)},
+ chal:{type:'choice',q:'Her total IgG is normal. Which part of her antibody response is still lagging?',opts:[
+   {t:'IgG2 against capsule sugars',ok:true,why:'IgG subclasses mature at different speeds. IgG2 carries much of the T-independent response to polysaccharides and rises slowest, so responses to capsule sugars stay weak well into childhood. Encapsulated bacteria (pneumococcus, Hib, meningococcus) use that gap, which is why children get conjugate vaccines.'},
+   {t:'IgG1 against protein toxins',why:'IgG1 is the subclass that rises first and reaches adult levels earliest, so her answer to protein antigens like tetanus toxoid is already good. Fixing that leaves the capsule untouched, and the ear infections keep coming.'},
+   {t:'IgE against parasite worms',why:'IgE handles worms and drives allergy. It does nothing against a sugar capsule, so the bacteria keep growing in her middle ear.'},
+   {t:'IgM, her very first antibody',why:'IgM is the first antibody she ever made, and she has made it since before birth. Plain sugars do trigger some IgM, but without IgG2 the capsule is poorly opsonized and the infections return.'}]},
+ async win(){clearIdle();const abs=[...stage.querySelectorAll('.ab')],bs=[...stage.querySelectorAll('.cb')];const fxg=fx();
+   const more=[0,1,2].map(k=>add(G(200+k*300,140,`<g transform="scale(1.6)">${ab(0,0,180,'var(--hot)')}</g>`),fxg));
+   const all=abs.concat(more);await Promise.all(all.map((a,k)=>bs[k]?moveTo(a,+bs[k].dataset.x,+bs[k].dataset.y-30,1200):null));
+   if(!here('subclass'))return;await Promise.all(bs.map(b=>fade(b,.25,600)));setLoad(ST.load-4);say(560,500,'IgG2 catches up later in childhood')},
+ take:'Maternal IgG fades by about 4 to 8 months, which is when inherited antibody deficiencies such as XLA usually start to show. A healthy baby\'s own IgG never falls below about 40% of adult levels, but IgG2 and anti-polysaccharide responses mature slowly and unevenly, leaving young children open to encapsulated bacteria.',map:'#idea-tind'},
+
+{id:'hygiene',title:'Four childhoods',where:'Four homes',clock:'Ages 0 to 5',body:['gut'],
+ note:'<b>A detour:</b> for this scene, four different children, each with a different early life.',
+ narr:`The microbes a child meets early on help set the immune balance. Gut bacteria, farm animals, soil and even worms all push the immune system somewhere. Here are four early childhoods.`,
+ draw(){const C=[['farm, cows and dogs','C-section, formula','few antibiotic courses'],['city, a cat at home','vaginal birth, breastfed','many antibiotic courses'],['farm, cows and dogs','vaginal birth, breastfed','few antibiotic courses'],['city, no pets','vaginal birth, formula','few antibiotic courses']];
+   return `<rect width="900" height="560" fill="var(--paper2)"/>${C.map((c,k)=>G(255+k*178,290,card(162,250,c,'child '+'ABCD'[k])+`<g transform="translate(0,36)">${person('','',.8)}</g>`,'tc','t'+k)).join('')}`},
+ chal:{type:'find',q:'Tap the child whose early life is linked to the lowest risk of allergy and asthma.',hint:'Each line of a card is one early exposure. Some of them push toward allergy and some push away.',
+  check(i){const w=['A farm with animals protects, but a C-section and formula both change which bacteria colonize the gut first, and that early flora is linked to more allergy.',
+     'Vaginal birth and breastfeeding help, and so may a pet. But many courses of antibiotics in early childhood keep knocking down the developing gut flora, and that is linked to more allergy and asthma.','',
+     'Vaginal birth and few antibiotics help, but formula instead of breast milk and a city home with no animals mean fewer early microbial exposures.'];
+   if(i===2)return {ok:true,why:'Child C has every protective exposure: farm animals, vaginal birth (her first bacteria come from her mother), breast milk, and few antibiotics. Early microbial signals push the immune system toward Th1 and Tregs and away from the Th2 bias she was born with.'};
+   return {why:w[i]+' While you chose that child, the allergy risk you were trying to lower stays higher.'}}},
+ async win(){const c=S('#t2');if(c)c.classList.add('glow');await Promise.all([cytokine(610,160,700,60,'microbial signals',0),cytokine(610,180,520,60,'Th1 + Treg',300)]);
+   setLoad(ST.load-4);say(610,470,'early microbes, a calmer balance')},
+ take:'The hygiene hypothesis: as early infections and parasites fell in industrialized countries, allergy and autoimmunity rose (type 1 diabetes is 3 to 4 times more common in Finland than next door in Russian Karelia), and germ-free animals get more allergy unless given flora early. It is not the whole story: asthma in poor inner cities stays high, and diet, birth mode, antibiotics, pollution and stress all shape the immune system and microbiome.',map:'#idea-flora'},
+
+{id:'repertoire',title:'Fewer new recruits',where:'Thymus and lymph nodes',clock:'Age 60',body:['thymus'],
+ narr:`Your thymus started shrinking at puberty, and by now it sends out only a trickle of new naive T cells. Each new T cell carries its own one-of-a-kind receptor (the shape on top). Even so, her blood T cell count is still close to normal.`,
+ draw(){const sh=['tri','sq','arc','zig','bar'];const pos=[];for(let r=0;r<3;r++)for(let c=0;c<6;c++)pos.push([290+c*95,170+r*120]);
+   return nodeBG('lymph node, T cell zone')+pos.map((p,k)=>[1,4,8,10,13,16].includes(k)?`<circle cx="${p[0]}" cy="${p[1]}" r="20" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4" class="gap"/>`:G(p[0],p[1],tcell(0,0,sh[(k*3)%5],'',k),'tt','c'+k)).join('')
+     +`<text x="530" y="530" class="sublbl">dashed circles: space left by T cells that died</text>`},
+ chal:{type:'choice',q:'Few new T cells come from the thymus. How do her numbers stay up, and what does it cost?',opts:[
+   {t:'Old clones divide to fill space; variety shrinks',ok:true,why:'This is homeostatic proliferation. The T cells she already has, many of them memory cells, divide to fill the space. The count holds, but the same clones copy themselves, so the repertoire narrows (oligoclonality), and worn-out cells pile up, such as CD8 cells that lost CD28 after years of stimulation.'},
+   {t:'The thymus regrows each time she gets sick',why:'Involution does not reverse with infection; illness and stress shrink the thymus further. Waiting for a regrown thymus, the gaps stay open and a new germ finds no T cell to answer it.'},
+   {t:'Her marrow sends T cells that skip the thymus',why:'A T cell that never went through the thymus was never tested by positive and negative selection. It would be useless or dangerous. T cells only become T cells in the thymus.'},
+   {t:'Each T cell grows extra receptors to cover gaps',why:'Each T cell keeps one receptor specificity for life (allelic exclusion). A cell cannot add new shapes, so the gaps in her repertoire stay gaps.'}]},
+ async win(){const gaps=[...stage.querySelectorAll('.gap')];const fxg=fx();
+   for(const g of gaps){if(!g.isConnected)return;const x=+g.getAttribute('cx'),y=+g.getAttribute('cy');const el=add(G(x,y,tcell(0,0,'tri','',x%5)),fxg);pop(el,350);g.remove();await wait(RED?1:200)}
+   if(!here('repertoire'))return;setLoad(ST.load-3);say(530,500,'numbers back, but many of the same shape')},
+ take:'Aging T cells: fewer naive cells from a shrinking thymus, homeostatic proliferation of the old ones, a narrower repertoire (oligoclonality), more memory cells, and more exhausted or senescent effectors. A truly new germ is less likely to meet a T cell that fits it.',map:'#cell-thy'},
+
+{id:'elder',title:'Inflammaging',where:'Her blood, a routine checkup',clock:'Age 80',body:['marrow'],
+ narr:`She is 80. Her immune system is not simply weaker; it has changed shape. Some things are turned up, some are turned down. Five of these cards describe her honestly.`,
+ draw(){const C=[['IL-6 and TNF','at rest: higher'],['NK cells: fewer,','each kills more'],['fever with','infection: blunted'],['antibody affinity','maturation: weaker'],['wound healing:','slower'],['answer to capsule','sugars: weaker']];
+   return `<rect width="900" height="560" fill="var(--paper2)"/>${C.map((c,k)=>G(300+(k%3)*230,190+Math.floor(k/3)*210,card(200,150,c),'tc','t'+k)).join('')}
+   <text x="530" y="540" class="sublbl">each card: one change between age 30 and age 80</text>`},
+ chal:{type:'find',q:'Five cards are true of her at 80. Tap the one that is not.',hint:'Read each card as a claim about an older immune system, then decide whether it holds.',
+  check(i){const w=['True. Inflammaging: older adults run a higher baseline of inflammatory cells and cytokines (IL-6, TNF, CRP) even when well.','',
+     'True. Older adults mount a smaller fever, so serious infections like pneumonia can show up as confusion or falls with little or no fever.',
+     'True. Germinal centers work less well with age, so antibodies are lower affinity and shorter lived.',
+     'True. Wounds heal more slowly with age.',
+     'True. Anti-polysaccharide responses fall with age; with the 23-valent plain sugar vaccine, only about half of older adults respond to at least 15 of the 23 serotypes, which is part of why conjugate pneumococcal vaccines are used.'];
+   if(i===1)return {ok:true,why:'That card is backwards. Older adults have more NK cells, but each one kills less well. More cells, weaker killing, which fits the overall pattern of immunosenescence.'};
+   return {why:w[i]+' While you checked a true card, the false one is still standing.'}}},
+ async win(){const c=S('#t1');if(!c)return;c.classList.add('glow');const ts=c.querySelectorAll('text');if(ts[0])ts[0].textContent='NK cells: more,';if(ts[1])ts[1].textContent='each kills less';
+   await pop(c,500);setLoad(ST.load-3);say(530,505,'immunosenescence plus inflammaging')},
+ take:'Key changes in old age: less output from thymus and marrow, a narrow repertoire, more memory and senescent cells, higher baseline inflammation (inflammaging), more but weaker NK cells, weaker antibody affinity and sugar responses, poorer antigen presentation, blunted fever and slower healing. These changes also feed the aging of metabolism, hormones and muscle.',map:'#cell-nk'},
+
+{id:'ifn',title:'The silent alarm',where:'Her airway, a winter virus',clock:'Age 82',body:['lung'],
+ narr:`She has fought off colds and flu for 80 years. Now a new coronavirus reaches her airway cells. The infected cells do what they always do: they release their warning signal to the cells next door. The neighbors never react, and the virus spreads cell to cell.`,
+ draw(){const xs=[260,390,520,650,780];return `<rect width="900" height="560" fill="var(--tissue)"/><rect x="0" y="0" width="900" height="130" fill="var(--lymph)"/><text x="190" y="30" class="zone">airway</text>
+   ${xs.map((x,k)=>G(x,250,epi(0,0,118,150,31+k,k===1),'','e'+k)).join('')}${G(390,150,virus(0,0,1.6),'','vir')}
+   <rect x="0" y="400" width="900" height="160" fill="var(--vessel)"/><text x="190" y="545" class="zone">her blood, reaching the tissue</text>
+   ${[[300,450],[460,470],[620,450],[760,480]].map((p,k)=>G(p[0],p[1],`<g transform="scale(1.5)">${ab(0,0,0,'var(--you)')}</g>`,'aab','y'+k)).join('')}
+   ${[0,1,2,3].map(k=>G(390,250,`<circle r="6" fill="var(--hot)"/>`,'sig','s'+k)).join('')}`},
+ async play(){await wait(300);const s=[...stage.querySelectorAll('.sig')];await Promise.all(s.map((d,k)=>moveTo(d,[300,330,460,480][k],[340,360,350,330][k],1200)));
+   if(!here('ifn'))return;await Promise.all(s.map(d=>fade(d,.35,500)))},
+ chal:{type:'choice',q:'Her infected cells send the warning, and nothing happens. What is waiting in her blood?',opts:[
+   {t:'Antibodies that neutralize type I interferon',ok:true,why:'Autoantibodies against type I interferons (IFN-alpha and IFN-omega) become more common with age. They mop up the warning, so the neighbors never enter the antiviral state and NK cells are not armed. In COVID-19 these autoantibodies account for a real share of deaths in older adults.'},
+   {t:'A broken gene for making type I interferon',why:'Inborn errors of the interferon pathway do cause severe COVID-19, mostly in younger people. But she has handled viruses for 80 years, and her infected cells are releasing the signal right now, so the gene works. Something is neutralizing the signal after it leaves.'},
+   {t:'Antibodies that block the ACE2 entry receptor',why:'Blocking ACE2 would keep the virus out of her cells, not help it spread. The problem here is that the neighbors never hear the warning.'},
+   {t:'Tregs that switch off her antiviral T cells',why:'T cells arrive days later. The failure here is in the first hours: the innate warning reaches the neighbors and they do not react, because it is being neutralized on the way.'}]},
+ async win(){const s=[...stage.querySelectorAll('.sig')],y=[...stage.querySelectorAll('.aab')];
+   await Promise.all(y.map((a,k)=>s[k]?moveTo(a,+s[k].dataset.x,+s[k].dataset.y+22,1100):null));if(!here('ifn'))return;
+   y.forEach(a=>a.classList.add('glow'));await Promise.all(s.map(d=>fade(d,0,500)));setLoad(ST.load-3);say(560,390,'autoantibodies catch the warning')},
+ take:'Not every problem in old age is a missing cell. Anti-type I interferon autoantibodies rise with age and sharply raise the risk of dying from COVID-19, a reminder that aging can add harmful immune activity as well as take protection away.',map:'#cell-ifn'},
+
+{id:'life',title:'A whole life',where:'Bone marrow',clock:'Age 82',body:['marrow'],final:true,
+ narr:`You have made her blood since she was a few millimeters long. Her immune system started out calm and careful, grew strong in her middle years, and slowly wore down. Both ends of life were the vulnerable ones.`,
+ draw(){const M=[[230,'womb','yolk sac to marrow'],[380,'birth','Treg and Th2 lean'],[530,'childhood','IgG2 catches up'],[680,'age 60','fewer new T cells'],[820,'age 80','inflammaging']];
+   return `<rect width="900" height="560" fill="var(--paper2)"/><line x1="200" y1="300" x2="860" y2="300" stroke="var(--muted)" stroke-width="3"/>
+   ${M.map((m,k)=>G(m[0],300,`<circle r="10" fill="${k===2||k===3?'var(--hot)':'var(--you)'}" stroke="var(--ink)" stroke-width="1.4"/><text x="0" y="${k%2?44:-26}" class="lbl">${m[1]}</text><text x="0" y="${k%2?62:-44}" class="sublbl">${m[2]}</text>`,'mk','m'+k)).join('')}
+   <text x="530" y="420" class="sublbl">gold: the vulnerable ends of life. blue: the strong middle.</text>
+   ${G(230,300,ME(0,0,26),'','me')}`},
+ async play(){for(let k=1;k<5;k++){if(!here('life'))return;await moveTo('#me',[230,380,530,680,820][k],300,700)}},
+ take:'Immune function is weakest at both ends of life. Babies lean on borrowed IgG, answer sugars poorly and are skewed toward tolerance; older adults have a shrunken thymus, a narrow repertoire, background inflammation and weaker responses. Vaccines and care at both ends are built around those gaps.',map:'#cell-vac'}
 ]});
 })();
 
@@ -4296,7 +4773,7 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
    +G(690,360,bcell(0,0,3)+T(0,52,'B cell'),'','bc')+G(806,486,mastC(32,5,{fc:true,ang:[-150,-120,-90,-60,-30]})+ME(0,0,44)+T(-6,62,'you, no IgE yet','sublbl'),'','me')},
  async play(){await moveTo('#tc0',404,254,1600)},
  chal:{type:'choice',q:'What does this T cell have to become for you to end up armed against peanut?',opts:[
-   {t:'A Th2 cell, making IL-4 and IL-13',ok:true,why:'IL-4 locks the T cell into Th2, and IL-4 with IL-13 tells the B cell to switch its antibody class to IgE. Th2 cells also make IL-5, which you will meet later.'},
+   {t:'A Th2 cell, making IL-4 and IL-13',ok:true,why:'IL-4 locks the T cell into Th2. At the B cell itself, follicular helper T cells (Tfh) hand over IL-4, and IL-4 with IL-13 tells the B cell to switch its antibody class to IgE. Th2 cells also make IL-5, which you will meet later.'},
    {t:'A Th1 cell, making IFN-gamma',why:'The B cell would switch to IgG against peanut instead, and no IgE would ever reach you. IFN-gamma actively pushes the response away from Th2. That is not what happened to this boy.'},
    {t:'A regulatory T cell, making IL-10 and TGF-beta',why:'That is what happens in most babies who eat peanut early: oral tolerance, and nobody gets armed. But this protein came in through inflamed skin, and the T cell tilted toward Th2.'},
    {t:'A Th17 cell, making IL-17',why:'IL-17 calls neutrophils against fungi and extracellular bacteria. The node fills with neutrophils that have nothing to do, and still no IgE.'}]},
@@ -4312,7 +4789,7 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
    +T(760,300,'empty receptors','sublbl')},
  async play(){const es=[...stage.querySelectorAll('.fe')];idle(()=>es.forEach(e=>{if(e.dataset.lock)return;moveTo(e,Math.max(200,Math.min(860,+e.dataset.x+Math.random()*30-15)),126+Math.random()*14,1800,'ease-in-out')}),1900)},
  chal:{type:'choice',q:'IgE drifts past you. Which receptor do you use to catch it and keep it?',opts:[
-   {t:'FcεRI, the high-affinity receptor',ok:true,why:'FcεRI grips the tail (Fc) of IgE so tightly that it stays on you for weeks to months. Mast cells and basophils carry it.'},
+   {t:'FcεRI, the high-affinity receptor',ok:true,why:'FcεRI grips the tail (Fc) of IgE so tightly that it stays on you for weeks to months. Mast cells and basophils carry it, and so do eosinophils.'},
    {t:'FcγRIII (CD16), an Fc receptor',why:'That receptor holds IgG, not IgE. The IgE drifts away and is cleared in a couple of days, and you stay unarmed. CD16 is how NK cells do ADCC.'},
    {t:'CD23, the low-affinity IgE receptor',why:'CD23 holds IgE loosely and sits mostly on B cells, where it helps regulate IgE production. It lets go long before peanut could ever arrive.'},
    {t:'The complement receptor CR1',why:'CR1 grabs C3b-coated things. IgE does not activate complement, so nothing sticks to you.'}]},
@@ -4435,13 +4912,13 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
  async play(){await Promise.all([cytokine(640,370,560,300,'IL-5',0),cytokine(420,410,480,300,'IL-5',300),cytokine(700,370,760,300,'eotaxin',600)])},
  chal:{type:'choice',q:'Which cell is arriving, and what is calling it?',opts:[
    {t:'Eosinophils, called by IL-5 and by eotaxin',ok:true,why:'IL-5 from Th2 cells and from you makes eosinophils grow and survive, and eotaxin pulls them into the tissue. They release major basic protein and their own leukotrienes, bringing a second wave of swelling and airway narrowing hours later: the late phase.'},
-   {t:'Neutrophils, called by IL-8 and C5a',why:'Neutrophils are built for bacteria. You signal for the wrong reinforcements while the real late-phase cells keep arriving and his airway tightens again.'},
+   {t:'B cells, called by the chemokine CXCL13',why:'CXCL13 pulls B cells into lymph node follicles, not into inflamed gut or airway tissue. Nobody answers that call here, and his airway tightens again anyway.'},
    {t:'NK cells, called by IL-12 and IL-15',why:'NK cells look for cells missing MHC I, like virus-infected or tumor cells. There is nothing here for them to kill, and the late phase rolls on without them.'},
    {t:'Plasma cells, called by IL-2 from T cells',why:'Plasma cells stay in the marrow and lymph nodes making antibody. IL-2 is a T cell growth signal. Nobody new shows up to explain his returning symptoms.'}]},
  async win(){const es=[...stage.querySelectorAll('.eo')],tg=[[300,360],[500,340],[560,520],[790,350],[800,500]];
    await Promise.all(es.map((e,k)=>wait(k*150).then(()=>moveTo(e,tg[k][0],300,700)).then(()=>moveTo(e,tg[k][0],tg[k][1],900))));setLoad(ST.load+8);
    add(T(560,220,'late phase: eosinophils in the tissue','youlbl'),fx())},
- take:'The late phase comes hours later and is driven by eosinophils, Th2 cells and basophils; it is a big reason steroids are used in asthma. Separately, anaphylaxis can come back hours later with no new bite (a biphasic reaction), so he is watched for several hours and goes home with two epinephrine autoinjectors.',map:'#cell-eos'},
+ take:'The late phase comes hours later and runs on the cytokines you made: IL-5 brings eosinophils, TNF and VEGF keep the swelling going, and neutrophils and Th2 cells pour in too. It is a big reason steroids are used in asthma. Separately, anaphylaxis can come back hours later with no new bite (a biphasic reaction), so he is watched for several hours and goes home with two epinephrine autoinjectors.',map:'#cell-eos'},
 
 {id:'types',title:'Four ways to hurt',where:'While he sleeps',clock:'That night',body:[],
  narr:`While he sleeps, think about where you fit. You are type I hypersensitivity: IgE, mast cells, minutes. The immune system has three other ways to injure its own body, and none of them need you.`,
@@ -4454,7 +4931,7 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
    [70,150,230].forEach((x,j)=>{const cx=P2[0]+x,cy=P2[1]+96;ic+=`<circle cx="${cx}" cy="${cy}" r="7" fill="var(--muted)"/>`+[0,1,2,3].map(k=>`<g transform="translate(${cx},${cy}) rotate(${k*90+j*20})"><g transform="translate(0,-8)">${ab(0,0,0)}</g></g>`).join('')+`<circle cx="${cx+10}" cy="${cy-12}" r="3.5" fill="var(--you)"/>`});
    const t4=`<g transform="translate(${P3[0]+110},${P3[1]+96})">${tcell(0,0,'sq','CD4',2)}</g><g transform="translate(${P3[0]+220},${P3[1]+92})">${mac(0,0,40,4)}</g><text x="${P3[0]+165}" y="${P3[1]+40}" class="sublbl">no antibody</text>`;
    return `<rect width="900" height="560" fill="var(--node)"/>`+panel(0,P0[0],P0[1],'Type I: you','IgE on mast cells, minutes',a1)+panel(1,P1[0],P1[1],'Type II','antibody stuck to a cell or receptor',rbc)
-    +panel(2,P2[0],P2[1],'Type III','antigen-antibody clumps in vessel walls',ic)+panel(3,P3[0],P3[1],'Type IV','T cells and macrophages, 2 to 3 days',t4)},
+    +panel(2,P2[0],P2[1],'Type III','antigen-antibody clumps in vessel walls',ic)+panel(3,P3[0],P3[1],'Type IV','T cells and macrophages, 1 to 3 days',t4)},
  async play(){setLoad(Math.min(ST.load,8))},
  chal:{type:'find',q:'A different patient: 10 days after antivenom made from horse antibodies, she has fever, hives, aching joints and low complement. Tap her mechanism.',
   hint:'Match the timing and the low complement to one of the four panels.',
@@ -4465,13 +4942,28 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
  async win(){S('#t2').classList.add('glow');[0,1,3].forEach(k=>fade('#t'+k,.35,600));await wait(400);add(T(355,284,'immune complexes: type III','youlbl'),fx());await wait(400)},
  take:'Type I: IgE and mast cells, minutes (anaphylaxis, hives, allergic asthma). Type II: antibody against a cell or receptor (hemolytic anemia, Graves, myasthenia). Type III: immune complexes (serum sickness, post-strep GN, lupus). Type IV: T cells, delayed (contact dermatitis, PPD). Only types I to III use antibody.',map:'#idea-hs24'},
 
+{id:'words',title:'Getting the words right',where:'Allergy clinic, family history',clock:'6 weeks later',body:[],
+ narr:`Before any testing, the allergist takes a family history. His father has had hay fever every spring since childhood and reacts to grass on a skin test. His mother wheezes and gets a blocked nose within an hour of aspirin or ibuprofen, and even with naproxen, which she had never taken before. These words get used loosely, so the allergist sorts them with care.`,
+ draw(){const card=(id,x,who,l1,l2,l3)=>G(x,170,`<rect x="-114" y="-90" width="228" height="190" rx="14" fill="var(--paper)" stroke="var(--line)" stroke-width="2.5"/>`+T(0,-56,who)+T(0,-18,l1,'sublbl')+T(0,6,l2,'sublbl')+T(0,30,l3,'sublbl'),'',id);
+   return `<rect width="900" height="560" fill="var(--node)"/>`+card('c0',290,'His father','hay fever every spring','skin test: grass','since childhood')
+    +card('c1',530,'His mother','wheeze within an hour','of aspirin or ibuprofen','any brand, even new')+card('c2',770,'Him','IgE against peanut','eczema as a baby','anaphylaxis at 6')
+    +G(560,440,mastC(56,6,{ige:true,ang:[-150,-120,-90,-60,-30]})+ME(0,0,76)+T(0,96,'Mast cell (you)'),'','me')},
+ chal:{type:'choice',q:'Which description fits his mother\'s reaction to ibuprofen?',opts:[
+   {t:'A hypersensitivity, not an allergy',ok:true,why:'A hypersensitivity is any reproducible reaction to a dose most people tolerate. An allergy is the subset driven by an antigen-specific immune response, which needs sensitization first. Blocking the COX-1 enzyme shunts her arachidonic acid toward leukotrienes, with no IgE and no T cell memory: a non-immunological hypersensitivity, like the cough or swelling some people get on ACE inhibitors.'},
+   {t:'An IgE allergy in an atopic person',why:'That describes her son and her husband. Her reaction needs no IgE at all, so labeling it an IgE allergy sends the team hunting for an antibody that is not there.'},
+   {t:'An IgE allergy, without atopy',why:'An allergy needs a specific immune response, and there is none: no sensitization, no IgE against ibuprofen. Any drug that blocks COX-1 sets her off, even one she has never met, which an antigen-specific allergy could not do.'},
+   {t:'A delayed T cell drug allergy',why:'Type IV drug reactions build over 1 to 3 days, usually as rashes, not as wheeze within an hour. And a T cell allergy is still an allergy, antigen-specific with memory. Hers has neither.'}]},
+ async win(){S('#c1').classList.add('glow');fade('#c0',.5,500);fade('#c2',.5,500);add(T(420,296,'hypersensitivity without an immune response','youlbl'),fx());
+   await wait(300);add(T(180,322,'father: atopic, an inherited tendency to make IgE','youlbl'),fx());await wait(600)},
+ take:'Hypersensitivity: reproducible symptoms from a dose most people tolerate, including non-immune reactions to NSAIDs or ACE inhibitors. Allergy: a hypersensitivity driven by an antigen-specific immune response, after sensitization (any of types I to IV). Atopy: a personal or family tendency to make IgE to ordinary exposures, the inherited soil for type I. Not every IgE allergy is atopy.',map:'#idea-hs1'},
+
 {id:'test',title:'Proving it',where:'Allergy clinic, forearm skin',clock:'6 weeks later',body:[],
  narr:`Six weeks later he sees an allergist. Your cousins in the skin of his forearm carry the same IgE against peanut, which means the allergist can use them to show what happened.`,
  draw(){return skinBG()+G(380,330,mastC(46,4,{ige:true,ang:[-150,-120,-90,-60,-30]})+T(0,72,'mast cell','sublbl'),'','m1')+G(580,360,mastC(46,8,{ige:true,ang:[-150,-120,-90,-60,-30]})+ME(0,0,62),'','me')+G(780,320,mastC(46,12,{ige:true,ang:[-150,-120,-90,-60,-30]}),'','m3')
    +G(580,-10,`<path d="M0,0 L0,50" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/><path d="M-4,50 L0,66 L4,50Z" fill="var(--ink)"/><circle cx="0" cy="68" r="7" fill="${PN}" stroke="${PS}"/>`,'','lance')},
  chal:{type:'choice',q:'How does the allergist show he is armed against peanut?',opts:[
    {t:'A skin prick test or a peanut-specific IgE level',ok:true,why:'Peanut extract pricked into the skin crosslinks IgE on skin mast cells, and within 15 to 20 minutes a raised wheal with a red flare appears. The blood test measures IgE against peanut, even against Ara h 2 itself.'},
-   {t:'A patch test with peanut, read at 48 hours',why:'A patch test finds type IV contact allergy (nickel, fragrances), a T cell reaction. Peanut IgE never shows up on it, and the family goes home falsely reassured.'},
+   {t:'A patch test with peanut, read at 72 hours',why:'A patch test (patch on for 48 hours, read at 72) finds type IV contact allergy (nickel, fragrances), a T cell reaction. Peanut IgE never shows up on it, and the family goes home falsely reassured.'},
    {t:'A PPD skin test read at 48 to 72 hours',why:'The PPD checks T cell memory for tuberculosis, also type IV. It says nothing about peanut.'},
    {t:'A total IgE level in the blood',why:'Total IgE runs high in many children with eczema and asthma. It cannot tell anyone which food he reacts to.'}]},
  async win(){await moveTo('#lance',580,44,600,'ease-in');await moveTo('#lance',580,-10,500);
@@ -4516,6 +5008,57 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
    await fade('#bound',.15,1200);add(T(560,230,'weeks later: little IgE left on you','youlbl'),fx())},
  take:'Omalizumab disarms you by mopping up free IgE. Oral immunotherapy (tiny daily doses of peanut) retrains the response toward tolerance. Neither one replaces carrying epinephrine.',map:'#cell-mas'},
 
+{id:'bio',title:'Cutting one wire',where:'His cousin\'s airway',clock:'Treatment',body:['lung'],
+ note:'<b>A different patient:</b> his 15-year-old cousin, with severe asthma.',
+ narr:`His cousin has severe asthma. Her blood is full of eosinophils, and inhaled steroids no longer keep her out of the emergency room. You and the cells around you run on one type 2 circuit, and a family of antibody drugs each cut a single wire in it. Her doctor starts mepolizumab.`,
+ draw(){const ar=(x1,y1,x2,y2)=>`<path d="M${x1},${y1} L${x2},${y2}" stroke="var(--muted)" stroke-width="2.5" marker-end="url(#hyAr)" fill="none"/>`;
+   let g=`<rect width="900" height="560" fill="var(--tissue)"/>${fibers(23,120,560)}<defs><marker id="hyAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10Z" fill="var(--muted)"/></marker></defs>`;
+   for(let i=0;i<13;i++)g+=epi(200+i*56,42,52,76,90+i);
+   g+=T(640,108,'airway lining','zone');
+   g+=G(470,290,tcell(0,0,'tri','Th2',3),'','th2');
+   g+=G(730,190,bcell(0,0,5)+T(0,-34,'B cell','sublbl'),'','bc');
+   g+=G(730,450,eos(0,0,4)+T(56,-30,'Eosinophil','sublbl'),'','eo');
+   g+=G(300,440,mastC(46,5,{ige:true,ang:[-150,-120,-90,-60,-30]})+ME(0,0,64),'','me');
+   g+=ar(340,150,440,262)+ar(500,272,690,200)+ar(500,312,690,440)+ar(758,178,812,300);
+   const tgt=(id,x,y,lab,art,lx,ly)=>G(x,y,art+`<circle r="30" fill="transparent"/>`+T(lx||0,ly||-24,lab,'lbl'),'tc',id);
+   const dot=`<circle r="9" fill="var(--hot)" stroke="var(--paper)" stroke-width="2"/>`;
+   g+=tgt('t0',330,140,'TSLP',dot,0,-18);
+   g+=tgt('t1',706,212,'IL-4R alpha',`<path d="M-6,-8 L-6,4 L6,4 L6,-8" stroke="var(--hot)" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,-64,30);
+   g+=tgt('t2',600,380,'IL-5',dot,0,34);
+   g+=tgt('t3',704,450,'IL-5 receptor',`<path d="M-6,-8 L-6,4 L6,4 L6,-8" stroke="var(--hot)" stroke-width="3.5" fill="none" stroke-linecap="round" transform="rotate(-90)"/>`,-30,40);
+   g+=tgt('t4',820,320,'IgE',`<g transform="rotate(20)">${igeY()}</g><g transform="translate(14,10) rotate(-25)">${igeY()}</g>`,6,-30);
+   return g},
+ chal:{type:'find',q:'Tap the molecule that mepolizumab binds.',hint:'Each label is a real drug target. Only one belongs to this drug.',
+  check(i){if(i===2)return {ok:true,why:'Mepolizumab is anti-IL-5. Without IL-5, far fewer eosinophils are made, matured and kept alive, so fewer reach her airway, and her flares drop. IL-5 is the eosinophil cytokine.'};
+   if(i===0)return {why:'That is the target of tezepelumab: TSLP, the alarm the irritated airway lining sends at the very top of the type 2 chain. Mepolizumab acts further down, and her eosinophils keep coming while you chase the wrong wire.'};
+   if(i===1)return {why:'That is dupilumab. It blocks the receptor chain that IL-4 and IL-13 share, which cuts IgE switching and Th2 signals. Mepolizumab works on a different cytokine.'};
+   if(i===3)return {why:'Close. Benralizumab binds the IL-5 receptor on the eosinophil itself and marks the cell for NK cells to destroy. Mepolizumab catches the cytokine before it ever reaches that receptor.'};
+   return {why:'That is omalizumab, the drug you already met. Mepolizumab leaves IgE alone, and her eosinophils keep pouring in.'}}},
+ async win(){const t=S('#t2');if(!t)return;t.classList.add('glow');['#t0','#t1','#t3','#t4'].forEach(q=>fade(q,.35,500));
+   const f=fx();const ms=[0,1,2].map(k=>add(G(560+k*60,520,`<g transform="rotate(${k*40-40})">${igeY('#7a5fb5')}</g>`),f));
+   await Promise.all(ms.map((m,k)=>moveTo(m,586+k*14,352+(k%2)*8,1100)));await fade('#eo',.4,800);
+   add(T(640,540,'IL-5 caught: eosinophils fade','youlbl'),f)},
+ take:'One wire each: omalizumab binds IgE, dupilumab blocks the IL-4 receptor alpha chain (IL-4 and IL-13), mepolizumab binds IL-5, benralizumab blocks the IL-5 receptor on eosinophils, and tezepelumab binds TSLP, the alarm from the airway lining. Biologics are one of two strategies against allergy; the other retrains the response to one allergen.',map:'#cell-eos'},
+
+{id:'ait',title:'Retraining',where:'Nasal lining',clock:'Age 16, three years of treatment',body:['neck'],
+ narr:`At 16 he also has bad hay fever from ragweed every fall. Instead of more pills, he starts allergen immunotherapy: a ragweed tablet under his tongue every day from late summer through ragweed season, three years running, the first one taken at the allergist's office. Repeated, controlled doses of one allergen slowly retrain the whole response to it, you included.`,
+ draw(){const R=rng(41);let g=`<rect width="900" height="560" fill="var(--tissue)"/>${fibers(31,200,560)}`;
+   for(let i=0;i<13;i++)g+=epi(200+i*56,42,52,76,120+i);g+=T(250,104,'nasal lining','zone');
+   for(let k=0;k<7;k++)g+=G(250+k*95,150+R()*60,`<circle r="10" fill="var(--you)" stroke="var(--bug)" stroke-width="2"/>`+[0,1,2,3,4,5].map(j=>`<circle cx="${(Math.cos(j)*10).toFixed(1)}" cy="${(Math.sin(j)*10).toFixed(1)}" r="2.4" fill="var(--bug)"/>`).join(''),'pol','p'+k);
+   g+=T(320,250,'ragweed pollen protein','sublbl');
+   return g+G(560,420,mastC(76,7,{ige:true})+ME(0,0,100)+T(0,124,'Mast cell (you)'),'','me')},
+ async play(){const ps=[...stage.querySelectorAll('.pol')];idle(()=>ps.forEach(p=>{if(p.dataset.lock)return;moveTo(p,Math.max(220,Math.min(860,+p.dataset.x+Math.random()*50-25)),Math.max(130,Math.min(240,+p.dataset.y+Math.random()*30-15)),1800,'ease-in-out')}),1900)},
+ chal:{type:'choice',q:'A year in, which change in his immune system means the treatment is working?',opts:[
+   {t:'A rise in ragweed-specific IgG4',ok:true,why:'IgG4 against ragweed is a blocking antibody: it catches the pollen protein before it reaches the IgE on you, so nothing crosslinks. It comes with IL-10 from regulatory T cells and a shrinking Th2 pool. Rising specific IgG4 is the classic marker that the course is working.'},
+   {t:'A rise in ragweed-specific Th2 cells',why:'That is the opposite of the goal. More Th2 cells would mean more IgE and a worse fall. Immunotherapy shrinks the allergen-specific Th2 pool and shifts toward regulatory T cells and Th1.'},
+   {t:'A drop in mast cells in his nose',why:'Immunotherapy retrains the response; it does not wipe out tissue mast cells, and nobody counts them to judge success. You are still here. What changes is that the pollen gets intercepted before it reaches your IgE.'},
+   {t:'A drop in his baseline tryptase',why:'Baseline tryptase reflects how many mast cells a person has (it is high in mastocytosis). It does not move when an allergy improves, so it tells the allergist nothing here.'}]},
+ async win(){clearIdle();const ps=[...stage.querySelectorAll('.pol')];const f=fx();
+   await Promise.all(ps.map((p,k)=>{p.dataset.lock=1;const y=add(G(+p.dataset.x+(k%2?30:-30),330,`<g transform="rotate(${k%2?-20:20})">${igeY('var(--hot)')}</g>`),f);
+     return wait(k*90).then(()=>pop(y,300)).then(()=>moveTo(y,+p.dataset.x,+p.dataset.y+18,700)).then(()=>moveTo(p,+p.dataset.x,+p.dataset.y+4,300))}));
+   add(T(560,300,'IgG4 catches the pollen first','youlbl'),f);S('#me').classList.add('glow')},
+ take:'Allergen immunotherapy gives repeated, controlled doses of one allergen (pollens, dust mites, molds, insect venoms, some foods) to rebalance the response: fewer Th2 cells, regulatory T cells making IL-10 and TGF-beta, and blocking IgG4 that competes with IgE. Shots under the skin (SCIT) need supervised visits and monthly maintenance. Tablets or drops under the tongue (SLIT) are taken at home after a supervised first dose, with more local but fewer systemic reactions, because mouth and gut tissue lean toward tolerance.',map:'#cell-treg'},
+
 {id:'leap',title:'The next baby',where:'Home',clock:'Years later',body:[],final:true,
  narr:`His baby sister is 5 months old and has eczema too. This time the plan is different. After checking with her doctor, she starts eating peanut early, as smooth peanut butter thinned into her food, a few times every week. Her gut meets Ara h 2 first, and her T cells learn tolerance instead of Th2.`,
  draw(){return `<rect width="900" height="560" fill="var(--node)"/><g transform="translate(260,90)"><text x="200" y="-30" class="lbl" style="font-size:17px">Peanut allergy by age 5 (LEAP trial)</text>
@@ -4528,6 +5071,147 @@ registerPlayer({id:'mast',name:'The mast cell',role:'Armed with IgE against pean
    fade('#v1',1,400);fade('#v2',1,400)},
  take:'Eating peanut early and regularly in infancy (around 4 to 6 months for high-risk babies, after checking with a doctor) cut peanut allergy by about 80% in the LEAP trial. The gut teaches tolerance; inflamed skin teaches IgE. You only fire if you were armed first.',map:'#idea-hs1'}
 
+]});
+})();
+
+</script>
+<script>
+/* The first microbes: a Bifidobacterium in a newborn's gut, order 19. Workshop 2 part 2 (development of the microbiome):
+   birth route, colostrum TGF-beta, milk sugars (HMOs), TLR tuning at the lining, SCFAs and Tregs, the newborn Th2 lean. */
+(function(){
+/* you: a Y-shaped (bifid) gram-positive rod, centered at 0,0 */
+const BIF=(rot,s)=>`<g transform="rotate(${rot||0}) scale(${s||1})"><path d="M0,14 L0,0 M0,0 L-8,-12 M0,0 L8,-12" stroke="var(--bug2)" stroke-width="9" stroke-linecap="round" fill="none"/><path d="M0,14 L0,0 M0,0 L-8,-12 M0,0 L8,-12" stroke="var(--bug)" stroke-width="5.5" stroke-linecap="round" fill="none"/></g>`;
+const ME_BIF=(lab)=>`<g class="jit">${BIF(0,1.6)}</g>${ME(0,0,36)}${lab?T(0,60,lab,'sublbl'):''}`;
+/* a relative: a smaller bifid rod */
+const KIN=(x,y,rot,seed)=>`<g class="jit" style="animation-delay:-${(seed%16)/10}s"><g transform="translate(${x},${y})">${BIF(rot,1)}</g></g>`;
+/* a gram-negative rod with a flagellum */
+const ROD=(rot)=>`<g transform="rotate(${rot||0})"><rect x="-17" y="-7" width="34" height="14" rx="7" fill="var(--bug)" stroke="var(--bug2)" stroke-width="2.4"/><path d="M17,0 q8,-7 16,0 t16,0 t16,0" stroke="var(--bug2)" stroke-width="1.8" fill="none"/></g>`;
+/* a milk sugar (HMO): three linked rings */
+const HMO=()=>{const h=(cx,cy)=>`<polygon points="${[0,1,2,3,4,5].map(k=>{const a=k*Math.PI/3;return (cx+Math.cos(a)*6).toFixed(1)+','+(cy+Math.sin(a)*6).toFixed(1)}).join(' ')}" fill="var(--paper)" stroke="var(--hot)" stroke-width="1.6"/>`;
+  return `<path d="M-11,4 L0,-4 L11,4" stroke="var(--hot)" stroke-width="1.6" fill="none"/>`+h(-11,4)+h(0,-4)+h(11,4)};
+const SAY=(x,y,t)=>add(T(x,y,t,'youlbl').replace('class="youlbl"','class="youlbl" text-anchor="middle"'));
+const S=q=>stage.querySelector(q);
+/* gut cross-section: lumen on top, a row of epithelial cells, lamina propria below */
+function gutBG(lumenLabel,cells){let s=`<rect width="900" height="560" fill="var(--tissue)"/>${fibers(77,400,560)}<rect width="900" height="300" fill="var(--paper2)"/>`;
+  const n=cells||13;for(let i=0;i<n;i++){const x=30+i*70;s+=epi(x,350,62,96,i+90)}
+  s+=`<rect x="0" y="296" width="900" height="6" fill="var(--epi2)" opacity=".7"/>`;
+  s+=T(190,40,lumenLabel||'gut lumen','zone')+T(700,545,'lamina propria','zone');return s}
+const IGA=(x,y)=>`<g transform="translate(${x},${y})">${ab(-5,0,-20,'var(--ab)')}${ab(5,0,20,'var(--ab)')}<circle cx="0" cy="9" r="3" fill="var(--you)"/></g>`;
+
+registerPlayer({id:'microbiome',name:'The first microbes',role:'A friendly gut bacterium, arriving at birth to help train a newborn\'s immune system',order:19,load0:20,
+ meter:'Infection',
+ blurb:'Arrive at birth, get fed by milk, and teach a brand new immune system to tell friends from foes.',
+ icon:(x,y)=>`<g transform="translate(${x},${y}) scale(1.6)">${BIF(0,1)}<g transform="translate(-16,10)">${BIF(-30,.7)}</g><g transform="translate(16,10)">${BIF(30,.7)}</g></g>`,
+ scenes:[
+{id:'birth',title:'First in',where:'Birth canal, then the newborn gut',clock:'Birth',body:['gut'],
+ narr:`You are a <em>Bifidobacterium</em>, a small Y-shaped rod. Until today the baby's gut held almost no microbes at all. Then she is born vaginally, and on the way out she swallows a mouthful of her mother's microbes. You are one of them, and you have the whole gut nearly to yourself.`,
+ extra:`<div class="goal"><b class="h">How this works</b>You are one of the first microbes in a newborn's gut. Over her first months you will help her immune system grow up: learning to live with you, while still fighting real germs. Each scene asks what happens next. Wrong answers let pathogens gain ground, and the meter rises.</div>`,
+ go:'Begin',
+ draw(){return gutBG('the newborn gut, nearly empty')+G(250,-60,ME_BIF(),'','me')+G(330,-80,`${KIN(0,0,20,3)}${KIN(40,14,-25,7)}${KIN(-30,30,40,11)}`,'','kin')},
+ async play(){await wait(300);await Promise.all([moveTo('#me',460,170,1800),moveTo('#kin',560,190,2100)]);
+   idle(()=>{const m=S('#me');if(m)moveTo(m,460+Math.random()*30-15,170+Math.random()*20-10,1800,'ease-in-out')},2000)},
+ take:'The fetal gut is barely colonized. Vaginal birth seeds the baby with her mother\'s microbes, and those first settlers start shaping her immune system right away.',map:'#idea-flora'},
+
+{id:'csec',title:'A different start',where:'Newborn nursery',clock:'Day 1',body:['gut'],
+ note:'<b>The baby in the next bassinet.</b> Born the same day, by cesarean.',
+ narr:`She skipped the birth canal, so she never swallowed her mother's vaginal and gut microbes. Her first settlers came from skin and the room around her, and her gut community looks different from her neighbor's. Few of your relatives made it in.`,
+ draw(){return gutBG('her gut, a different crowd')+G(330,150,`<g transform="scale(1.4)">${staph(4,21)}</g>`,'','sk1')+G(620,120,`<g transform="scale(1.4)">${staph(3,33)}</g>`,'','sk2')
+   +G(760,200,ROD(15),'','gn')+G(470,200,ME_BIF('you, one of very few'),'','me')+`<g id="kids" opacity="0">${[[260,90,10],[380,230,-30],[560,80,25],[700,260,-15],[820,110,40],[300,250,5],[620,220,-40]].map((p,k)=>KIN(p[0],p[1],p[2],k)).join('')}</g>`},
+ async play(){idle(()=>{['#sk1','#sk2','#gn'].forEach(q=>{const e=S(q);if(e)moveTo(e,+e.dataset.x+(Math.random()*20-10),+e.dataset.y+(Math.random()*14-7),1700,'ease-in-out')})},1800)},
+ chal:{type:'choice',q:'Over the next months, what does the most to bring her gut microbes back toward a vaginally born baby\'s?',opts:[
+   {t:'Feeding her human milk',ok:true,why:'Studies comparing birth routes find that human milk feeding brings a cesarean baby\'s gut microbes nearly all the way back toward the vaginal pattern. Milk carries the sugars your kind lives on, plus microbes and antibody of its own.'},
+   {t:'A week of broad-spectrum antibiotics',why:'The antibiotics wipe out the few relatives of yours who got in, and the gut that grows back is even further from normal. Antibiotics are one of the main things that knock a microbiome off course, at any age.'},
+   {t:'Keeping her nursery as clean as possible',why:'Her gut meets even fewer microbes, so there is less to learn from. That is the hygiene hypothesis: too little early exposure, and the immune system leans toward allergy.'},
+   {t:'Formula from the very first feed',why:'Formula-fed babies grow a different gut community. Formula lacks the full mix of milk sugars, living microbes and secretory IgA in human milk, so your kind stays scarce.'}]},
+ async win(){const k=S('#kids');if(k)await fade(k,1,1200);await Promise.all([fade('#sk1',.35,800),fade('#sk2',.35,800)]);SAY(560,330-50,'your kind fills in');setLoad(ST.load-5)},
+ take:'Birth route shapes the first microbiome: vaginal birth hands the baby her mother\'s microbes, and cesarean birth does not. Human milk feeding largely closes that gap. Exposures this early are linked to effects that last for years.',map:'#idea-flora'},
+
+{id:'colostrum',title:'The first milk',where:'Newborn gut lining',clock:'Day 2',body:['gut'],
+ narr:`The first milk, colostrum, washes over you. It is thick with secretory IgA, which stays on the gut lining instead of being absorbed, and with one signaling protein at about ten times its level in blood. Under the lining, the baby's own B cells and helper T cells are listening.`,
+ draw(){return gutBG('the gut, coated in colostrum')+`<rect width="900" height="40" y="258" fill="var(--paper)" opacity=".6"/>`
+   +G(420,190,ME_BIF(),'','me')+`<g id="milkiga">${[[300,270],[540,276],[660,268],[780,274]].map(p=>IGA(p[0],p[1])).join('')}</g>`
+   +G(330,470,bcell(0,0,4)+T(0,44,'B cell','sublbl'),'','bc')+G(620,470,tcell(0,0,'tri','naive CD4',3),'','tc1')
+   +G(820,470,plasma(0,0,52)+T(0,44,'IgA plasma cell','sublbl'),'','pc')},
+ async play(){const p=S('#pc');if(p)p.style.opacity=0;await wait(300);
+   for(let k=0;k<5;k++){const d=add(G(260+k*120,240,`<circle r="5" fill="var(--hot)"/>`));moveTo(d,330+k*90,420,1600).then(()=>fade(d,0,400))}},
+ chal:{type:'choice',q:'Which colostrum signal pushes the baby\'s B cells to switch to IgA, and her naive helper T cells toward Tregs?',opts:[
+   {t:'TGF-beta',ok:true,why:'TGF-beta drives B cells to switch to IgA and helps naive CD4 cells become regulatory T cells, which build oral tolerance. In colostrum it also seals tight junctions and calms gut inflammation.'},
+   {t:'IL-4',why:'IL-4 sends B cells toward IgE and T cells toward Th2, the allergy side, which a newborn already leans toward. Her gut would make IgE to milk proteins instead of quiet tolerance.'},
+   {t:'IFN-gamma',why:'IFN-gamma is the Th1 signal that arms macrophages. It would inflame a gut that is meant to be learning calm, and it does not make IgA or Tregs.'},
+   {t:'IL-12',why:'IL-12 comes from macrophages and dendritic cells and makes Th1 cells. More inflammation, no IgA switch, no Tregs.'}]},
+ async win(){const t=S('#tc1');if(t){t.innerHTML=tcell(0,0,'tri','Treg',3);t.classList.add('glow')}
+   const b=S('#bc');if(b)await fade(b,.25,500);await fade('#pc',1,500);const fx=S('#fx');
+   for(let k=0;k<3;k++){const a=add(G(820,450,IGA(0,0)),fx);moveTo(a,720+k*50,250,1400)}await wait(1400);SAY(560,420-20,'her own IgA, and her first Tregs');setLoad(ST.load-5)},
+ take:'Colostrum TGF-beta: oral tolerance through Tregs, the baby\'s own switch to IgA, sealed tight junctions, and less of the inflammation behind necrotizing enterocolitis (NEC). Milk\'s secretory IgA is not absorbed; it lines the gut and blocks pathogens.',map:'#idea-foxp3'},
+
+{id:'hmo',title:'Sugars nobody else can eat',where:'Lumen of the large intestine',clock:'Week 1',body:['gut'],
+ narr:`Milk carries more than 100 kinds of complex sugars, human milk oligosaccharides (HMOs). The baby's enzymes cannot break them down, so they pass through untouched and reach you in the colon. You carry the genes to eat them. A gram-negative rod drifts toward the lining, looking for a sugar to grab.`,
+ draw(){return gutBG('colon lumen')+`<g id="sugars">${[[260,80],[400,60],[540,90],[680,70],[820,100],[330,150],[610,160]].map((p,k)=>G(p[0],p[1],HMO(),'hm','h'+k)).join('')}</g>`
+   +G(420,220,ME_BIF(),'','me')+G(780,200,ROD(160),'','gn')+T(760,240,'gram-negative rod','sublbl')},
+ async play(){await moveTo('#gn',720,262,2200,'ease-in-out')},
+ chal:{type:'choice',q:'The baby cannot digest these sugars at all. What are they doing in her milk?',opts:[
+   {t:'They feed you and lure pathogens away',ok:true,why:'They are prebiotics: they feed bifidobacteria like you, which carry the genes to eat them. Free HMOs also work as decoy receptors. A pathogen grabs the floating sugar instead of the sugars on the lining, and washes out.'},
+   {t:'They are the baby\'s main source of energy',why:'They pass through undigested, so they give her almost no energy; fat and lactose do that. Meanwhile the rod finds a spot on the lining and holds on.'},
+   {t:'They coat the lining so nothing can attach',why:'If they did, you could not settle either. They float free in the lumen, and that is how they trick pathogens. The rod finds a bare spot and holds on.'},
+   {t:'They are leftovers from making milk, no job',why:'Milk spends a lot of energy making them, and the number and mix is tuned by the mother\'s genes and diet. They have two jobs, and the rod gets to the lining while you wait.'}]},
+ async win(){const g=S('#gn');const h0=S('#h6');if(h0&&g)await moveTo(h0,690,236,900);if(g){await Promise.all([moveTo(g,900,120,1400),h0?moveTo(h0,880,100,1400):0])}
+   const fx=S('#fx');for(const k of [0,1,2,3]){const h=S('#h'+k);if(h)moveTo(h,420,220,1100).then(()=>fade(h,0,300))}await wait(1200);
+   [[360,200],[480,250],[380,260],[500,190]].forEach((p,k)=>{const n=add(KIN(p[0],p[1],k*30-40,k+4),fx);pop(n,400)});SAY(520,120,'fed, multiplied, and the rod is gone');setLoad(ST.load-6)},
+ take:'HMOs are prebiotics. They resist digestion, reach the colon and feed <em>Bifidobacterium</em>, which has the genes to eat them, a sign that host and microbe evolved together. They are also soluble decoy receptors: pathogens bind the free sugar instead of the gut lining.',map:'#idea-flora'},
+
+{id:'tlr',title:'Friend or foe at the border',where:'Surface of the gut lining',clock:'Week 2',body:['gut'],
+ narr:`You drift down onto the lining. Its cells carry pattern sensors, and you share broad patterns with dangerous bacteria, so the lining has to decide what to make of you. One sensor is about to touch your gram-positive wall.`,
+ draw(){const R=[['TLR4',340],['TLR2',500],['TLR5',660],['TLR4',820]];
+   return gutBG('lumen, next to the lining',13)+R.map((r,k)=>G(r[1],300,`<circle r="40" cy="-20" fill="var(--paper)" opacity=".001"/><path d="M-9,4 L-9,-20 M9,4 L9,-20" stroke="var(--hot)" stroke-width="5" stroke-linecap="round"/><path d="M-15,-28 Q0,-14 15,-28" stroke="var(--hot)" stroke-width="5" fill="none" stroke-linecap="round"/>`+T(0,-44,r[0],'lbl'),'tc','t'+k)).join('')
+   +G(560,140,ME_BIF(),'','me')},
+ chal:{type:'find',q:'Tap the sensor that will fire when it touches you.',hint:'Each sensor reads one kind of microbial pattern. Think about what your wall is made of.',
+  check(i){if(i===1)return {ok:true,why:'TLR2 reads lipoteichoic acid and lipoproteins in gram-positive walls, and bifidobacteria are gram-positive. TLR4 waits for LPS from gram-negative pathogens.'};
+   if(i===2)return {why:'TLR5 reads flagellin, the protein of a bacterial flagellum. You have none, so it stays quiet while you brush past, and you have not been checked at all.'};
+   return {why:'TLR4 reads LPS, which only gram-negative bacteria carry, like the pathogens this lining must still catch. Your gram-positive wall has none, so nothing reads you here.'}}},
+ async win(){const m=S('#me');if(m)await moveTo(m,500,200,900);const r=S('#t1');if(r)r.classList.add('glow');
+   const fx=S('#fx');const lb=['soluble TLR2','soluble CD14','lactoferrin'];
+   await Promise.all(lb.map((l,k)=>{const d=add(G(260+k*60,60,`<circle r="6" fill="var(--hot)"/><text x="10" y="4" style="font-size:12px;font-weight:700;fill:var(--hot)">${l}</text>`),fx);return wait(k*250).then(()=>moveTo(d,580,150+k*26,1300))}));
+   if(r)r.classList.remove('glow');SAY(640,470,'milk turns the alarm down: you are hosted, not attacked');setLoad(ST.load-5)},
+ take:'TLR2 reads gram-positive bifidobacteria; TLR4 reads LPS from gram-negative pathogens. Because friends and foes share these patterns, milk tunes the signal: soluble TLR2, soluble CD14, lactoferrin and lactadherin dampen TLR2 and TLR4 signaling, while a few milk sugars push TLR4 the other way. That balance lets the gut host you and still answer pathogens.',map:'#idea-tlr'},
+
+{id:'scfa',title:'What you give back',where:'Colon, above the GALT',clock:'Week 3',body:['gut'],
+ narr:`You and your relatives now crowd the colon. Under the lining sits the gut-associated lymphoid tissue (GALT), home to about 70 to 80% of the body's immune cells, and still immature. What you make from milk sugars helps train it.`,
+ draw(){return gutBG('colon lumen')+G(330,70,HMO(),'','sug')+G(470,200,ME_BIF(),'','me')+`<g>${KIN(600,180,30,2)}${KIN(660,230,-20,5)}${KIN(380,240,50,8)}</g>`
+   +G(330,470,tcell(0,0,'sq','naive CD4',2),'','n1')+G(560,480,tcell(0,0,'sq','naive CD4',4),'','n2')+G(790,470,mac(0,0,40,7),'','mf')+T(790,530,'gut macrophage','sublbl')},
+ chal:{type:'order',q:'Put the steps in order, from a milk sugar in the lumen to a calmer immune system.',steps:[
+   {t:'Milk sugars reach the colon undigested',anim:async()=>{await moveTo('#sug',450,170,900)}},
+   {t:'You and your neighbors ferment them into SCFAs',anim:async()=>{const s=S('#sug');if(s)await fade(s,0,300);const fx=S('#fx');for(let k=0;k<4;k++){const d=add(G(470,200,`<circle r="5" fill="var(--hot)"/>`,'scf'),fx);moveTo(d,400+k*50,250,700)}await wait(700);add(T(560,140,'butyrate and other SCFAs','sublbl'),fx).classList.add('scl')}},
+   {t:'Butyrate crosses into the lamina propria',anim:async()=>{const ds=[...stage.querySelectorAll('.scf')];await Promise.all(ds.map((d,k)=>moveTo(d,320+k*80,430,900)))}},
+   {t:'Naive helper T cells become Tregs',anim:async()=>{['#n1','#n2'].forEach((q,k)=>{const e=S(q);if(e){e.innerHTML=tcell(0,0,'sq','Treg',k*2+2);e.classList.add('glow')}});await wait(500)}},
+   {t:'Tregs calm the gut\'s responses to food and microbes',anim:async()=>{const fx=S('#fx');for(const x of [330,560]){const d=add(G(x,450,`<circle r="6" fill="var(--b)"/><text x="10" y="4" style="font-size:12px;font-weight:700;fill:var(--ink)">IL-10</text>`),fx);moveTo(d,760,450,1200)}await wait(1200);const m=S('#mf');if(m)m.classList.add('glow')}}],
+  bad:'Out of order. No sugar, no butyrate; no butyrate reaching the T cells, no Tregs. The young gut stays jumpy, and a pathogen gets a foothold while it is distracted.'},
+ async badAnim(){stage.querySelectorAll('.scf,.scl').forEach(e=>e.remove());const s=S('#sug');if(s){s.style.opacity=1;moveTo(s,330,70,300)}
+   ['#n1','#n2'].forEach((q,k)=>{const e=S(q);if(e){e.innerHTML=tcell(0,0,'sq','naive CD4',k*2+2);e.classList.remove('glow')}});await wait(350)},
+ async win(){SAY(560,100,'acid slows pathogens; butyrate makes Tregs');setLoad(ST.load-6)},
+ take:'Bifidobacteria ferment HMOs into acetate and lactate, and neighboring bacteria turn those into butyrate. The acid left behind slows pathogens, and butyrate drives Treg development, which damps allergy and inflammation. If the gut does not meet enough varied bacteria in the first 1,000 days, the GALT does not mature properly.',map:'#idea-flora'},
+
+{id:'th2',title:'Tipping the scale',where:'Gut lamina propria',clock:'Month 2',body:['gut'],
+ narr:`The baby's helper T cells came into the world leaning one way, and left alone that lean has a price. You, your relatives and the milk sugars have been pushing back toward the middle for weeks.`,
+ draw(){return gutBG('colon lumen')+G(470,190,ME_BIF(),'','me')+`<g>${KIN(620,160,20,3)}${KIN(330,210,-30,6)}</g>`
+   +`<g id="beam" style="transform-origin:600px 420px;transform:rotate(-14deg)"><line x1="420" y1="420" x2="780" y2="420" stroke="var(--ink)" stroke-width="5"/>
+     <g transform="translate(420,420)"><path d="M-40,10 L40,10 L30,30 L-30,30Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>${T(0,54,'side A','sublbl')}</g>
+     <g transform="translate(780,420)"><path d="M-40,10 L40,10 L30,30 L-30,30Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>${T(0,54,'side B','sublbl')}</g></g>
+   <path d="M600,420 L580,520 L620,520Z" fill="var(--ink)"/>`},
+ chal:{type:'choice',q:'Which way do newborn helper T cells lean, and what does that lean risk?',opts:[
+   {t:'Toward Th2, which risks allergy',ok:true,why:'Newborn T helper responses skew toward Th2, the IgE and allergy side. Milk sugars and commensals like you turn Th2 down and shift the balance toward Th1 and Th17.'},
+   {t:'Toward Th1, which risks autoimmunity',why:'Th1 and Th17 are where you push her, not where she starts. Pushed too far that way she would risk inflammation and autoimmunity, which is why the goal is balance. Her real lean goes unchecked, and allergy builds.'},
+   {t:'Toward Th17, which risks gut inflammation',why:'Th17 is part of where commensals move her, not her starting point. Her real starting lean goes unchecked, and she makes IgE to foods and pollen.'},
+   {t:'Toward CD8 killers, which risks damage',why:'Newborn CD8 T cells are few and slow to kill, so killing is not where she leans. Her real lean goes unchecked, and allergy builds.'}]},
+ async win(){const b=S('#beam');if(!b)return;const fx=S('#fx');add(T(420,500,'Th2','lbl').replace('class="lbl"','class="lbl" text-anchor="middle"'),fx);add(T(780,500,'Th1 / Th17','lbl').replace('class="lbl"','class="lbl" text-anchor="middle"'),fx);
+   await fin(b.animate([{transform:'rotate(-14deg)'},{transform:'rotate(0deg)'}],{duration:RED?1:1400,easing:'ease-in-out',fill:'forwards'}),1400);b.style.transform='rotate(0deg)';SAY(600,110,'balanced: fights germs, tolerates food, no allergy');setLoad(ST.load-5)},
+ take:'Newborns lean Th2. HMOs and commensals turn Th2 down and shift toward Th1/Th17, aiming for balance: no allergy, not too much inflammation, still able to fight infection, tolerant without autoimmunity. The hygiene hypothesis: too little exposure (cesarean birth) or too little help handling the flora (formula instead of milk), and allergy is more likely.',map:'#idea-th'},
+
+{id:'final',title:'For life',where:'The gut, months and years on',clock:'Month 6 onward',body:['gut','thymus'],final:true,
+ narr:`By six months your community has grown and diversified, and so has the immune system it trained. Breastfed babies can have a thymus nearly twice the size of formula-fed babies at 4 months, fed by milk TGF-beta, butyrate from your neighbors, Tregs, and even maternal cells from colostrum. Your crowd will keep changing for the rest of her life, with diet, antibiotics and illness.`,
+ draw(){return gutBG('the gut, years on')+G(470,180,ME_BIF(),'','me')+`<g id="crowd">${Array.from({length:14},(_,k)=>KIN(220+(k*53)%640,70+(k*37)%190,(k*47)%90-45,k)).join('')}</g>`
+   +G(330,470,tcell(0,0,'sq','Treg',2),'','r1')+G(560,470,plasma(0,0,53)+T(0,44,'IgA plasma cell','sublbl'),'','p1')+G(790,470,nkcell(0,0,43)+T(0,50,'NK cell','sublbl'),'','nk')},
+ async play(){await wait(300);const fx=S('#fx');for(let k=0;k<3;k++){const a=add(G(560,450,IGA(0,0)),fx);moveTo(a,500+k*60,260,1400)}},
+ take:'The microbiome is built in the first 1,000 days, by birth route, milk and early exposures, and it trains the GALT, Tregs, IgA and even the thymus. Exclusive breastfeeding for about 6 months is the AAP recommendation. Formula-fed infants in one study showed early adaptive maturation (more allergy risk) and slower innate recruitment, and breastfed infants had more NK cells.',map:'#idea-flora'}
 ]});
 })();
 
@@ -5256,6 +5940,16 @@ function strep(n,seed,ang){const R=rng(seed||5);let s='';let x=0,y=0,a=ang||0;fo
 function myocyte(x,y,w,h,seed){let s=`<g filter="url(#soft)"><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="14" fill="#e9c9cf" stroke="var(--heart)" stroke-width="2"/></g>`;
   for(let k=1;k<w/16;k++)s+=`<line x1="${x-w/2+k*16}" y1="${y-h/2+6}" x2="${x-w/2+k*16}" y2="${y+h/2-6}" stroke="var(--heart)" stroke-width="${k%2?3:1.4}" opacity=".7"/>`;
   return s+`<ellipse cx="${x}" cy="${y}" rx="16" ry="9" class="nuc"/>`}
+/* week 4 helpers: cards, skin, joints */
+function card(w,h,l1,l2){return `<rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="12" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="0" y="${l2?-4:6}" style="font-size:17px;font-weight:700;fill:var(--ink);text-anchor:middle">${l1}</text>${l2?`<text x="0" y="20" style="font-size:15px;fill:var(--muted);text-anchor:middle">${l2}</text>`:''}`}
+function kera(x,y,seed){return `<path d="${blob(x,y,17,seed,.12,8,11)}" fill="var(--epi2)" stroke="var(--skinl)" stroke-width="1" opacity=".9"/><ellipse cx="${x}" cy="${y}" rx="4.5" ry="3.5" class="nuc" style="opacity:.6"/>`}
+function epidermis(y0,h,n,seed){let s=`<rect id="epid" x="0" y="${y0}" width="900" height="${h}" fill="var(--epi)"/>`;const R=rng(seed||3);
+  for(let r=0;r<n;r++)for(let i=0;i<24;i++)s+=kera(175+i*30+(r%2)*15,y0+16+r*24,Math.floor(R()*900));return s}
+function melano(x,y,seed){const R=rng(seed||2);let d='';for(let i=0;i<4;i++){const a=-Math.PI*(.15+i*.23),l=22+R()*10;d+=`<path d="M${x},${y} q${(Math.cos(a)*l*.5).toFixed(1)},${(Math.sin(a)*l*.7).toFixed(1)} ${(Math.cos(a)*l).toFixed(1)},${(Math.sin(a)*l).toFixed(1)}" stroke="var(--skin2)" stroke-width="4" stroke-linecap="round" fill="none"/>`}
+  return `<g>${d}${mblob(x,y,13,seed||2,.1,9,10,'var(--skin2)')}${[[-5,-3],[4,-4],[6,3],[-4,4],[0,0]].map(p=>`<circle cx="${x+p[0]}" cy="${y+p[1]}" r="1.9" fill="var(--hair)"/>`).join('')}</g>`}
+function cd8me(){return cellT(0,0,'tri','CD8',11,null,'mylbl')+ME(0,0,34)}
+function chainR(x,y,n,id){let s='';for(let k=0;k<n;k++)s+=`<g id="${id}${k}"><circle cx="${x+k*34}" cy="${y}" r="14" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><text x="${x+k*34}" y="${y+5}" style="font-size:12px;font-weight:700;fill:var(--ink);text-anchor:middle">${k%2?'R':'G'}</text></g>`;
+  return `<path d="M${x},${y} H${x+(n-1)*34}" stroke="var(--ink)" stroke-width="2"/>`+s}
 
 registerPlayer({id:'selfreactive',name:'The self-reactive T cell',role:'Your receptor fits a piece of your own heart',order:12,load0:5,
  blurb:'Slip through the thymus with a receptor that fits heart myosin, meet every safety net, then watch a strep throat break them.',
@@ -5384,6 +6078,23 @@ registerPlayer({id:'selfreactive',name:'The self-reactive T cell',role:'Your rec
  async win(){await wait(300)},
  take:'Acute rheumatic fever is mainly type II hypersensitivity (antibodies against cell and matrix antigens) with T cell help, 2 to 4 weeks after untreated group A strep pharyngitis. Jones criteria: carditis, migratory polyarthritis, chorea, erythema marginatum, subcutaneous nodules. Chronic rheumatic heart disease hits the mitral valve most. Treating strep throat with penicillin prevents it.',map:'#idea-autoab'},
 
+{id:'spread',title:'Who else joined',where:'The inflamed heart',clock:'Age 10, week 5',body:['heart'],
+ narr:`The heart is inflamed now, and you are not the only self-reactive T cell in it. Damaged valve and muscle cells are spilling proteins that strep never resembled, and the tissue is soaked in cytokines. Four heart-reactive clones sit near you. Three of them broke tolerance, each in a different way. One never did.`,
+ draw(){const C=[[330,200,MY,'Clone A','sees M protein and myosin','primed in the neck node'],[650,200,MY,'Clone B','sees myosin, no strep match','woken by IL-1 and TNF here'],
+     [330,410,'zig','Clone C','sees collagen from the valve','added after weeks of damage'],[650,410,MY,'Clone D','sees myosin, no strep match','met a calm DC with no B7']];
+   return `<rect width="900" height="560" fill="var(--tissue)"/>`+fibers(23,300,560)+`<path d="M180,520 q60,-50 120,0 q60,-50 120,0" stroke="var(--heart)" stroke-width="9" fill="none" stroke-linecap="round" opacity=".6"/>`
+   +C.map(([x,y,sh,co,a,b],i)=>G(x,y,cellT(0,0,sh,co,i+5)+`<text x="0" y="66" style="font-size:13px;fill:var(--ink);text-anchor:middle">${a}</text><text x="0" y="84" style="font-size:13px;fill:var(--muted);text-anchor:middle">${b}</text>`,'tc','t'+i)).join('')
+   +G(490,300,meCell('',7),'','me')},
+ async play(){noBugs()},
+ chal:{type:'find',q:'Tap the clone that broke tolerance by bystander activation.',hint:'Read both lines under each clone: what it sees, and what switched it on.',
+  check(i){const W=['Clone A cross-reacts: it was primed against strep M protein and also fits myosin. That is molecular mimicry, the way you got in. Meanwhile the real bystander keeps adding to the damage.',
+    '','Clone C reacts to a protein that only appeared after the valve was damaged. That widening to new self targets is epitope spreading, not bystander activation. The heart keeps swelling while you look.',
+    'Clone D saw myosin on a calm dendritic cell with no B7, so it got signal 1 without signal 2 and is anergic. It never broke tolerance at all.'];
+   return i===1?{ok:true,why:'Clone B does not cross-react with strep at all. It was simply sitting in tissue full of danger signals and cytokines (IL-1, TNF, interferons), and that inflammation was enough to switch it on. That is bystander activation. Smoking and UV light act the same way in other diseases.'}:{why:W[i]}}},
+ async win(){const L=[['molecular mimicry',330,140],['bystander activation',650,140],['epitope spreading',330,350],['still anergic',650,350]];
+   for(let k=0;k<4;k++){add(T(L[k][1],L[k][2],L[k][0],'youlbl'));await wait(250)}const d=stage.querySelector('#t3');if(d)await fade(d,.4,500);const b=stage.querySelector('#t1');if(b)b.classList.add('glow')},
+ take:'Tolerance breaks in three main ways. Molecular mimicry: a microbe peptide looks like self. Bystander activation: inflammation from infection, injury, smoking or UV wakes a self-reactive cell that has no cross-reaction. Epitope spreading: damage releases new self antigens and the attack widens over time; in type 1 diabetes, autoantibodies appear years before symptoms and add targets one at a time.',map:'#idea-sig2'},
+
 {id:'aicd',title:'Too much of a good thing',where:'The heart and nearby lymph nodes',clock:'Weeks later',body:['heart'],
  narr:`The strep is cleared, but you and your clones keep getting restimulated by myosin from damaged heart tissue. Your own surface starts showing a new pair of molecules, and so do your neighbors.`,
  draw(){return nodeBG('Lymph node')+[0,1,2,3].map(k=>G(300+k*120,300+(k%2)*60,cellT(0,0,MY,'',k+1)+`<text x="0" y="-36" class="sublbl">Fas + FasL</text>`,'clone','c'+k)).join('')+G(170,420,meCell('CD4',7),'','me')},
@@ -5432,11 +6143,112 @@ registerPlayer({id:'selfreactive',name:'The self-reactive T cell',role:'Your rec
  async win(){const bug=stage.querySelector('#bug');add(T(740,260,'monthly penicillin: no new strep','youlbl'));if(bug)await fade(bug,0,800);stage.querySelector('#me').classList.remove('glow');await fade('#me',.5,600)},
  take:'Rheumatic fever: penicillin for the strep, then secondary prophylaxis with monthly benzathine penicillin for years; aspirin or NSAIDs for arthritis. For other autoimmune diseases, treatment turns down the steps you depend on: steroids broadly, abatacept blocks B7 to CD28, anti-TNF drugs block the cytokine (screen for TB), rituximab removes B cells, methotrexate limits proliferation.',map:'#idea-imsup'},
 
+{id:'terms',title:'A positive test, a healthy woman',where:'Blood donor clinic',clock:'A routine screen',body:['arm'],
+ note:'<b>A different person.</b> Step away from the child for a moment: self-reactive cells like you live in everyone.',
+ narr:`A 35-year-old woman gives blood, and a research screen finds a low titer of antinuclear antibody (ANA) in her serum. She feels well. She has no rash, no sore joints, no protein in her urine, and her exam is normal. Somewhere in her body, self-reactive B cells have been switched on enough to make that antibody.`,
+ draw(){return `<rect width="900" height="560" fill="var(--node)"/>`+G(330,300,`<rect x="-26" y="-110" width="52" height="200" rx="22" fill="var(--paper)" stroke="var(--line)" stroke-width="3"/><rect x="-20" y="-20" width="40" height="104" rx="18" fill="#e3c7a0"/>`+T(0,124,'her serum','sublbl'),'','tube')
+   +G(620,300,card(300,190,'','')+`<text x="-130" y="-50" style="font-size:15px;fill:var(--ink)">ANA: low positive (1:80)</text><text x="-130" y="-16" style="font-size:15px;fill:var(--ink)">Symptoms: none</text><text x="-130" y="18" style="font-size:15px;fill:var(--ink)">Exam: normal</text><text x="-130" y="52" style="font-size:15px;fill:var(--ink)">Urine: normal</text>`,'','rep')
+   +`<g id="rings" opacity="0"><ellipse cx="560" cy="300" rx="320" ry="240" fill="none" stroke="var(--hot)" stroke-width="3"/><ellipse cx="560" cy="330" rx="220" ry="160" fill="none" stroke="var(--hot)" stroke-width="3"/><ellipse cx="560" cy="370" rx="110" ry="80" fill="var(--paper2)" stroke="var(--you)" stroke-width="3"/>
+    ${T(560,84,'autoreactivity: everyone','lbl')}${T(560,196,'autoimmunity: common','lbl')}${T(560,375,'autoimmune disease','lbl')}${T(560,398,'about 5 percent','sublbl')}</g>`},
+ async play(){noBugs()},
+ chal:{type:'choice',q:'Which term fits her best right now?',opts:[
+  {t:'Autoimmunity without autoimmune disease',ok:true,why:'Her self-reactive B cells have been activated (that is autoimmunity), but nothing is damaged, so she has no autoimmune disease. Low-titer ANA turns up in many healthy people, more often in women and older adults.'},
+  {t:'Early systemic lupus erythematosus',why:'If you label her with lupus, she gets treated for a disease she does not have. ANA is sensitive but not specific. Lupus needs clinical features; anti-dsDNA and anti-Smith are the specific antibodies that support it.'},
+  {t:'An autoinflammatory syndrome',why:'Autoinflammatory diseases, such as familial Mediterranean fever, are innate alarms stuck on, with no self-reactive B or T cells and no autoantibodies. She has an autoantibody, so this is the adaptive side.'},
+  {t:'Autoreactivity that tolerance fully controlled',why:'Self-reactive cells exist in everyone, because receptors are built at random. But once they make antibody, they have been activated, so tolerance has already slipped a little. That step has a different name.'}]},
+ async win(){await fade('#rep',0,500);await fade('#tube',0,300);await fade('#rings',1,700);const m=add(G(560,240,'<circle r="9" fill="var(--you)" stroke="var(--ink)" stroke-width="1.5"/>'));pop(m);add(T(560,270,'she is here','youlbl'))},
+ take:'Autoreactivity: self-reactive B and T cells exist in everyone. Autoimmunity: some are activated and make autoantibody, which is common and often harmless. Autoimmune disease: that response causes damage, in up to about 5 percent of people, mostly women (Hashimoto more than 40 to 1, lupus about 10 to 1, RA about 3 to 1); ankylosing spondylitis is the exception, more common in men.',map:'#idea-autoab'},
+
+{id:'gell',title:'Who is doing the damage?',where:'Rheumatology clinic',clock:'One afternoon',body:['arm'],
+ note:'<b>Six different patients.</b> Every one of them has a positive autoantibody test.',
+ narr:`Autoimmune damage follows the same hypersensitivity types as any other immune attack, and one disease can use more than one. Six patients are waiting today. In five of them the antibody itself does the harm, by binding a cell, a receptor or a tissue. In one, the antibody is only a marker, and self-reactive T cells are destroying the tissue.`,
+ draw(){const P=[['Graves disease','anti-TSH receptor'],['Type 1 diabetes','anti-GAD65'],['Myasthenia gravis','anti-AChR'],['Pemphigus vulgaris','anti-desmoglein 3'],['Immune thrombocytopenia','anti-GPIIb/IIIa'],['Goodpasture syndrome','anti-collagen IV']];
+   return `<rect width="900" height="560" fill="var(--node)"/>`+P.map(([d,a],i)=>G(300+(i%3)*240,200+Math.floor(i/3)*200,card(228,78,d,a)+ab(0,-54,0),'tc','t'+i)).join('')},
+ async play(){noBugs()},
+ chal:{type:'find',q:'Tap the patient whose autoantibody is only a marker, while T cells destroy the organ.',hint:'Think about what each antibody binds, and whether binding alone would cause the symptoms.',
+  check(i){const W=['Her IgG binds the TSH receptor and switches it on like the hormone itself, so her thyroid grows and races. The antibody is the disease: type II, stimulating.','',
+    'His IgG blocks and strips acetylcholine receptors at the neuromuscular junction, so his eyelids droop and his muscles tire with use. The antibody is the disease: type II.',
+    'Her IgG cuts the desmosome glue between keratinocytes, so the epidermis splits into fragile blisters and mouth sores. The antibody is the disease: type II.',
+    'His IgG coats platelets and spleen macrophages eat them, so he bruises and gets petechiae. The antibody is the disease: type II.',
+    'Her IgG binds the basement membrane of lung and kidney, calling in complement and neutrophils: coughing blood and nephritis. The antibody is the disease: type II.'];
+   return i===1?{ok:true,why:'In type 1 diabetes, antibodies to GAD65, insulin and islet cells mark the attack, and they can appear years before symptoms, which makes them useful for prediction. But CD8 and CD4 T cells kill the beta cells. That is type IV.'}:{why:W[i]}}},
+ async win(){for(let k=0;k<6;k++){if(k===1)continue;const t=stage.querySelector('#t'+k);if(!t)return;fade(t,.45,400);add(T(300+(k%3)*240,250+Math.floor(k/3)*200,'type II','youlbl'))}
+   const t=stage.querySelector('#t1');if(t)t.classList.add('glow');add(T(540,250,'type IV: T cells','youlbl'));await wait(500)},
+ take:'Autoimmune damage maps onto Gell and Coombs, often more than one type. Type II, antibody against a cell or receptor: hemolytic anemia, ITP, Goodpasture, myasthenia, Graves, pemphigus. Type III, immune complexes: lupus, and RA through rheumatoid factor and ACPA. Type IV, T cells: type 1 diabetes, MS, psoriasis, vitiligo, alopecia areata, and RA again. Even type I can turn on self (autoallergy, such as IgE against thyroid peroxidase). IgG against the IgE receptor, behind some chronic hives, is type II.',map:'#idea-hs24'},
+
+{id:'psor',title:'Skin that feeds itself',where:'Skin of the elbow',clock:'A flare',body:['arm'],
+ note:'<b>A different patient: a 28-year-old with thick, silvery plaques on both elbows.</b> You are a memory T cell that lives in his skin.',
+ narr:`Skin is a busy immune organ: Langerhans cells and CD8 T cells in the epidermis, helper T cells, dendritic cells and mast cells below. Most T cells here are memory cells that never leave and wake easily, and you are one of them. Your receptor fits LL37, an antimicrobial peptide his own keratinocytes make. Even the keratinocytes can send cytokine signals.`,
+ draw(){return `<rect width="900" height="560" fill="var(--tissue)"/>`+fibers(5,200,560)+`<g id="epiG">${epidermis(40,130,5,9)}</g><g id="thick"></g>`+T(840,30,'epidermis','sublbl')+T(840,545,'dermis','sublbl')
+   +G(360,380,dc(0,0,21,false)+T(0,82,'dendritic cell','sublbl'),'','dc')+G(640,410,meCell('Th17',7),'','me')},
+ async play(){noBugs()},
+ chal:{type:'order',q:'Tap how one flare builds and keeps itself going, in order.',steps:[
+  {t:'An injury stresses keratinocytes, and they release LL37 stuck to their own DNA',anim:async()=>{for(let k=0;k<6;k++){const d=add(G(300+k*70,170,'<circle r="6" fill="var(--you)" stroke="var(--ink)" stroke-width="1.2"/>'));moveTo(d,330+k*12,330,1200)}add(T(470,312,'LL37 + self DNA','youlbl'));await wait(1300)}},
+  {t:'Dendritic cells take up the complexes, wake up, and release IL-23',anim:async()=>{const d=stage.querySelector('#dc');if(!d)return;d.innerHTML=dc(0,0,21,true)+T(0,82,'activated dendritic cell','sublbl');await pop(d.firstElementChild,300);cytokine(360,380,600,400,'IL-23');await wait(1500)}},
+  {t:'IL-23 keeps you and other Th17 cells going, and you release IL-17 and IL-22',anim:async()=>{const m=stage.querySelector('#me');if(m)m.classList.add('glow');cytokine(640,410,560,190,'IL-17',0);cytokine(640,410,740,190,'IL-22',250);await wait(1800)}},
+  {t:'Keratinocytes divide too fast and pile up into a thick, scaly plaque',anim:async()=>{const th=stage.querySelector('#thick');if(!th)return;const R=rng(77);for(let r=0;r<3;r++){for(let i=0;i<24;i++)th.insertAdjacentHTML('beforeend',kera(175+i*30+(r%2)*15,186+r*22,Math.floor(R()*900)));await wait(300)}
+    const e=stage.querySelector('#epid');if(e)e.setAttribute('height','200');add(T(560,268,'thick epidermis with scale','youlbl'));await wait(400)}},
+  {t:'Keratinocytes send out chemokines, IL-1, IL-6 and TNF that call in more T cells and neutrophils',anim:async()=>{for(let k=0;k<3;k++){const n=add(G(820,470+k*20,neu(0,0,20,k+3)));moveTo(n,300+k*90,262,1400)}cytokine(500,230,640,400,'TNF',200);add(T(560,520,'the loop feeds itself','youlbl'));await wait(1600)}}],
+  bad:'Out of order. Nothing can amplify until stressed keratinocytes release the self antigen and a dendritic cell calls in Th17 cells. Without that start the plaque never forms, and the loop starts over.'},
+ async badAnim(){const m=stage.querySelector('#me');if(m)m.classList.remove('glow')},
+ async win(){await wait(300)},
+ take:'Psoriasis is a loop between T cells and keratinocytes: stress releases self antigens such as LL37, dendritic cells make IL-23, Th17 cells make IL-17 and IL-22, keratinocytes overgrow into thick plaques with scale and send back IL-1, IL-6, TNF and chemokines that pull in neutrophils. Biologics cut the loop: ustekinumab (anti-IL-12 and IL-23), secukinumab (anti-IL-17A), anti-TNF. Strep throat can trigger flares, and IL23R gene variants raise the risk.',map:'#idea-th'},
+
+{id:'vitil',title:'Pale patches',where:'Skin of the hands',clock:'Over a year',body:['hand'],
+ note:'<b>A different patient: a 19-year-old with sharp-edged white patches on both hands.</b> You are a CD8 T cell in her epidermis.',
+ narr:`At the base of her epidermis sit the pigment cells, melanocytes, each passing melanin to the keratinocytes around it. Each melanocyte shows a self peptide on MHC I that your receptor fits. You kill them with perforin and granzyme, and your IFN-gamma tells nearby keratinocytes to send chemokines that call more killers like you. Her dermatologist wants a cream that turns that IFN-gamma signal down.`,
+ draw(){let m='';[260,370,480,590,700,810].forEach((x,k)=>{m+=G(x,222,melano(0,0,k+4),k>=2&&k<=3?'gone':'','mel'+k)});
+   return `<rect width="900" height="560" fill="var(--tissue)"/>`+fibers(15,300,560)+epidermis(60,170,6,31)+`<rect x="390" y="56" width="230" height="190" fill="#fff" opacity=".5"/>`+T(505,48,'white patch','sublbl')+m+T(260,272,'melanocyte','sublbl')
+   +G(520,380,cd8me(),'','me')},
+ async play(){noBugs();stage.querySelectorAll('.gone').forEach(g=>g.style.opacity=.15);await moveTo('#me',700,320,1600)},
+ chal:{type:'choice',q:'Which drug turns down the IFN-gamma signal in her skin?',opts:[
+  {t:'A JAK inhibitor, ruxolitinib',ok:true,why:'The IFN-gamma receptor signals through JAK1 and JAK2 to STAT1. Blocking JAK means the keratinocytes stop sending chemokines, fewer killers arrive, and melanocytes can come back. Topical ruxolitinib is approved for vitiligo.'},
+  {t:'An anti-IL-17A antibody, secukinumab',why:'IL-17 drives psoriasis, not vitiligo. Here the killers keep coming because IFN-gamma is untouched, and the patch keeps spreading.'},
+  {t:'An anti-CD20 antibody, rituximab',why:'That removes B cells. Her melanocytes are being killed by CD8 T cells like you, so the patch keeps spreading.'},
+  {t:'A vitamin D cream, calcipotriene',why:'Calcipotriene slows keratinocyte overgrowth in psoriasis plaques. It does not block the IFN-gamma signal calling killers in, so the white patch grows.'}]},
+ async win(){add(G(700,440,`<rect x="-150" y="-28" width="300" height="56" rx="12" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="0" y="-4" style="font-size:14px;font-weight:700;fill:var(--ink);text-anchor:middle">IFN-gamma receptor, then JAK, then STAT</text><text x="0" y="16" style="font-size:13px;fill:var(--muted);text-anchor:middle">JAK blocked: no chemokines</text>`));
+   const m=stage.querySelector('#me');if(m)await fade(m,.45,700);for(const k of [2,3]){const g=stage.querySelector('#mel'+k);if(g)await fade(g,1,600)}add(T(505,300,'pigment returns slowly','youlbl'))},
+ take:'Vitiligo and alopecia areata are cytotoxic autoimmunity: CD8 T cells and IFN-gamma destroy melanocytes (white, often symmetric patches) or attack hair follicles (patchy hair loss). Cytokine receptors signal through JAK kinases, so JAK inhibitors turn many cytokines down at once: topical ruxolitinib for vitiligo, oral baricitinib for alopecia areata. Neither disease is painful or dangerous, but both weigh heavily on people.',map:'#cell-cd8'},
+
+{id:'ra',title:'Years before the joints',where:'Her lungs, then her blood',clock:'8 years before any joint pain',body:['lung'],
+ note:'<b>A different patient: a 44-year-old woman who has smoked for 25 years.</b> Her hands feel fine today.',
+ narr:`Smoke irritates her airways every day. In the stressed tissue an enzyme called PADI4 is changing the arginine in some of her proteins into a different amino acid. Her HLA-DR4 molecules carry a shared groove shape that holds these altered peptides especially well, and self-reactive helpers like you start helping B cells react to them.`,
+ draw(){return nodeBG('Lung tissue and lymph node')+G(0,0,chainR(260,130,12,'aa'),'','chain')+T(450,95,'one of her proteins','sublbl')+G(700,190,`<path d="M-40,-14 h80 a14,14 0 0 1 0,28 h-80 a14,14 0 0 1 0,-28z" fill="var(--hot)" opacity=".85"/><text x="0" y="5" style="font-size:14px;font-weight:700;fill:var(--paper);text-anchor:middle">PADI4</text>`,'','enz')
+   +G(420,350,dc(0,0,9,true)+onII(42,-36,'zig','var(--you)')+T(0,86,'HLA-DR4 cell','sublbl'),'','apc')+G(560,360,meCell('CD4',7),'','me')+G(720,380,bcell(0,0,6),'','bc')+T(720,430,'B cell','sublbl')
+   +`<g><line x1="230" y1="500" x2="860" y2="500" stroke="var(--line)" stroke-width="4"/>${T(240,525,'now','sublbl')}${T(840,525,'joints swell','sublbl')}<rect id="tl" x="230" y="494" width="0" height="12" rx="6" fill="var(--you)"/></g>`},
+ async play(){noBugs();await moveTo('#enz',560,190,1400);await moveTo('#enz',700,190,1200)},
+ chal:{type:'choice',q:'What has PADI4 made in her proteins, and which antibody will follow?',opts:[
+  {t:'Citrulline, and anti-CCP (ACPA) antibody',ok:true,why:'PADI4 turns arginine into citrulline. Citrullinated proteins look new to her immune system, and the B cells you help make anti-citrullinated protein antibodies (ACPA, measured as anti-CCP) years before her joints hurt.'},
+  {t:'Hydroxyproline, and rheumatoid factor',why:'Hydroxyproline is normal collagen chemistry, not what PADI4 makes. Rheumatoid factor is IgM against the Fc of IgG: common in RA but less specific, and it is not aimed at altered proteins.'},
+  {t:'Phosphoserine, and antinuclear antibody',why:'Phosphorylation is done by kinases, not by PADI4, and ANA points toward lupus and other connective tissue diseases. Chase this and you miss the antibody that predicts her RA.'},
+  {t:'Citrulline, and anti-dsDNA antibody',why:'The amino acid is right, but anti-dsDNA is the specific antibody of lupus and binds DNA, not citrullinated protein. Her test would come back negative while RA quietly builds.'}]},
+ async win(){for(let k=1;k<12;k+=2){const g=stage.querySelector('#aa'+k);if(!g)return;g.querySelector('circle').setAttribute('fill','var(--you)');g.querySelector('text').textContent='Cit';await wait(120)}
+   for(let k=0;k<5;k++)add(G(700+k*22-44,330,ab(0,0,0)));const t=stage.querySelector('#tl');if(t)await fin(t.animate([{width:'0px'},{width:'420px'}],{duration:RED?1:1400,fill:'forwards'}),1400);add(T(450,480,'ACPA already positive','youlbl'))},
+ take:'RA often starts outside the joint: smoking, gum disease or infection drive PADI4 to citrullinate proteins such as vimentin, collagen II, fibrinogen and enolase. HLA-DRB1*04 alleles share a groove motif (the shared epitope) that presents them well. Anti-CCP (ACPA) is about 70 percent sensitive and over 90 percent specific, and it appears years before symptoms. Rheumatoid factor (IgM against IgG Fc) is less specific. RA with neither is seronegative.',map:'#idea-autoab'},
+
+{id:'pannus',title:'Into the joint',where:'Lining of a knuckle joint',clock:'8 years later',body:['hand'],
+ note:'<b>The same woman, eight years later.</b> Her knuckles and wrists are swollen and stiff for an hour every morning.',
+ narr:`Now you are in the lining of her knuckle joint, the synovium. It is crowded with T cells, B cells, plasma cells and macrophages, and small germinal centers have formed right in the tissue. The lining is thickening and creeping over the cartilage toward the bone.`,
+ draw(){return `<rect width="900" height="560" fill="var(--tissue)"/><path d="M180,420 Q450,360 880,420 L880,560 L180,560Z" fill="var(--paper2)" stroke="var(--line)" stroke-width="3"/><path id="cart" d="M180,420 Q450,360 880,420 L880,440 Q450,382 180,440Z" fill="#cfe0ec"/>`
+   +T(820,505,'bone','sublbl')+T(820,402,'cartilage','sublbl')+`<path id="syn" d="M180,300 Q450,250 880,300 L880,330 Q450,282 180,330Z" fill="#e7c9c2" stroke="var(--line)"/>`+T(820,280,'synovium','sublbl')
+   +G(300,180,meCell('Th17',7),'','me')+G(420,170,bcell(0,0,3),'','bc')+G(540,180,plasma(0,0,5),'','pc')+G(680,190,mac(0,0,34,6),'','mc')},
+ async play(){noBugs()},
+ chal:{type:'order',q:'Tap how her joint gets eaten away, in order.',steps:[
+  {t:'Th1 and Th17 cells like you help B cells, and plasma cells release ACPA and rheumatoid factor',anim:async()=>{await moveTo('#me',380,190,700);for(let k=0;k<5;k++){const a=add(G(540,180,ab(0,0,0)));moveTo(a,600+k*20,200+k*8,900)}await wait(1000)}},
+  {t:'Immune complexes and IL-17 activate macrophages, which release TNF and IL-6',anim:async()=>{const m=stage.querySelector('#mc');if(m)m.classList.add('glow');cytokine(680,190,420,300,'TNF',0);cytokine(680,190,560,300,'IL-6',300);await wait(1800)}},
+  {t:'TNF and IL-6 drive synovial fibroblasts to multiply into pannus over the cartilage',anim:async()=>{const s=stage.querySelector('#syn');if(!s)return;s.setAttribute('d','M180,300 Q450,250 880,300 L880,392 Q450,350 180,400Z');add(T(330,350,'pannus','youlbl'));await wait(700)}},
+  {t:'Pannus fibroblasts make RANKL, which turns precursors into osteoclasts',anim:async()=>{for(let k=0;k<3;k++){const o=add(G(300+k*150,470,`${mblob(0,0,24,k+60,.15,10,16,'var(--mac)')}${[-10,0,10].map(x=>`<circle cx="${x}" cy="0" r="4.5" class="nuc"/>`).join('')}`));pop(o)}add(T(450,520,'osteoclasts','youlbl'));await wait(700)}},
+  {t:'Osteoclasts dissolve bone at the joint margin, leaving erosions on the x-ray',anim:async()=>{const c=stage.querySelector('#cart');if(c)fade(c,.35,700);for(let k=0;k<3;k++)add(`<ellipse cx="${300+k*150}" cy="436" rx="26" ry="12" fill="var(--tissue)" stroke="var(--line)"/>`);await wait(800)}}],
+  bad:'Out of order. Fibroblasts do not grow into pannus until immune cells feed them TNF and IL-6, and osteoclasts need RANKL from that pannus before bone can erode. The joint resets.'},
+ async badAnim(){const m=stage.querySelector('#me');if(m)await moveTo(m,300,180,500)},
+ async win(){await wait(300)},
+ take:'RA joint: Th1 and Th17 cells, B cells and ACPA immune complexes activate macrophages; TNF and IL-6 turn synovial fibroblasts into pannus that destroys cartilage; pannus RANKL makes osteoclasts that erode bone. Each step is a drug target: anti-TNF (infliximab, etanercept; screen for TB first), tocilizumab (IL-6 receptor), rituximab (CD20), abatacept (CTLA-4-Ig, blocks B7 to CD28), JAK inhibitors, and denosumab (RANKL) for bone.',map:'#idea-imsup'},
+
 {id:'genes',final:true,title:'When one gene breaks a safety net',where:'Every safety net you met',clock:'Summary',body:['thymus'],
- narr:`You met every layer of tolerance and saw how one infection got past them. In a few children, a single broken gene removes one layer from birth, and the disease that follows names the layer.`,
- draw(){const rows=[['AIRE','thymus display','APECED: candida, hypoparathyroidism, adrenal failure'],['FOXP3','regulatory T cells','IPEX: infant diabetes, enteropathy, eczema'],['Fas / FasL','activation-induced death','ALPS: big nodes and spleen, cytopenias'],['CTLA-4','B7 removal by Tregs','CTLA-4 haploinsufficiency: gut and multi-organ autoimmunity']];
-   return `<rect width="900" height="560" fill="var(--node)"/>`+T(560,70,'One gene, one safety net','lbl')+rows.map(([g,n,d],k)=>`<g id="g${k}" opacity="0"><rect x="200" y="${100+k*100}" width="670" height="76" rx="12" fill="var(--paper)" stroke="var(--line)"/><text x="220" y="${132+k*100}" style="font-weight:700;font-size:17px;fill:var(--hot)">${g}</text><text x="220" y="${156+k*100}" class="sublbl" style="text-anchor:start">${n}</text><text x="400" y="${144+k*100}" style="font-size:15px;fill:var(--ink)">${d}</text></g>`).join('')},
- async play(){noBugs();for(let k=0;k<4;k++){await fade('#g'+k,1,400)}},
+ narr:`You met every layer of tolerance and saw how one infection got past them. In a few children, a single broken gene removes one layer from birth, and the disease that follows names the layer. These monogenic syndromes are rare; most autoimmunity is polygenic.`,
+ draw(){const rows=[['AIRE','thymus display','APECED: candida, hypoparathyroidism, adrenal failure'],['FOXP3','regulatory T cells','IPEX: infant diabetes, enteropathy, eczema'],['Fas / FasL','activation-induced death','ALPS: big nodes and spleen, cytopenias'],['CTLA-4','B7 removal by Tregs','CTLA-4 haploinsufficiency: gut and multi-organ autoimmunity'],['C1q, C2, C4','clearing dead cells','Early complement loss: lupus-like disease']];
+   return `<rect width="900" height="560" fill="var(--node)"/>`+T(560,70,'One gene, one safety net','lbl')+rows.map(([g,n,d],k)=>`<g id="g${k}" opacity="0"><rect x="200" y="${96+k*88}" width="670" height="70" rx="12" fill="var(--paper)" stroke="var(--line)"/><text x="220" y="${125+k*88}" style="font-weight:700;font-size:17px;fill:var(--hot)">${g}</text><text x="220" y="${149+k*88}" class="sublbl" style="text-anchor:start">${n}</text><text x="400" y="${137+k*88}" style="font-size:15px;fill:var(--ink)">${d}</text></g>`).join('')},
+ async play(){noBugs();for(let k=0;k<5;k++){await fade('#g'+k,1,400)}},
  take:'Tolerance has layers: central deletion in the thymus (AIRE), then in the body ignorance, anergy, regulatory T cells (FOXP3, CTLA-4) and activation-induced death (Fas). Autoimmune disease usually needs a genetic tilt (HLA, sex) plus a trigger like infection that supplies signal 2 or mimicry.',map:'#idea-foxp3'}
 
 ]});
@@ -6544,17 +7356,17 @@ const LUPUS={id:'lupus',_from:null,_ctx:'<b>New story: a young woman with lupus.
    {t:'High C3 and C4, with anti-centromere',why:'Complement is consumed in active lupus, so it falls. Anti-centromere belongs to limited scleroderma (CREST).'},
    {t:'Normal complement, with anti-histone',why:'Anti-histone points to drug-induced lupus (hydralazine, procainamide, isoniazid), which rarely involves the kidney, and her complement is being used up.'},
    {t:'Low C1 inhibitor, with normal C3',why:'That is hereditary angioedema: low C4 during attacks, normal C3, swelling without hives. No autoantibodies.'}]},
- take:'Lupus is type III: autoantibody plus self antigen form complexes that deposit in kidney, skin and joints and consume complement (low C3, C4). Paradoxically, missing early complement (C1q, C2, C4) raises lupus risk, because complexes and dying cells are not cleared.',map:'#idea-ic'};
+ take:'Lupus is type III: autoantibody plus self antigen form complexes that deposit in kidney, skin and joints and consume complement (low C3, C4). Paradoxically, missing early complement (C1q, C2, C4) raises lupus risk, because complexes and dying cells are not cleared.',map:'#idea-hs24'};
 
 registerTopic({id:'vaccines',order:9,name:'Vaccines and immunity across life',role:'How vaccines teach memory, and how newborns and older adults differ',
  blurb:'A vaccine is a rehearsal. Follow one dose from the needle to memory, then see why babies and grandparents respond differently.',
  covers:['Live vs inactivated vs mRNA and vector vaccines','Adjuvants and the danger signal','Memory B cells and long-lived plasma cells','T-independent polysaccharides and conjugate vaccines','Passive immunity: maternal IgG, immune globulin','Newborns and older adults','When vaccines stop working: herd immunity and R0, oral polio reversion, serotype replacement, flu drift and shift','Contraindications, adverse events and VAERS'],
- items:[['vaccine','form'],['vaccine','price'],['vaccine','adj'],['vaccine','road'],['vaccine','gc'],['vaccine','fcrn'],['vaccine','cocoon'],['bcell','spleen',{ctx:'Why sugar capsules need a trick: a B cell in the spleen meeting a polysaccharide with no T cell help.'}],['vaccine','conj',{ctx:'Back to the baby, now 2 months old.'}],['vaccine','wait'],['vaccine','tig'],['vaccine','aging'],['vaccine','real'],['vaccine','herd'],['vaccine','opv'],['vaccine','pneumo'],['vaccine','shift'],['vaccine','safe'],['vaccine','mem']]});
+ items:[['vaccine','form'],['vaccine','price'],['vaccine','adj'],['vaccine','road'],['vaccine','gc'],['vaccine','fcrn'],['lifespan','window',{ctx:'When that IgG actually crosses. You are the blood-forming cells of a baby still in the womb.'}],['vaccine','cocoon',{ctx:'Back to the newborn and her family.'}],['bcell','spleen',{ctx:'Why sugar capsules need a trick: a B cell in the spleen meeting a polysaccharide with no T cell help.'}],['vaccine','conj',{ctx:'Back to the baby, now 2 months old.'}],['vaccine','wait'],['vaccine','tig'],['vaccine','aging'],['lifespan','repertoire',{ctx:'Why older adults answer vaccines weakly. You are the blood-forming cells of a woman now in her eighties.'}],['vaccine','real',{ctx:'Back to vaccines in the real world.'}],['vaccine','herd'],['vaccine','opv'],['vaccine','pneumo'],['vaccine','shift'],['vaccine','safe'],['vaccine','mem']]});
 
 registerTopic({id:'autoimmunity',order:13,name:'Autoimmunity',role:'How a self-reactive cell gets past every safety net, and the damage it does',
  blurb:'Follow a T cell that can see your own heart: through the thymus, past every peripheral brake, and into rheumatic fever after a strep throat.',
- covers:['Central tolerance and AIRE, briefly','Molecular mimicry and signal 2 from infection: rheumatic fever (type II)','HLA associations, autoantibodies and treatment','Lupus: immune complexes, low C3 and C4, anti-dsDNA (type III)'],
- items:[['selfreactive','path',{ctx:'You are a T cell whose receptor happens to fit a piece of your own heart muscle.'}],['selfreactive','aire'],['selfreactive','strep'],['selfreactive','sig2'],['selfreactive','heart'],['selfreactive','hla',{ctx:'Back to the self-reactive T cell: why some people are more at risk.'}],['selfreactive','labs'],['selfreactive','treat'],LUPUS,['lab','elisa',{ctx:'How her anti-dsDNA gets measured: a blood sample at the ELISA bench.'}]]});
+ covers:['Central tolerance and AIRE, briefly','Molecular mimicry and signal 2 from infection: rheumatic fever (type II)','HLA associations, autoantibodies and treatment','Bystander activation and epitope spreading; autoreactivity vs autoimmunity vs disease','Lupus: immune complexes, low C3 and C4, anti-dsDNA (type III)','Which autoantibodies cause damage; psoriasis and the IL-23/IL-17 loop; vitiligo and JAK inhibitors; RA, citrulline, anti-CCP and pannus'],
+ items:[['selfreactive','path',{ctx:'You are a T cell whose receptor happens to fit a piece of your own heart muscle.'}],['selfreactive','aire'],['selfreactive','strep'],['selfreactive','sig2'],['selfreactive','heart'],['selfreactive','spread'],['selfreactive','hla',{ctx:'Back to the self-reactive T cell: why some people are more at risk.'}],['selfreactive','labs'],['selfreactive','treat'],['selfreactive','terms'],LUPUS,['selfreactive','gell',{ctx:'Back to the wider picture: which autoantibodies do the damage and which only mark it.'}],['selfreactive','psor'],['selfreactive','vitil'],['selfreactive','ra'],['selfreactive','pannus'],['lab','elisa',{ctx:'How her anti-dsDNA gets measured: a blood sample at the ELISA bench.'}]]});
 
 registerTopic({id:'complement',order:8,name:'Antibodies and complement',role:'What an antibody actually does once it is made, and the complement cascade',
  blurb:'An antibody does nothing alone: it blocks, tags, and calls in complement and other cells. Live it as one IgG molecule.',
@@ -6568,13 +7380,17 @@ registerTopic({id:'immunodeficiency',order:10,name:'Immunodeficiencies',role:'Ch
 
 registerTopic({id:'hypersensitivity',order:11,name:'Hypersensitivity and allergy',role:'Types I to IV, anaphylaxis, food and drug allergy',
  blurb:'Hypersensitivity is the immune system doing its job against the wrong thing, or too hard. Start with a mast cell meeting peanut, then see the other three types.',
- covers:['Type I: sensitization, IgE, mast cell degranulation','Anaphylaxis: epinephrine first, tryptase','Late phase and eosinophils','Type II antibodies and the Coombs tests, type III immune complexes, type IV T cells','Food and drug allergy, haptens, testing, prevention'],
- items:[['mast','th2'],['mast','fce'],['mast','xlink'],['mast','degran'],['mast','body'],['mast','epi'],['mast','tryp'],['mast','late'],['mast','types'],['graft','hyper',{ctx:'Type II, the fastest version: preformed antibody against a transplanted kidney.'}],['lab','dat',{ctx:'How the lab proves antibody is coating red cells: a blood sample at the Coombs bench.'}],['lab','which'],['antibody','hapten',{ctx:'How a drug too small to see becomes a target: penicillin and the hapten idea.'}],['selfreactive','heart',{ctx:'Type II again, in rheumatic fever: antibodies and T cells against heart tissue after strep throat.'}],LUPUS,['macrophage','th1',{ctx:'Type IV runs on this: a Th1 cell arming macrophages with IFN-gamma, as in a PPD skin test or a granuloma. It takes 48 to 72 hours.'}],['mast','test',{ctx:'Back to the mast cell and peanut allergy.'}],['mast','drugs'],['mast','omal'],['mast','leap']]});
+ covers:['Type I: sensitization, IgE, mast cell degranulation','Anaphylaxis: epinephrine first, tryptase','Late phase and eosinophils','Type II antibodies and the Coombs tests, type III immune complexes, type IV T cells','Hypersensitivity vs allergy; type II receptor antibodies and chronic urticaria','Serum sickness, Arthus and the PPD; four subtypes of type IV','Food and drug allergy, haptens, testing, biologics, immunotherapy and IgG4, prevention and the hygiene hypothesis'],
+ items:[['mast','th2'],['mast','fce'],['mast','xlink'],['mast','degran'],['mast','body'],['mast','epi'],['mast','tryp'],['mast','late'],['mast','types'],['mast','words'],['hyper','t2kinds',{ctx:'Type II from the other side. You are an IgG antibody, and where you land decides the disease.'}],['hyper','csu'],['graft','hyper',{ctx:'Type II, the fastest version: preformed antibody against a transplanted kidney.'}],['lab','dat',{ctx:'How the lab proves antibody is coating red cells: a blood sample at the Coombs bench.'}],['lab','which'],['antibody','hapten',{ctx:'How a drug too small to see becomes a target: penicillin and the hapten idea.'}],['selfreactive','heart',{ctx:'Type II again, in rheumatic fever: antibodies and T cells against heart tissue after strep throat.'}],['hyper','serum',{ctx:'Type III without autoimmunity: a man given antivenom made in horses.'}],LUPUS,['hyper','ppd',{ctx:'Type IV, the delayed one: a skin test read days after it was placed.'}],['macrophage','th1',{ctx:'Type IV runs on this: a Th1 cell arming macrophages with IFN-gamma, as in a PPD skin test or a granuloma. It takes 48 to 72 hours.'}],['hyper','t4sub',{ctx:'Back to delayed reactions: not every type IV runs on Th1.'}],['hyper','mixed'],['mast','test',{ctx:'Back to the mast cell and peanut allergy.'}],['mast','drugs'],['mast','omal'],['mast','bio'],['mast','ait'],['mast','leap'],['lifespan','hygiene',{ctx:'Why allergy keeps rising: four children growing up in four different ways.'}],['microbiome','th2',{ctx:'The same question from inside a newborn gut. You are one of the first bacteria to settle there.'}]]});
 
 registerTopic({id:'transplant',order:12,name:'Transplant immunology',role:'Matching, rejection on three timescales, immunosuppressants, GVHD',
  blurb:'A transplanted organ carries someone else\'s HLA. Live as a donor kidney through matching, every kind of rejection, and the drugs that protect you.',
- covers:['HLA matching and the crossmatch','Hyperacute, acute cellular, antibody-mediated and chronic rejection','Direct vs indirect allorecognition','Immunosuppressants and their side effects','Infections after transplant','Graft-versus-host disease'],
- items:[['graft','hla'],['graft','sib'],['graft','xmatch'],['graft','hyper'],['graft','reperf'],['graft','drugs'],['graft','allo'],['graft','acr'],['graft','cmv'],['graft','nephro'],['graft','chronic'],['graft','gvhd'],['graft','final']]});
+ covers:['Organ allocation; auto, syn, allo and xenografts; minor antigens and the mixed lymphocyte reaction','HLA matching and the crossmatch','Hyperacute, acute cellular, antibody-mediated and chronic rejection','Direct vs indirect allorecognition','Immunosuppressants and their side effects','Infections after transplant','Immune privilege','Graft-versus-host disease and graft versus leukemia'],
+ items:[['graft','alloc'],['graft','hla'],['graft','sib'],['graft','kinds'],['graft','minor'],['graft','mlr'],['graft','xmatch'],['graft','hyper'],['graft','reperf'],['graft','drugs'],['graft','allo'],['graft','acr'],['graft','cmv'],['graft','nephro'],['graft','chronic'],['graft','privilege'],['graft','gvhd'],['graft','gvhdpath'],['graft','gvl'],['graft','final']]});
+registerTopic({id:'lifespan',order:14,name:'Early life, aging and the microbiome',role:'How the immune system is built before birth, trained by its first microbes, and worn down with age',
+ blurb:'One lifetime, from the yolk sac to age 82, and the bacteria that move in on the first day and teach the gut what to tolerate.',
+ covers:['Where blood cells are made before and after birth','Maternal IgG: when it crosses, preterm babies, when it fades','The newborn tilt toward Tregs and Th2; slow IgG2 to capsules','Birth route, breast milk, colostrum TGF-beta and milk sugars','TLR2, short-chain fatty acids and gut Tregs','The hygiene hypothesis, evidence for and against','Aging: thymic loss, fewer new T cells, inflammaging, NK changes, anti-interferon antibodies'],
+ items:[['lifespan','intro'],['lifespan','sites'],['lifespan','window'],['lifespan','skew'],['microbiome','birth',{ctx:'Same newborn, seen from the gut. You are one of the first bacteria to arrive.'}],['microbiome','csec'],['microbiome','colostrum'],['microbiome','hmo'],['microbiome','tlr'],['microbiome','scfa'],['microbiome','th2'],['microbiome','final'],['lifespan','subclass',{ctx:'Back to the growing child and her blood-forming cells.'}],['lifespan','hygiene'],['lifespan','repertoire'],['lifespan','elder'],['lifespan','ifn'],['lifespan','life']]});
 
 </script>
 <script>
@@ -6587,7 +7403,7 @@ registerTopic({id:'organs',order:1,name:'Cells and organs',role:'Where immune ce
 registerTopic({id:'innate',order:2,name:'Innate immunity',role:'Sensing danger in the first minutes, before any antibody exists',
  blurb:'The innate system recognizes patterns that only microbes carry and reacts in minutes. Watch it from the cells that do the sensing.',
  covers:['Pattern recognition: which receptor (TLRs, Dectin-1, NOD2, RIG-I) senses which germ, and where','The signal inside the cell: MyD88 and NF-kappaB','Danger signals from dying cells','Complement without antibody: alternative and lectin pathways, then phagocytosis','Killing inside the phagolysosome','Type I interferon and the antiviral state','NK cells and missing self'],
- items:[['macrophage','tlr',{ctx:'A splinter has carried Staph aureus into the skin of the right hand. You are the macrophage that lives there.'}],['macrophage','damp'],['dc','prrs',{ctx:'Different germs, different receptors. You are a dendritic cell meeting a whole lineup of them.'}],['macrophage','signal'],['antigen','c3b',{ctx:'Same splinter, seen from the bacterial protein itself. Complement in the plasma has found it.'}],['antigen','alt'],['antigen','lectin'],['macrophage','phago',{ctx:'Back to the macrophage, now that the bacteria are coated.'}],['macrophage','kill'],['airway','sense',{ctx:'New story: influenza virus is infecting the airway lining of the lung. You are one of the lining cells it gets into.'}],['airway','alarm'],['airway','antiviral'],['airway','pdc'],['nk','boost',{ctx:'Same flu infection, now from an NK cell: the innate answer to a virus hiding inside your own cells.'}],['nk','ids'],['nk','stress'],['nk','miss'],['nk','kill']]});
+ items:[['macrophage','tlr',{ctx:'A splinter has carried Staph aureus into the skin of the right hand. You are the macrophage that lives there.'}],['macrophage','damp'],['microbiome','tlr',{ctx:'Not every microbe is an enemy. You are a friendly bacterium settling into a newborn gut, meeting the same receptors.'}],['dc','prrs',{ctx:'Different germs, different receptors. You are a dendritic cell meeting a whole lineup of them.'}],['macrophage','signal'],['antigen','c3b',{ctx:'Same splinter, seen from the bacterial protein itself. Complement in the plasma has found it.'}],['antigen','alt'],['antigen','lectin'],['macrophage','phago',{ctx:'Back to the macrophage, now that the bacteria are coated.'}],['macrophage','kill'],['airway','sense',{ctx:'New story: influenza virus is infecting the airway lining of the lung. You are one of the lining cells it gets into.'}],['airway','alarm'],['airway','antiviral'],['airway','pdc'],['nk','boost',{ctx:'Same flu infection, now from an NK cell: the innate answer to a virus hiding inside your own cells.'}],['nk','ids'],['nk','stress'],['nk','miss'],['nk','kill']]});
 
 registerTopic({id:'inflammation',order:3,name:'Inflammation',role:'The alarm, the flood of neutrophils, the burst, and the cleanup',
  blurb:'Inflammation is the body bringing cells and fluid to one spot, killing what is there, and then shutting it down. Live the whole arc.',
@@ -6607,7 +7423,7 @@ registerTopic({id:'mhc',order:5,name:'Antigen processing and MHC',role:'Turning 
 registerTopic({id:'tolerance',order:6,name:'Development and tolerance',role:'How the body deletes or silences cells that would attack itself',
  blurb:'Making random receptors means making some that see self. Watch the tests in the thymus and marrow, and the brakes that work later in the body.',
  covers:['Positive selection: CD4 vs CD8','Negative selection and AIRE','B cell receptor editing','Peripheral tolerance: ignorance, anergy, Tregs, activation-induced death','Signal 2, B7 and CTLA-4'],
- items:[['cd4','possel'],['cd4','negsel'],['bcell','edit',{ctx:'The B cell version of the same test, in the bone marrow.'}],['selfreactive','ignore',{ctx:'Some self-reactive T cells slip past the thymus anyway. You are one of them: your receptor fits a piece of heart muscle.'}],['selfreactive','anergy'],['selfreactive','treg'],['selfreactive','aicd'],['dc','b7',{ctx:'Why signal 2 matters, from the dendritic cell that gives it.'}]]});
+ items:[['cd4','possel'],['cd4','negsel'],['bcell','edit',{ctx:'The B cell version of the same test, in the bone marrow.'}],['selfreactive','ignore',{ctx:'Some self-reactive T cells slip past the thymus anyway. You are one of them: your receptor fits a piece of heart muscle.'}],['selfreactive','anergy'],['selfreactive','treg'],['selfreactive','aicd'],['dc','b7',{ctx:'Why signal 2 matters, from the dendritic cell that gives it.'}],['microbiome','scfa',{ctx:'Tolerance in the gut starts early. You are a bacterium in a newborn colon, feeding the cells that keep the peace.'}]]});
 
 registerTopic({id:'adaptive',order:7,name:'Humoral and cellular immunity',role:'T cell activation, help for B cells, antibodies and killers',
  blurb:'The adaptive response, start to finish: a naive T cell finds its match, gets permission, multiplies, and helps B cells and killers do their jobs.',
